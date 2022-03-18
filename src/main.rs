@@ -1,6 +1,4 @@
-//! Blinks the LED on a Pico board
-//!
-//! This will blink an LED attached to GP25, which is the pin the Pico uses for the on-board LED.
+//! DCF77/NPL radio clock on a Pico board
 #![no_std]
 #![no_main]
 
@@ -56,5 +54,3 @@ fn main() -> ! {
         delay.delay_ms(500);
     }
 }
-
-// End of file

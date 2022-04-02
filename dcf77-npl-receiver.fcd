@@ -271,12 +271,6 @@ MC 380 300 1 0 000
 MC 375 300 1 0 000
 MC 370 300 1 0 000
 MC 365 300 1 0 000
-MC 490 35 0 0 860
-MC 490 35 3 0 010
-FCJ
-TY 495 15 5 4 0 0 0 Bitstream++Charter 
-TY 485 20 5 4 0 0 0 Bitstream++Charter 3.3V
-TY 490 70 4 3 270 0 0 Bitstream++Charter GPIO 16
 TY 190 70 4 3 270 0 0 Bitstream++Charter 3.3V OUT
 TY 150 70 4 3 270 0 0 Bitstream++Charter GND
 TY 150 170 4 3 90 0 0 Bitstream++Charter GND

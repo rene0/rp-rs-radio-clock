@@ -324,3 +324,25 @@ MC 110 40 0 0 ey_libraries.genics0
 FCJ
 TY 105 25 5 4 0 0 0 Bitstream++Charter 5V
 TY 120 50 5 4 0 0 0 Bitstream++Charter 
+TY 290 170 4 3 90 0 0 Bitstream++Charter GPIO7
+TY 310 170 4 3 90 0 0 Bitstream++Charter GPIO8
+TY 330 170 4 3 90 0 0 Bitstream++Charter GPIO9
+RV 300 360 255 320 0
+TY 260 335 4 3 0 0 0 Bitstream++Charter KY-040
+MC 300 350 0 0 010
+FCJ
+TY 300 350 5 4 0 0 0 Bitstream++Charter 
+TY 305 350 5 4 0 0 0 Bitstream++Charter 3.3V
+MC 300 360 0 0 020
+MC 300 320 0 0 000
+FCJ
+TY 285 320 5 4 0 0 0 Bitstream++Charter CLK
+TY 310 330 5 4 0 0 0 Bitstream++Charter 
+MC 300 330 0 0 000
+FCJ
+TY 290 330 5 4 0 0 0 Bitstream++Charter DT
+TY 310 340 5 4 0 0 0 Bitstream++Charter 
+MC 300 340 0 0 000
+FCJ
+TY 290 340 5 4 0 0 0 Bitstream++Charter SW
+TY 310 350 5 4 0 0 0 Bitstream++Charter 

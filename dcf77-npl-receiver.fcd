@@ -186,7 +186,7 @@ LI 285 300 285 285 0
 LI 195 300 195 285 0
 TY 110 170 4 3 90 0 0 Bitstream++Charter GPIO 0
 TY 130 170 4 3 90 0 0 Bitstream++Charter GPIO 1
-RV 445 300 360 260 0
+RV 445 300 360 255 0
 TY 395 260 4 3 0 0 0 Bitstream++Charter PCF8574
 MC 445 270 0 0 000
 MC 445 290 0 0 000
@@ -198,22 +198,22 @@ MC 385 280 0 0 ihram.trim
 FCJ
 TY 385 280 5 4 0 0 0 Bitstream++Charter brightness
 TY 395 290 5 4 0 0 0 Bitstream++Charter 
-MC 360 265 2 0 000
+MC 360 260 2 0 000
 FCJ
-TY 335 260 5 4 0 0 0 Bitstream++Charter SCL_H
-TY 340 255 5 4 0 0 0 Bitstream++Charter 
-MC 360 275 2 0 000
+TY 360 260 5 4 0 0 0 Bitstream++Charter SCL
+TY 335 255 5 4 0 0 0 Bitstream++Charter SCL_H
+MC 360 270 2 0 000
 FCJ
-TY 335 270 5 4 0 0 0 Bitstream++Charter SDA_H
-TY 340 265 5 4 0 0 0 Bitstream++Charter 
-MC 360 285 2 0 010
+TY 360 270 5 4 0 0 0 Bitstream++Charter SDA
+TY 335 265 5 4 0 0 0 Bitstream++Charter SDA_H
+MC 360 280 2 0 010
 FCJ
-TY 345 280 5 4 0 0 0 Bitstream++Charter 
-TY 345 285 5 4 0 0 0 Bitstream++Charter 5V
-MC 360 295 2 0 020
+TY 360 280 5 4 0 0 0 Bitstream++Charter VCC
+TY 345 275 5 4 0 0 0 Bitstream++Charter 5V
+MC 360 290 2 0 020
 FCJ
-TY 350 295 5 4 0 0 0 Bitstream++Charter C
-TY 340 280 5 4 0 0 0 Bitstream++Charter 
+TY 360 290 5 4 0 0 0 Bitstream++Charter GND
+TY 345 285 5 4 0 0 0 Bitstream++Charter C
 RV 445 345 360 325 0
 TY 395 335 4 3 0 0 0 Bitstream++Charter LCD2004
 TY 395 325 4 3 0 0 0 Bitstream++Charter HD44780
@@ -281,44 +281,28 @@ TY 180 345 4 3 0 0 0 Bitstream++Charter Pololu 2595
 RV 230 360 150 335 0
 MC 160 360 1 0 000
 FCJ
-TY 160 350 5 4 0 0 0 Bitstream++Charter LV
-TY 155 365 5 4 0 0 0 Bitstream++Charter 3.3V
+TY 160 350 5 4 0 0 0 Bitstream++Charter HV
+TY 155 365 5 4 0 0 0 Bitstream++Charter 5V
 MC 175 360 1 0 000
 FCJ
-TY 175 350 5 4 0 0 0 Bitstream++Charter L1
-TY 165 370 5 4 0 0 0 Bitstream++Charter 
+TY 175 350 5 4 0 0 0 Bitstream++Charter H1
+TY 170 365 5 4 0 0 0 Bitstream++Charter SDA_H
 MC 190 360 1 0 000
 FCJ
-TY 190 350 5 4 0 0 0 Bitstream++Charter L2
-TY 180 370 5 4 0 0 0 Bitstream++Charter 
-MC 205 360 1 0 000
-FCJ
-TY 205 350 5 4 0 0 0 Bitstream++Charter L3
-TY 195 370 5 4 0 0 0 Bitstream++Charter 
-MC 220 360 1 0 000
-FCJ
-TY 220 350 5 4 0 0 0 Bitstream++Charter L4
-TY 210 370 5 4 0 0 0 Bitstream++Charter 
-MC 220 335 3 0 000
-FCJ
-TY 220 335 5 4 0 0 0 Bitstream++Charter H4
-TY 230 325 5 4 0 0 0 Bitstream++Charter 
-MC 205 335 3 0 000
-FCJ
-TY 205 335 5 4 0 0 0 Bitstream++Charter H3
-TY 215 325 5 4 0 0 0 Bitstream++Charter 
+TY 185 350 5 4 0 0 0 Bitstream++Charter H2
+TY 190 365 5 4 0 0 0 Bitstream++Charter SCL_H
 MC 190 335 3 0 000
 FCJ
-TY 190 335 5 4 0 0 0 Bitstream++Charter H2
-TY 200 325 5 4 0 0 0 Bitstream++Charter 
+TY 190 335 5 4 0 0 0 Bitstream++Charter L2
+TY 190 320 5 4 0 0 0 Bitstream++Charter SCL_L
 MC 175 335 3 1 000
 FCJ
-TY 175 335 5 4 0 0 0 Bitstream++Charter H1
-TY 185 345 5 4 0 0 0 Bitstream++Charter 
+TY 175 335 5 4 0 0 0 Bitstream++Charter L1
+TY 170 320 5 4 0 0 0 Bitstream++Charter SDA_L
 MC 160 335 3 0 000
 FCJ
-TY 160 335 5 4 0 0 0 Bitstream++Charter HV
-TY 155 320 5 4 0 0 0 Bitstream++Charter 5V
+TY 160 335 5 4 0 0 0 Bitstream++Charter LV
+TY 155 320 5 4 0 0 0 Bitstream++Charter 3.3V
 TY 110 70 4 3 270 0 0 Bitstream++Charter VBUS
 MC 110 40 0 0 ey_libraries.genics0
 FCJ
@@ -327,22 +311,46 @@ TY 120 50 5 4 0 0 0 Bitstream++Charter
 TY 290 170 4 3 90 0 0 Bitstream++Charter GPIO7
 TY 310 170 4 3 90 0 0 Bitstream++Charter GPIO8
 TY 330 170 4 3 90 0 0 Bitstream++Charter GPIO9
-RV 300 360 255 320 0
-TY 260 335 4 3 0 0 0 Bitstream++Charter KY-040
+RV 300 370 255 320 0
+TY 265 340 4 3 0 0 0 Bitstream++Charter KY-040
 MC 300 350 0 0 010
 FCJ
-TY 300 350 5 4 0 0 0 Bitstream++Charter 
+TY 295 350 5 4 0 0 0 Bitstream++Charter +
 TY 305 350 5 4 0 0 0 Bitstream++Charter 3.3V
 MC 300 360 0 0 020
+FCJ
+TY 285 360 5 4 0 0 0 Bitstream++Charter GND
+TY 305 360 5 4 0 0 0 Bitstream++Charter D
 MC 300 320 0 0 000
 FCJ
 TY 285 320 5 4 0 0 0 Bitstream++Charter CLK
-TY 310 330 5 4 0 0 0 Bitstream++Charter 
+TY 305 320 5 4 0 0 0 Bitstream++Charter K_CLK
 MC 300 330 0 0 000
 FCJ
 TY 290 330 5 4 0 0 0 Bitstream++Charter DT
-TY 310 340 5 4 0 0 0 Bitstream++Charter 
+TY 305 330 5 4 0 0 0 Bitstream++Charter K_DT
 MC 300 340 0 0 000
 FCJ
 TY 290 340 5 4 0 0 0 Bitstream++Charter SW
-TY 310 350 5 4 0 0 0 Bitstream++Charter 
+TY 305 340 5 4 0 0 0 Bitstream++Charter K_SW
+MC 210 365 3 0 ey_libraries.refpnt1
+MC 220 365 3 0 ey_libraries.refpnt1
+MC 210 330 1 0 ey_libraries.refpnt1
+MC 220 330 1 0 ey_libraries.refpnt1
+TY 355 170 4 3 90 0 0 Bitstream++Charter GND
+MC 350 190 0 0 ey_libraries.refpnt0
+FCJ
+TY 350 195 5 4 0 0 0 Bitstream++Charter D
+TY 360 200 5 4 0 0 0 Bitstream++Charter 
+MC 310 190 1 0 000
+FCJ
+TY 310 195 5 4 0 0 0 Bitstream++Charter K_DT
+TY 525 250 5 4 0 0 0 Bitstream++Charter 
+MC 330 190 1 0 000
+FCJ
+TY 330 195 5 4 0 0 0 Bitstream++Charter K_CLK
+TY 515 275 5 4 0 0 0 Bitstream++Charter 
+MC 290 190 1 0 000
+FCJ
+TY 290 195 5 4 0 0 0 Bitstream++Charter K_SW
+TY 515 290 5 4 0 0 0 Bitstream++Charter 

@@ -44,38 +44,17 @@ MC 410 210 1 0 ey_libraries.didled0
 MC 430 210 1 0 ey_libraries.didled0
 MC 470 210 1 0 ey_libraries.didled0
 MC 470 220 0 0 ey_libraries.refpnt0
-FCJ
-TY 470 225 5 4 0 0 0 Bitstream++Charter A
-TY 480 225 5 4 0 0 0 Bitstream++Charter 
 MC 430 220 0 0 ey_libraries.refpnt0
-FCJ
-TY 430 225 5 4 0 0 0 Bitstream++Charter A
-TY 440 225 5 4 0 0 0 Bitstream++Charter 
 MC 410 220 0 0 ey_libraries.refpnt0
-FCJ
-TY 410 225 5 4 0 0 0 Bitstream++Charter A
-TY 420 225 5 4 0 0 0 Bitstream++Charter 
 MC 210 220 0 0 ey_libraries.refpnt0
-FCJ
-TY 210 225 5 4 0 0 0 Bitstream++Charter B
-TY 220 225 5 4 0 0 0 Bitstream++Charter 
 MC 190 220 0 0 ey_libraries.refpnt0
-FCJ
-TY 190 225 5 4 0 0 0 Bitstream++Charter B
-TY 200 225 5 4 0 0 0 Bitstream++Charter 
 MC 170 220 0 0 ey_libraries.refpnt0
-FCJ
-TY 170 225 5 4 0 0 0 Bitstream++Charter B
-TY 180 225 5 4 0 0 0 Bitstream++Charter 
 RV 150 260 215 285 0
 MC 230 220 0 0 ey_libraries.refpnt0
+MC 195 285 1 0 ey_libraries.refpnt2
 FCJ
-TY 230 225 5 4 0 0 0 Bitstream++Charter B
-TY 240 225 5 4 0 0 0 Bitstream++Charter 
-MC 195 300 1 0 ey_libraries.refpnt2
-FCJ
-TY 180 305 5 4 0 0 0 Bitstream++Charter /DCF77
-TY 205 295 5 4 0 0 0 Bitstream++Charter 
+TY 180 290 5 4 0 0 0 Bitstream++Charter /DCF77
+TY 205 280 5 4 0 0 0 Bitstream++Charter 
 TY 170 260 4 3 0 0 0 Bitstream++Charter DCF77 V3
 TY 155 285 4 3 90 0 0 Bitstream++Charter 3-15V
 TY 165 285 4 3 90 0 0 Bitstream++Charter AON
@@ -103,42 +82,17 @@ TY 250 260 5 4 0 0 0 Bitstream++Charter
 TY 240 240 5 4 0 0 0 Bitstream++Charter orange FR-H
 LI 240 260 240 250 0
 LI 250 260 250 250 0
-MC 285 300 1 0 ey_libraries.refpnt2
+MC 285 285 1 0 ey_libraries.refpnt2
 FCJ
-TY 275 305 5 4 0 0 0 Bitstream++Charter /NPL
-TY 295 315 5 4 0 0 0 Bitstream++Charter 
+TY 275 290 5 4 0 0 0 Bitstream++Charter /NPL
+TY 295 300 5 4 0 0 0 Bitstream++Charter 
 MC 245 290 3 0 ey_libraries.refpnt1
 MC 255 290 3 0 ey_libraries.refpnt1
 MC 275 290 3 0 ey_libraries.refpnt1
-MC 205 295 0 0 020
-FCJ
-TY 205 295 5 4 0 0 0 Bitstream++Charter A
-TY 215 300 5 4 0 0 0 Bitstream++Charter 
-MC 175 295 0 0 020
-FCJ
-TY 175 295 5 4 0 0 0 Bitstream++Charter A
-TY 185 300 5 4 0 0 0 Bitstream++Charter 
-LI 205 285 205 295 0
-LI 175 295 175 285 0
 MC 235 285 1 0 010
 FCJ
 TY 230 290 4 3 0 0 0 Bitstream++Charter 
 TY 230 290 4 3 0 0 0 Bitstream++Charter 3.3V
-MC 265 295 0 0 020
-FCJ
-TY 265 295 5 4 0 0 0 Bitstream++Charter B
-TY 275 300 5 4 0 0 0 Bitstream++Charter 
-MC 295 295 0 0 020
-FCJ
-TY 295 295 5 4 0 0 0 Bitstream++Charter B
-TY 305 300 5 4 0 0 0 Bitstream++Charter 
-MC 305 295 0 0 020
-FCJ
-TY 305 295 5 4 0 0 0 Bitstream++Charter B
-TY 305 295 5 4 0 0 0 Bitstream++Charter 
-LI 265 295 265 285 0
-LI 305 295 305 285 0
-LI 295 295 295 285 0
 TY 235 285 4 3 90 0 0 Bitstream++Charter 3-5.5V
 TY 245 285 4 3 90 0 0 Bitstream++Charter 4-15V
 TY 295 285 4 3 90 0 0 Bitstream++Charter GND
@@ -153,17 +107,6 @@ FCJ
 TY 200 45 5 4 0 0 0 Bitstream++Charter 
 TY 185 25 5 4 0 0 0 Bitstream++Charter 3.3V
 MC 160 40 0 0 ey_libraries.refpnt0
-FCJ
-TY 160 30 5 4 0 0 0 Bitstream++Charter A
-TY 170 50 5 4 0 0 0 Bitstream++Charter 
-MC 150 190 0 0 ey_libraries.refpnt0
-FCJ
-TY 150 195 5 4 0 0 0 Bitstream++Charter C
-TY 160 200 5 4 0 0 0 Bitstream++Charter 
-MC 250 190 0 0 ey_libraries.refpnt0
-FCJ
-TY 250 195 5 4 0 0 0 Bitstream++Charter B
-TY 260 200 5 4 0 0 0 Bitstream++Charter 
 LI 150 40 160 40 0
 LI 150 50 150 40 0
 MC 390 195 3 0 ey_libraries.refpnt3
@@ -182,8 +125,6 @@ MC 110 190 1 0 000
 FCJ
 TY 105 195 5 4 0 0 0 Bitstream++Charter SDA_L
 TY 100 205 5 4 0 0 0 Bitstream++Charter 
-LI 285 300 285 285 0
-LI 195 300 195 285 0
 TY 110 170 4 3 90 0 0 Bitstream++Charter GPIO 0
 TY 130 170 4 3 90 0 0 Bitstream++Charter GPIO 1
 RV 445 300 360 255 0
@@ -210,10 +151,6 @@ MC 360 280 2 0 010
 FCJ
 TY 360 280 5 4 0 0 0 Bitstream++Charter VCC
 TY 345 275 5 4 0 0 0 Bitstream++Charter 5V
-MC 360 290 2 0 020
-FCJ
-TY 360 290 5 4 0 0 0 Bitstream++Charter GND
-TY 345 285 5 4 0 0 0 Bitstream++Charter C
 RV 445 345 360 325 0
 TY 395 335 4 3 0 0 0 Bitstream++Charter LCD2004
 TY 395 325 4 3 0 0 0 Bitstream++Charter HD44780
@@ -273,8 +210,6 @@ MC 370 300 1 0 000
 MC 365 300 1 0 000
 TY 190 70 4 3 270 0 0 Bitstream++Charter 3.3V OUT
 TY 150 70 4 3 270 0 0 Bitstream++Charter GND
-TY 150 170 4 3 90 0 0 Bitstream++Charter GND
-TY 250 170 4 3 90 0 0 Bitstream++Charter GND
 TY 270 170 4 3 90 0 0 Bitstream++Charter GPIO 6
 TY 390 170 4 3 90 0 0 Bitstream++Charter GPIO 11
 TY 180 345 4 3 0 0 0 Bitstream++Charter Pololu 2595
@@ -293,7 +228,7 @@ TY 185 350 5 4 0 0 0 Bitstream++Charter H2
 TY 190 365 5 4 0 0 0 Bitstream++Charter SCL_H
 MC 190 335 3 0 000
 FCJ
-TY 190 335 5 4 0 0 0 Bitstream++Charter L2
+TY 185 335 5 4 0 0 0 Bitstream++Charter L2
 TY 190 320 5 4 0 0 0 Bitstream++Charter SCL_L
 MC 175 335 3 1 000
 FCJ
@@ -313,14 +248,10 @@ TY 310 170 4 3 90 0 0 Bitstream++Charter GPIO8
 TY 330 170 4 3 90 0 0 Bitstream++Charter GPIO9
 RV 300 370 255 320 0
 TY 265 340 4 3 0 0 0 Bitstream++Charter KY-040
-MC 300 350 0 0 010
+MC 300 355 0 0 010
 FCJ
 TY 295 350 5 4 0 0 0 Bitstream++Charter +
-TY 305 350 5 4 0 0 0 Bitstream++Charter 3.3V
-MC 300 360 0 0 020
-FCJ
-TY 285 360 5 4 0 0 0 Bitstream++Charter GND
-TY 305 360 5 4 0 0 0 Bitstream++Charter D
+TY 305 355 5 4 0 0 0 Bitstream++Charter 3.3V
 MC 300 320 0 0 000
 FCJ
 TY 285 320 5 4 0 0 0 Bitstream++Charter CLK
@@ -337,11 +268,6 @@ MC 210 365 3 0 ey_libraries.refpnt1
 MC 220 365 3 0 ey_libraries.refpnt1
 MC 210 330 1 0 ey_libraries.refpnt1
 MC 220 330 1 0 ey_libraries.refpnt1
-TY 355 170 4 3 90 0 0 Bitstream++Charter GND
-MC 350 190 0 0 ey_libraries.refpnt0
-FCJ
-TY 350 195 5 4 0 0 0 Bitstream++Charter D
-TY 360 200 5 4 0 0 0 Bitstream++Charter 
 MC 310 190 1 0 000
 FCJ
 TY 310 195 5 4 0 0 0 Bitstream++Charter K_DT
@@ -354,3 +280,14 @@ MC 290 190 1 0 000
 FCJ
 TY 290 195 5 4 0 0 0 Bitstream++Charter K_SW
 TY 515 290 5 4 0 0 0 Bitstream++Charter 
+MC 175 285 0 0 ey_libraries.refpnt0
+MC 205 285 0 0 ey_libraries.refpnt0
+MC 305 285 0 0 ey_libraries.refpnt0
+MC 295 285 0 0 ey_libraries.refpnt0
+MC 265 285 0 0 ey_libraries.refpnt0
+MC 305 365 0 0 ey_libraries.refpnt0
+MC 355 295 0 0 ey_libraries.refpnt0
+LI 355 295 360 295 0
+LI 305 365 300 365 0
+TY 285 360 4 3 0 0 0 Bitstream++Charter GND
+TY 360 290 4 3 0 0 0 Bitstream++Charter GND

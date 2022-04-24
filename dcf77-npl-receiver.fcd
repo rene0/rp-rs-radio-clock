@@ -53,7 +53,7 @@ RV 150 260 215 285 0
 MC 230 220 0 0 ey_libraries.refpnt0
 MC 195 285 1 0 ey_libraries.refpnt2
 FCJ
-TY 180 290 5 4 0 0 0 Bitstream++Charter /DCF77
+TY 190 290 5 4 0 0 0 Bitstream++Charter /DCF77
 TY 205 280 5 4 0 0 0 Bitstream++Charter 
 TY 170 260 4 3 0 0 0 Bitstream++Charter DCF77 V3
 TY 155 285 4 3 90 0 0 Bitstream++Charter 3-15V
@@ -84,7 +84,7 @@ LI 240 260 240 250 0
 LI 250 260 250 250 0
 MC 285 285 1 0 ey_libraries.refpnt2
 FCJ
-TY 275 290 5 4 0 0 0 Bitstream++Charter /NPL
+TY 280 290 5 4 0 0 0 Bitstream++Charter /NPL
 TY 295 300 5 4 0 0 0 Bitstream++Charter 
 MC 245 290 3 0 ey_libraries.refpnt1
 MC 255 290 3 0 ey_libraries.refpnt1

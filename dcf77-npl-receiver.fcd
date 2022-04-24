@@ -252,34 +252,10 @@ MC 300 355 0 0 010
 FCJ
 TY 295 350 5 4 0 0 0 Bitstream++Charter +
 TY 305 355 5 4 0 0 0 Bitstream++Charter 3.3V
-MC 300 320 0 0 000
-FCJ
-TY 285 320 5 4 0 0 0 Bitstream++Charter CLK
-TY 305 320 5 4 0 0 0 Bitstream++Charter K_CLK
-MC 300 330 0 0 000
-FCJ
-TY 290 330 5 4 0 0 0 Bitstream++Charter DT
-TY 305 330 5 4 0 0 0 Bitstream++Charter K_DT
-MC 300 340 0 0 000
-FCJ
-TY 290 340 5 4 0 0 0 Bitstream++Charter SW
-TY 305 340 5 4 0 0 0 Bitstream++Charter K_SW
 MC 210 365 3 0 ey_libraries.refpnt1
 MC 220 365 3 0 ey_libraries.refpnt1
 MC 210 330 1 0 ey_libraries.refpnt1
 MC 220 330 1 0 ey_libraries.refpnt1
-MC 310 190 1 0 000
-FCJ
-TY 310 195 5 4 0 0 0 Bitstream++Charter K_DT
-TY 525 250 5 4 0 0 0 Bitstream++Charter 
-MC 330 190 1 0 000
-FCJ
-TY 330 195 5 4 0 0 0 Bitstream++Charter K_CLK
-TY 515 275 5 4 0 0 0 Bitstream++Charter 
-MC 290 190 1 0 000
-FCJ
-TY 290 195 5 4 0 0 0 Bitstream++Charter K_SW
-TY 515 290 5 4 0 0 0 Bitstream++Charter 
 MC 175 285 0 0 ey_libraries.refpnt0
 MC 205 285 0 0 ey_libraries.refpnt0
 MC 305 285 0 0 ey_libraries.refpnt0
@@ -291,3 +267,27 @@ LI 355 295 360 295 0
 LI 305 365 300 365 0
 TY 285 360 4 3 0 0 0 Bitstream++Charter GND
 TY 360 290 4 3 0 0 0 Bitstream++Charter GND
+MC 290 195 3 0 ey_libraries.refpnt3
+FCJ
+TY 290 195 5 4 0 0 0 Bitstream++Charter K_SW
+TY 295 200 5 4 0 0 0 Bitstream++Charter 
+MC 310 195 3 0 ey_libraries.refpnt3
+FCJ
+TY 310 195 5 4 0 0 0 Bitstream++Charter K_DT
+TY 320 185 5 4 0 0 0 Bitstream++Charter 
+MC 330 195 3 0 ey_libraries.refpnt3
+FCJ
+TY 330 195 5 4 0 0 0 Bitstream++Charter K_CLK
+TY 340 185 5 4 0 0 0 Bitstream++Charter 
+MC 300 325 0 0 ey_libraries.refpnt2
+FCJ
+TY 285 320 5 4 0 0 0 Bitstream++Charter CLK
+TY 310 320 5 4 0 0 0 Bitstream++Charter K_CLK
+MC 300 335 0 0 ey_libraries.refpnt2
+FCJ
+TY 285 330 5 4 0 0 0 Bitstream++Charter DT
+TY 310 330 5 4 0 0 0 Bitstream++Charter K_DT
+MC 300 345 0 0 ey_libraries.refpnt2
+FCJ
+TY 285 340 5 4 0 0 0 Bitstream++Charter SW
+TY 310 340 5 4 0 0 0 Bitstream++Charter K_SW

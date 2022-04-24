@@ -246,12 +246,12 @@ TY 120 50 5 4 0 0 0 Bitstream++Charter
 TY 290 170 4 3 90 0 0 Bitstream++Charter GPIO7
 TY 310 170 4 3 90 0 0 Bitstream++Charter GPIO8
 TY 330 170 4 3 90 0 0 Bitstream++Charter GPIO9
-RV 300 370 255 320 0
-TY 265 340 4 3 0 0 0 Bitstream++Charter KY-040
-MC 300 355 0 0 010
+RV 300 395 255 320 0
+TY 270 360 4 3 0 0 0 Bitstream++Charter KY-040
+MC 305 380 0 0 010
 FCJ
-TY 295 350 5 4 0 0 0 Bitstream++Charter +
-TY 305 355 5 4 0 0 0 Bitstream++Charter 3.3V
+TY 295 375 5 4 0 0 0 Bitstream++Charter +
+TY 315 375 5 4 0 0 0 Bitstream++Charter 3.3V
 MC 210 365 3 0 ey_libraries.refpnt1
 MC 220 365 3 0 ey_libraries.refpnt1
 MC 210 330 1 0 ey_libraries.refpnt1
@@ -261,11 +261,11 @@ MC 205 285 0 0 ey_libraries.refpnt0
 MC 305 285 0 0 ey_libraries.refpnt0
 MC 295 285 0 0 ey_libraries.refpnt0
 MC 265 285 0 0 ey_libraries.refpnt0
-MC 305 365 0 0 ey_libraries.refpnt0
+MC 310 390 0 0 ey_libraries.refpnt0
 MC 355 295 0 0 ey_libraries.refpnt0
 LI 355 295 360 295 0
-LI 305 365 300 365 0
-TY 285 360 4 3 0 0 0 Bitstream++Charter GND
+LI 310 390 300 390 0
+TY 285 385 4 3 0 0 0 Bitstream++Charter GND
 TY 360 290 4 3 0 0 0 Bitstream++Charter GND
 MC 290 195 3 0 ey_libraries.refpnt3
 FCJ
@@ -279,15 +279,25 @@ MC 330 195 3 0 ey_libraries.refpnt3
 FCJ
 TY 330 195 5 4 0 0 0 Bitstream++Charter K_CLK
 TY 340 185 5 4 0 0 0 Bitstream++Charter 
-MC 300 325 0 0 ey_libraries.refpnt2
+MC 305 325 0 0 ey_libraries.refpnt2
 FCJ
 TY 285 320 5 4 0 0 0 Bitstream++Charter CLK
-TY 310 320 5 4 0 0 0 Bitstream++Charter K_CLK
-MC 300 335 0 0 ey_libraries.refpnt2
+TY 315 320 5 4 0 0 0 Bitstream++Charter K_CLK
+MC 305 335 0 0 ey_libraries.refpnt2
 FCJ
 TY 285 330 5 4 0 0 0 Bitstream++Charter DT
-TY 310 330 5 4 0 0 0 Bitstream++Charter K_DT
-MC 300 345 0 0 ey_libraries.refpnt2
+TY 315 330 5 4 0 0 0 Bitstream++Charter K_DT
+MC 305 345 0 0 ey_libraries.refpnt2
 FCJ
 TY 285 340 5 4 0 0 0 Bitstream++Charter SW
-TY 310 340 5 4 0 0 0 Bitstream++Charter K_SW
+TY 315 340 5 4 0 0 0 Bitstream++Charter K_SW
+MC 305 360 1 0 ey_libraries.pasres0
+FCJ
+TY 310 350 5 4 0 0 0 Bitstream++Charter R8
+TY 310 365 5 4 0 0 0 Bitstream++Charter 10k
+LI 300 325 305 325 0
+LI 300 335 305 335 0
+LI 300 345 305 345 0
+LI 305 380 300 380 0
+LI 305 345 305 355 0
+LI 305 380 305 370 0

@@ -12,6 +12,5 @@ use panic_halt as _;
 /// as soon as all global variables are initialised.
 #[entry]
 fn main() -> ! {
-    loop {
-    }
+    panic!();
 }

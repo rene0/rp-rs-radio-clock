@@ -1,15 +1,12 @@
 #![no_std]
 #![no_main]
 
+use bsp::hal::{pac, sio::Sio};
 use cortex_m_rt::entry;
 use defmt_rtt as _;
 use embedded_hal::digital::v2::{InputPin, OutputPin};
 use panic_halt as _;
 use rp_pico as bsp;
-use bsp::hal::{
-    pac,
-    sio::Sio,
-};
 
 fn test_ky040(pins: bsp::Pins) -> ! {
     let button_pin = pins.gpio7.into_pull_down_input(); // KY-040 SW push button, perhaps into_floating_input() works too

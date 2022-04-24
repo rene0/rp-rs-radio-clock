@@ -1,12 +1,6 @@
 #![no_std]
 #![no_main]
 
-use cortex_m_rt::entry;
-use defmt_rtt as _;
-use embedded_hal::digital::v2::OutputPin;
-use embedded_time::fixed_point::FixedPoint;
-use panic_halt as _;
-use rp_pico as bsp;
 use bsp::hal::{
     clocks::{init_clocks_and_plls, Clock},
     pac,
@@ -14,6 +8,12 @@ use bsp::hal::{
     watchdog::Watchdog,
 };
 use bsp::XOSC_CRYSTAL_FREQ;
+use cortex_m_rt::entry;
+use defmt_rtt as _;
+use embedded_hal::digital::v2::OutputPin;
+use embedded_time::fixed_point::FixedPoint;
+use panic_halt as _;
+use rp_pico as bsp;
 
 fn test_leds(pins: bsp::Pins, mut delay: cortex_m::delay::Delay) -> ! {
     // no vec! in no_std, and each pin is a different type so using an array does not work.
@@ -62,8 +62,8 @@ fn main() -> ! {
         &mut pac.RESETS,
         &mut watchdog,
     )
-        .ok()
-        .unwrap();
+    .ok()
+    .unwrap();
 
     let delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().integer());
 

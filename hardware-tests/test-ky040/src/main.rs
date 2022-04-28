@@ -9,7 +9,7 @@ use panic_halt as _;
 use rp_pico as bsp;
 
 fn test_ky040(pins: bsp::Pins) -> ! {
-    let button_pin = pins.gpio7.into_pull_down_input(); // KY-040 SW push button, perhaps into_floating_input() works too
+    let sw_pin = pins.gpio7.into_pull_down_input(); // perhaps into_floating_input() works too
     let dt_pin = pins.gpio8.into_pull_down_input();
     let clk_pin = pins.gpio9.into_pull_down_input();
     let mut led_pin = pins.led.into_push_pull_output();
@@ -19,7 +19,7 @@ fn test_ky040(pins: bsp::Pins) -> ! {
     let mut rotation_now;
     // test "write to I/O-port" and pushing a button --> OK
     loop {
-        if button_pin.is_low().unwrap() {
+        if sw_pin.is_low().unwrap() {
             led_pin.set_high().unwrap();
         } else {
             led_pin.set_low().unwrap();

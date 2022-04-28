@@ -1,6 +1,6 @@
 [package]
 authors = ["the rp-rs team", "rene0"]
-edition = "2018"
+edition = "2021"
 readme = "README.md"
 name = "rp-rs-radio-clock"
 version = "0.1.0"

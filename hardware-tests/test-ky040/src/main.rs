@@ -8,6 +8,12 @@ use embedded_hal::digital::v2::{InputPin, OutputPin};
 use panic_halt as _;
 use rp_pico as bsp;
 
+// see also some examples from the internet:
+// https://www.brainy-bits.com/post/best-code-to-use-with-a-ky-040-rotary-encoder-let-s-find-out
+// https://gist.github.com/mumrah/ccd82aa13e784e77b788810dbaa8f4a3 for software SW debounce
+// https://michiel.vanderwulp.be/domotica/Modules/KY040-Rotary-Encoder/KY-040-Science.pdf
+// https://www.best-microcontroller-projects.com/rotary-encoder.html
+// https://arduino.stackexchange.com/questions/69307/ky-040-rotary-encoder-skipping-steps
 fn test_ky040(pins: bsp::Pins) -> ! {
     let sw_pin = pins.gpio7.into_pull_down_input(); // perhaps into_floating_input() works too
     let dt_pin = pins.gpio8.into_pull_down_input();
@@ -27,7 +33,8 @@ fn test_ky040(pins: bsp::Pins) -> ! {
         rotation_now = clk_pin.is_low().unwrap();
         if rotation_now != rotation_start {
             // Use the DT pin to found out the direction.
-            // This probably needs debouncing.
+            // The equivalent code in MicroPython needs debouncing, but at
+            // least with two indicator LEDs this code seems fine.
             if dt_pin.is_low().unwrap() != rotation_now {
                 // clockwise
                 npl_led_bit_a.set_low().unwrap();

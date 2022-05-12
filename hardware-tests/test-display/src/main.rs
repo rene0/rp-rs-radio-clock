@@ -8,13 +8,13 @@ use bsp::hal::{
     watchdog::Watchdog,
 };
 use bsp::XOSC_CRYSTAL_FREQ;
-use core::fmt::Error;
 use core::fmt::Write;
 use cortex_m_rt::entry;
 use defmt_rtt as _;
 use embedded_time::fixed_point::FixedPoint;
 use embedded_time::rate::Extensions;
 use hd44780_driver::{Cursor, CursorBlink, HD44780};
+use hd44780_helpers::Hd44780Wrapper;
 use heapless::String;
 use panic_halt as _;
 use rp_pico as bsp;
@@ -25,24 +25,6 @@ const I2C_ADDRESS: u8 = 0x27;
 const DISPLAY_ROWS: u8 = 4;
 /// Number of columns on the display, change as needed
 const DISPLAY_COLUMNS: u8 = 20;
-
-/// Gets the one-dimensional HD44780 coordinate for position (x, y) (zero-based)
-///
-/// https://web.alfredstate.edu/faculty/weimandn/lcd/lcd_addressing/lcd_addressing_index.html
-/// Assumes type-2 addressing for 16x1 displays
-fn get_xy(x: u8, y: u8) -> Result<u8, Error> {
-    if (x > DISPLAY_COLUMNS) || (y > DISPLAY_ROWS) {
-        panic!("Coordinates out of bounds")
-    }
-    let mut addr = x & 0x3f;
-    if (y & 1) == 1 {
-        addr += 0x40;
-    }
-    if (y & 2) == 2 {
-        addr += DISPLAY_COLUMNS;
-    }
-    Ok(addr)
-}
 
 #[entry]
 fn main() -> ! {
@@ -86,7 +68,7 @@ fn main() -> ! {
         clocks.peripheral_clock,
     );
     let mut lcd = HD44780::new_i2c(i2c, I2C_ADDRESS, &mut delay).unwrap();
-
+    let lcd_helper = Hd44780Wrapper::new(DISPLAY_COLUMNS, DISPLAY_ROWS);
     lcd.reset(&mut delay).unwrap();
     lcd.clear(&mut delay).unwrap();
     // Turn the cursor off, in two steps:
@@ -98,13 +80,13 @@ fn main() -> ! {
     lcd.write_str("rp-hal on", &mut delay).unwrap();
 
     // Move the cursor
-    lcd.set_cursor_pos(get_xy(8, 2).unwrap(), &mut delay)
+    lcd.set_cursor_pos(lcd_helper.get_xy(8, 2).unwrap(), &mut delay)
         .unwrap();
 
     // Write more more text
     lcd.write_str("HD44780!", &mut delay).unwrap();
 
-    lcd.set_cursor_pos(get_xy(11, 3).unwrap(), &mut delay)
+    lcd.set_cursor_pos(lcd_helper.get_xy(11, 3).unwrap(), &mut delay)
         .unwrap();
     lcd.write_str("at (11,3)", &mut delay).unwrap();
 
@@ -119,7 +101,7 @@ fn main() -> ! {
         // `write` for `heapless::String` returns an error if the buffer is full,
         // but because the buffer here is 20 bytes large, the u64 will fit.
         let _ = write!(data, "{}", dist);
-        lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
+        lcd.set_cursor_pos(lcd_helper.get_xy(0, 1).unwrap(), &mut delay)
             .unwrap();
         lcd.write_str(data.as_str(), &mut delay).unwrap();
         old_value = new_value;

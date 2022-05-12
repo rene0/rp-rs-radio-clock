@@ -9,13 +9,13 @@ use bsp::hal::{
     watchdog::Watchdog,
 };
 use bsp::XOSC_CRYSTAL_FREQ;
-use core::fmt::Error;
 use cortex_m_rt::entry; // the macro for our start-up function
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::digital::v2::OutputPin;
 use embedded_time::fixed_point::FixedPoint; // for .integer()
 use embedded_time::rate::Extensions as rate_extensions; // allows for plain "400" in "400.kHz()"
 use hd44780_driver::{Cursor, CursorBlink, HD44780};
+use hd44780_helpers::Hd44780Wrapper;
 use panic_halt as _;
 use rp_pico as bsp;
 
@@ -25,24 +25,6 @@ const I2C_ADDRESS: u8 = 0x27;
 const DISPLAY_ROWS: u8 = 4;
 /// Number of columns on the display, change as needed
 const DISPLAY_COLUMNS: u8 = 20;
-
-/// Gets the one-dimensional HD44780 coordinate for position (x, y) (zero-based)
-///
-/// https://web.alfredstate.edu/faculty/weimandn/lcd/lcd_addressing/lcd_addressing_index.html
-/// Assumes type-2 addressing for 16x1 displays
-fn get_xy(x: u8, y: u8) -> Result<u8, Error> {
-    if (x > DISPLAY_COLUMNS) || (y > DISPLAY_ROWS) {
-        panic!("Coordinates out of bounds")
-    }
-    let mut addr = x & 0x3f;
-    if (y & 1) == 1 {
-        addr += 0x40;
-    }
-    if (y & 2) == 2 {
-        addr += DISPLAY_COLUMNS;
-    }
-    Ok(addr)
-}
 
 /// Entry point to our bare-metal application.
 ///
@@ -90,6 +72,7 @@ fn main() -> ! {
     );
     // Initialize the display:
     let mut lcd = HD44780::new_i2c(i2c, I2C_ADDRESS, &mut delay).unwrap();
+    let lcd_helper = Hd44780Wrapper::new(DISPLAY_COLUMNS, DISPLAY_ROWS);
     lcd.reset(&mut delay).unwrap();
     lcd.clear(&mut delay).unwrap();
     lcd.set_cursor_blink(CursorBlink::Off, &mut delay).unwrap(); // small static cursor
@@ -97,7 +80,7 @@ fn main() -> ! {
         .unwrap(); // turn off completely
     lcd.write_str("DCF77", &mut delay).unwrap();
     if DISPLAY_ROWS > 2 {
-        lcd.set_cursor_pos(get_xy(0, 2).unwrap(), &mut delay)
+        lcd.set_cursor_pos(lcd_helper.get_xy(0, 2).unwrap(), &mut delay)
             .unwrap();
         lcd.write_str("NPL", &mut delay).unwrap();
     }

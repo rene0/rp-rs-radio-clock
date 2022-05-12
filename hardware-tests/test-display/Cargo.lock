@@ -225,6 +225,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "hd44780_helpers"
+version = "0.1.0"
+
+[[package]]
 name = "heapless"
 version = "0.7.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -613,6 +617,7 @@ dependencies = [
  "embedded-hal",
  "embedded-time",
  "hd44780-driver",
+ "hd44780_helpers",
  "heapless",
  "panic-halt",
  "rp-pico",

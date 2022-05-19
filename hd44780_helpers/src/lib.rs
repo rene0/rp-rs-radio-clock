@@ -16,7 +16,7 @@ impl Hd44780Wrapper {
     /// https://web.alfredstate.edu/faculty/weimandn/lcd/lcd_addressing/lcd_addressing_index.html
     /// Assumes type-2 addressing for 16x1 displays
     pub fn get_xy(&self, x: u8, y: u8) -> Result<u8, Error> {
-        if (x > self.number_columns) || (y > self.number_rows) {
+        if (x >= self.number_columns) || (y >= self.number_rows) {
             panic!("Coordinates out of bounds")
         }
         let mut addr = x & 0x3f;

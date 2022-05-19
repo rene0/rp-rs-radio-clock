@@ -39,7 +39,6 @@ fn main() -> ! {
     alarm0.enable_interrupt();
     alarm0.schedule(250_000.microseconds()).unwrap();
     cortex_m::interrupt::free(|cs| GLOBAL_PINS.borrow(cs).replace(Some(alarm0)));
-    #[allow(unsafe_code)]
     unsafe {
         pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
     }

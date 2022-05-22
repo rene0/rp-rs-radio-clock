@@ -39,10 +39,9 @@ static G_HIGH_EDGE_RECEIVED_DCF77: AtomicBool = AtomicBool::new(false);
 static G_LOW_EDGE_RECEIVED_DCF77: AtomicBool = AtomicBool::new(false);
 static G_HIGH_EDGE_RECEIVED_NPL: AtomicBool = AtomicBool::new(false);
 static G_LOW_EDGE_RECEIVED_NPL: AtomicBool = AtomicBool::new(false);
-// There is no AtomicU64, so use two halves and do some manual work:
-static G_TIMER_TICK_HIGH_DCF77: AtomicU32 = AtomicU32::new(0);
+// Just use the lower 32 bits of the timer values, we will deal with the 1h11m35s wrap ourselves.
+// This saves hardware access to registers, atomic operations, and logic inside get_counter() which are all more expensive.
 static G_TIMER_TICK_LOW_DCF77: AtomicU32 = AtomicU32::new(0);
-static G_TIMER_TICK_HIGH_NPL: AtomicU32 = AtomicU32::new(0);
 static G_TIMER_TICK_LOW_NPL: AtomicU32 = AtomicU32::new(0);
 // tick-tock
 static G_TOGGLE_LED: AtomicBool = AtomicBool::new(false);
@@ -155,58 +154,54 @@ fn main() -> ! {
         pac::NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
         pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
     }
-    let mut time_high: u64;
-    let mut time_low: u64;
+    let mut time_high;
+    let mut time_low;
     let mut led_active = false;
     loop {
         if G_LOW_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
-            time_low = (G_TIMER_TICK_HIGH_DCF77.load(Ordering::Acquire) as u64) << 32
-                | (G_TIMER_TICK_LOW_DCF77.load(Ordering::Acquire) as u64);
+            time_low = G_TIMER_TICK_LOW_DCF77.load(Ordering::Acquire);
             lcd.set_cursor_pos(lcd_helper.get_xy(10, 0).unwrap(), &mut delay)
                 .unwrap();
             lcd.write_char('L', &mut delay).unwrap();
             lcd.set_cursor_pos(lcd_helper.get_xy(0, 1).unwrap(), &mut delay)
                 .unwrap();
-            let mut data = String::<20>::from("");
+            let mut data = String::<10>::from("");
             let _ = write!(data, "{}", time_low);
             lcd.write_str(data.as_str(), &mut delay).unwrap();
             G_LOW_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
         }
         if G_LOW_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
-            time_low = (G_TIMER_TICK_HIGH_NPL.load(Ordering::Acquire) as u64) << 32
-                | (G_TIMER_TICK_LOW_NPL.load(Ordering::Acquire) as u64);
+            time_low = G_TIMER_TICK_LOW_NPL.load(Ordering::Acquire);
             lcd.set_cursor_pos(lcd_helper.get_xy(10, 2).unwrap(), &mut delay)
                 .unwrap();
             lcd.write_char('L', &mut delay).unwrap();
             lcd.set_cursor_pos(lcd_helper.get_xy(0, 3).unwrap(), &mut delay)
                 .unwrap();
-            let mut data = String::<20>::from("");
+            let mut data = String::<10>::from("");
             let _ = write!(data, "{}", time_low);
             lcd.write_str(data.as_str(), &mut delay).unwrap();
             G_LOW_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
         }
         if G_HIGH_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
-            time_high = (G_TIMER_TICK_HIGH_DCF77.load(Ordering::Acquire) as u64) << 32
-                | (G_TIMER_TICK_LOW_DCF77.load(Ordering::Acquire) as u64);
+            time_high = G_TIMER_TICK_LOW_DCF77.load(Ordering::Acquire);
             lcd.set_cursor_pos(lcd_helper.get_xy(10, 0).unwrap(), &mut delay)
                 .unwrap();
             lcd.write_char('H', &mut delay).unwrap();
             lcd.set_cursor_pos(lcd_helper.get_xy(0, 1).unwrap(), &mut delay)
                 .unwrap();
-            let mut data = String::<20>::from("");
+            let mut data = String::<10>::from("");
             let _ = write!(data, "{}", time_high);
             lcd.write_str(data.as_str(), &mut delay).unwrap();
             G_HIGH_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
         }
         if G_HIGH_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
-            time_high = (G_TIMER_TICK_HIGH_NPL.load(Ordering::Acquire) as u64) << 32
-                | (G_TIMER_TICK_LOW_NPL.load(Ordering::Acquire) as u64);
+            time_high = G_TIMER_TICK_LOW_NPL.load(Ordering::Acquire);
             lcd.set_cursor_pos(lcd_helper.get_xy(10, 2).unwrap(), &mut delay)
                 .unwrap();
             lcd.write_char('H', &mut delay).unwrap();
             lcd.set_cursor_pos(lcd_helper.get_xy(0, 3).unwrap(), &mut delay)
                 .unwrap();
-            let mut data = String::<20>::from("");
+            let mut data = String::<10>::from("");
             let _ = write!(data, "{}", time_high);
             lcd.write_str(data.as_str(), &mut delay).unwrap();
             G_HIGH_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
@@ -245,22 +240,20 @@ fn IO_IRQ_BANK0() {
     // Our edge interrupts don't clear themselves.
     // Do that at the end of the various conditions so we don't immediately jump back to this interrupt handler.
     if let Some(tick) = TICK_TIMER {
-        let now = tick.get_counter();
+        let now = tick.get_counter_low();
         if let Some(dcf77_signal) = DCF77_PIN {
             if dcf77_signal.is_low().unwrap() {
                 if !*PREVIOUS_DCF77_LOW {
                     *PREVIOUS_DCF77_LOW = true;
                     G_LOW_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-                    G_TIMER_TICK_HIGH_DCF77.store((now >> 32) as u32, Ordering::Release);
-                    G_TIMER_TICK_LOW_DCF77.store(now as u32, Ordering::Release);
+                    G_TIMER_TICK_LOW_DCF77.store(now, Ordering::Release);
                 }
                 dcf77_signal.clear_interrupt(EdgeLow);
             } else {
                 if *PREVIOUS_DCF77_LOW {
                     *PREVIOUS_DCF77_LOW = false;
                     G_HIGH_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-                    G_TIMER_TICK_HIGH_DCF77.store((now >> 32) as u32, Ordering::Release);
-                    G_TIMER_TICK_LOW_DCF77.store(now as u32, Ordering::Release);
+                    G_TIMER_TICK_LOW_DCF77.store(now, Ordering::Release);
                 }
                 dcf77_signal.clear_interrupt(EdgeHigh);
             }
@@ -270,16 +263,14 @@ fn IO_IRQ_BANK0() {
             if npl_signal.is_low().unwrap() {
                 if !*PREVIOUS_NPL_LOW {
                     *PREVIOUS_NPL_LOW = true;
-                    G_TIMER_TICK_HIGH_NPL.store((now >> 32) as u32, Ordering::Release);
-                    G_TIMER_TICK_LOW_NPL.store(now as u32, Ordering::Release);
+                    G_TIMER_TICK_LOW_NPL.store(now, Ordering::Release);
                     G_LOW_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
                 }
                 npl_signal.clear_interrupt(EdgeLow);
             } else {
                 if *PREVIOUS_NPL_LOW {
                     *PREVIOUS_NPL_LOW = false;
-                    G_TIMER_TICK_HIGH_NPL.store((now >> 32) as u32, Ordering::Release);
-                    G_TIMER_TICK_LOW_NPL.store(now as u32, Ordering::Release);
+                    G_TIMER_TICK_LOW_NPL.store(now, Ordering::Release);
                     G_HIGH_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
                 }
                 npl_signal.clear_interrupt(EdgeHigh);

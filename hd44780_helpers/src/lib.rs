@@ -7,8 +7,11 @@ pub struct Hd44780Wrapper {
     number_rows: u8,
 }
 impl Hd44780Wrapper {
-    pub fn new(columns:u8, rows:u8) -> Self {
-        Self { number_columns: columns, number_rows: rows }
+    pub fn new(columns: u8, rows: u8) -> Self {
+        Self {
+            number_columns: columns,
+            number_rows: rows,
+        }
     }
 
     /// Gets the one-dimensional HD44780 coordinate for position (x, y) (zero-based)

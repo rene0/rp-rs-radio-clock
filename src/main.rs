@@ -35,14 +35,14 @@ const I2C_ADDRESS: u8 = 0x27;
 const DISPLAY_ROWS: u8 = 4;
 /// Number of columns on the display, change as needed
 const DISPLAY_COLUMNS: u8 = 20;
-static G_HIGH_EDGE_RECEIVED_DCF77: AtomicBool = AtomicBool::new(false);
-static G_LOW_EDGE_RECEIVED_DCF77: AtomicBool = AtomicBool::new(false);
-static G_HIGH_EDGE_RECEIVED_NPL: AtomicBool = AtomicBool::new(false);
-static G_LOW_EDGE_RECEIVED_NPL: AtomicBool = AtomicBool::new(false);
+static G_EDGE_RECEIVED_DCF77: AtomicBool = AtomicBool::new(false);
+static G_EDGE_LOW_DCF77: AtomicBool = AtomicBool::new(false);
+static G_EDGE_RECEIVED_NPL: AtomicBool = AtomicBool::new(false);
+static G_EDGE_LOW_NPL: AtomicBool = AtomicBool::new(false);
 // Just use the lower 32 bits of the timer values, we will deal with the 1h11m35s wrap ourselves.
 // This saves hardware access to registers, atomic operations, and logic inside get_counter() which are all more expensive.
-static G_TIMER_TICK_LOW_DCF77: AtomicU32 = AtomicU32::new(0);
-static G_TIMER_TICK_LOW_NPL: AtomicU32 = AtomicU32::new(0);
+static G_TIMER_TICK_DCF77: AtomicU32 = AtomicU32::new(0);
+static G_TIMER_TICK_NPL: AtomicU32 = AtomicU32::new(0);
 // tick-tock
 static G_TOGGLE_LED: AtomicBool = AtomicBool::new(false);
 
@@ -152,57 +152,68 @@ fn main() -> ! {
         pac::NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
         pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
     }
-    let mut time_high;
-    let mut time_low;
+    let mut t0_dcf77 = 0;
+    let mut t1_dcf77;
+    let mut first_dcf77 = true;
+    let mut t0_npl = 0;
+    let mut t1_npl;
+    let mut first_npl = true;
     let mut led_active = false;
+    let mut str_buf = String::<12>::from("");
     loop {
-        if G_LOW_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
-            time_low = G_TIMER_TICK_LOW_DCF77.load(Ordering::Acquire);
-            lcd.set_cursor_pos(lcd_helper.get_xy(10, 0).unwrap(), &mut delay)
-                .unwrap();
-            lcd.write_char('L', &mut delay).unwrap();
-            lcd.set_cursor_pos(lcd_helper.get_xy(0, 1).unwrap(), &mut delay)
-                .unwrap();
-            let mut data = String::<10>::from("");
-            let _ = write!(data, "{}", time_low);
-            lcd.write_str(data.as_str(), &mut delay).unwrap();
-            G_LOW_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
+        if G_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
+            t1_dcf77 = G_TIMER_TICK_DCF77.load(Ordering::Acquire);
+            if !first_dcf77 {
+                lcd.set_cursor_pos(lcd_helper.get_xy(7, 0).unwrap(), &mut delay)
+                    .unwrap();
+                str_buf.clear();
+                let _ = write!(
+                    str_buf,
+                    "{} {:<10}",
+                    if G_EDGE_LOW_DCF77.load(Ordering::Acquire) {
+                        'L'
+                    } else {
+                        'H'
+                    },
+                    time_diff(t0_dcf77, t1_dcf77)
+                );
+                lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                lcd.set_cursor_pos(lcd_helper.get_xy(0, 1).unwrap(), &mut delay)
+                    .unwrap();
+                str_buf.clear();
+                let _ = write!(str_buf, "{:<10}  ", t1_dcf77);
+                lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+            }
+            t0_dcf77 = t1_dcf77;
+            first_dcf77 = false;
+            G_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
         }
-        if G_LOW_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
-            time_low = G_TIMER_TICK_LOW_NPL.load(Ordering::Acquire);
-            lcd.set_cursor_pos(lcd_helper.get_xy(10, 2).unwrap(), &mut delay)
-                .unwrap();
-            lcd.write_char('L', &mut delay).unwrap();
-            lcd.set_cursor_pos(lcd_helper.get_xy(0, 3).unwrap(), &mut delay)
-                .unwrap();
-            let mut data = String::<10>::from("");
-            let _ = write!(data, "{}", time_low);
-            lcd.write_str(data.as_str(), &mut delay).unwrap();
-            G_LOW_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
-        }
-        if G_HIGH_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
-            time_high = G_TIMER_TICK_LOW_DCF77.load(Ordering::Acquire);
-            lcd.set_cursor_pos(lcd_helper.get_xy(10, 0).unwrap(), &mut delay)
-                .unwrap();
-            lcd.write_char('H', &mut delay).unwrap();
-            lcd.set_cursor_pos(lcd_helper.get_xy(0, 1).unwrap(), &mut delay)
-                .unwrap();
-            let mut data = String::<10>::from("");
-            let _ = write!(data, "{}", time_high);
-            lcd.write_str(data.as_str(), &mut delay).unwrap();
-            G_HIGH_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
-        }
-        if G_HIGH_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
-            time_high = G_TIMER_TICK_LOW_NPL.load(Ordering::Acquire);
-            lcd.set_cursor_pos(lcd_helper.get_xy(10, 2).unwrap(), &mut delay)
-                .unwrap();
-            lcd.write_char('H', &mut delay).unwrap();
-            lcd.set_cursor_pos(lcd_helper.get_xy(0, 3).unwrap(), &mut delay)
-                .unwrap();
-            let mut data = String::<10>::from("");
-            let _ = write!(data, "{}", time_high);
-            lcd.write_str(data.as_str(), &mut delay).unwrap();
-            G_HIGH_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
+        if G_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
+            t1_npl = G_TIMER_TICK_NPL.load(Ordering::Acquire);
+            if !first_npl {
+                lcd.set_cursor_pos(lcd_helper.get_xy(7, 2).unwrap(), &mut delay)
+                    .unwrap();
+                str_buf.clear();
+                let _ = write!(
+                    str_buf,
+                    "{} {:<10}",
+                    if G_EDGE_LOW_NPL.load(Ordering::Acquire) {
+                        'L'
+                    } else {
+                        'H'
+                    },
+                    time_diff(t0_npl, t1_npl)
+                );
+                lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                lcd.set_cursor_pos(lcd_helper.get_xy(0, 3).unwrap(), &mut delay)
+                    .unwrap();
+                str_buf.clear();
+                let _ = write!(str_buf, "{:<10}  ", t1_npl);
+                lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+            }
+            t0_npl = t1_npl;
+            first_npl = false;
+            G_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
         }
         if G_TOGGLE_LED.load(Ordering::Acquire) {
             if led_active {
@@ -213,6 +224,17 @@ fn main() -> ! {
             led_active = !led_active;
             G_TOGGLE_LED.store(false, Ordering::Release);
         }
+    }
+}
+
+#[inline]
+fn time_diff(t0: u32, t1: u32) -> u32 {
+    if t1 > t0 {
+        t1 - t0
+    } else if t0 > 0 {
+        u32::MAX - t0 + t1 + 1 /* wrapped, each 1h11m35s */
+    } else {
+        0 /* initial */
     }
 }
 
@@ -243,15 +265,17 @@ fn IO_IRQ_BANK0() {
             if dcf77_signal.is_low().unwrap() {
                 if !*PREVIOUS_DCF77_LOW {
                     *PREVIOUS_DCF77_LOW = true;
-                    G_LOW_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-                    G_TIMER_TICK_LOW_DCF77.store(now, Ordering::Release);
+                    G_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
+                    G_EDGE_LOW_DCF77.store(true, Ordering::Release);
+                    G_TIMER_TICK_DCF77.store(now, Ordering::Release);
                 }
                 dcf77_signal.clear_interrupt(EdgeLow);
             } else {
                 if *PREVIOUS_DCF77_LOW {
                     *PREVIOUS_DCF77_LOW = false;
-                    G_HIGH_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-                    G_TIMER_TICK_LOW_DCF77.store(now, Ordering::Release);
+                    G_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
+                    G_EDGE_LOW_DCF77.store(false, Ordering::Release);
+                    G_TIMER_TICK_DCF77.store(now, Ordering::Release);
                 }
                 dcf77_signal.clear_interrupt(EdgeHigh);
             }
@@ -261,15 +285,17 @@ fn IO_IRQ_BANK0() {
             if npl_signal.is_low().unwrap() {
                 if !*PREVIOUS_NPL_LOW {
                     *PREVIOUS_NPL_LOW = true;
-                    G_TIMER_TICK_LOW_NPL.store(now, Ordering::Release);
-                    G_LOW_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
+                    G_TIMER_TICK_NPL.store(now, Ordering::Release);
+                    G_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
+                    G_EDGE_LOW_NPL.store(true, Ordering::Release);
                 }
                 npl_signal.clear_interrupt(EdgeLow);
             } else {
                 if *PREVIOUS_NPL_LOW {
                     *PREVIOUS_NPL_LOW = false;
-                    G_TIMER_TICK_LOW_NPL.store(now, Ordering::Release);
-                    G_HIGH_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
+                    G_TIMER_TICK_NPL.store(now, Ordering::Release);
+                    G_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
+                    G_EDGE_LOW_NPL.store(false, Ordering::Release);
                 }
                 npl_signal.clear_interrupt(EdgeHigh);
             }

@@ -108,11 +108,9 @@ fn main() -> ! {
     lcd.set_cursor_visibility(Cursor::Invisible, &mut delay)
         .unwrap(); // turn off completely
     lcd.write_str("DCF77", &mut delay).unwrap();
-    if DISPLAY_ROWS > 2 {
-        lcd.set_cursor_pos(lcd_helper.get_xy(0, 2).unwrap(), &mut delay)
-            .unwrap();
-        lcd.write_str("NPL", &mut delay).unwrap();
-    }
+    lcd.set_cursor_pos(lcd_helper.get_xy(0, 2).unwrap(), &mut delay)
+        .unwrap();
+    lcd.write_str("NPL", &mut delay).unwrap();
 
     // Set up the LEDs and signal the "looking for signal" state (time and error LEDs on):
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();

@@ -2,6 +2,8 @@
 #![no_std]
 #![no_main]
 
+use crate::gpio::Pin;
+use crate::pac::I2C0;
 use bsp::hal::gpio;
 use bsp::hal::gpio::Interrupt::{EdgeHigh, EdgeLow};
 use bsp::hal::timer::Alarm0;
@@ -10,6 +12,7 @@ use bsp::hal::{
     pac,
     sio::Sio,
     watchdog::Watchdog,
+    I2C,
 };
 use bsp::pac::interrupt;
 use bsp::XOSC_CRYSTAL_FREQ;
@@ -19,10 +22,12 @@ use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use cortex_m::interrupt::Mutex;
 use cortex_m_rt::entry; // the macro for our start-up function
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
-use embedded_hal::digital::v2::{InputPin, OutputPin};
+use embedded_hal::blocking::delay::{DelayMs, DelayUs};
+use embedded_hal::digital::v2::{InputPin, OutputPin, ToggleableOutputPin};
 use embedded_time::duration::Extensions;
 use embedded_time::fixed_point::FixedPoint; // for .integer()
 use embedded_time::rate::Extensions as rate_extensions; // allows for plain "400" in "400.kHz()"
+use hd44780_driver::bus::I2CBus;
 use hd44780_driver::{Cursor, CursorBlink, HD44780};
 use hd44780_helpers::Hd44780Wrapper;
 use heapless::String;
@@ -54,6 +59,19 @@ static GLOBAL_PIN_NPL: Mutex<RefCell<Option<NPLSignalPin>>> = Mutex::new(RefCell
 static GLOBAL_TIMER: Mutex<RefCell<Option<bsp::hal::Timer>>> = Mutex::new(RefCell::new(None));
 // and one for the timer alarm:
 static GLOBAL_ALARM: Mutex<RefCell<Option<Alarm0>>> = Mutex::new(RefCell::new(None));
+
+type I2cDisplay = I2C<
+    I2C0,
+    (
+        Pin<bsp::hal::gpio::pin::bank0::Gpio0, bsp::hal::gpio::FunctionI2C>,
+        Pin<bsp::hal::gpio::pin::bank0::Gpio1, bsp::hal::gpio::FunctionI2C>,
+    ),
+>;
+enum DisplayMode {
+    Time,
+    #[allow(dead_code)]
+    Pulses,
+}
 
 /// Entry point to our bare-metal application.
 ///
@@ -158,31 +176,25 @@ fn main() -> ! {
     let mut t0_npl = 0;
     let mut t1_npl;
     let mut first_npl = true;
-    let mut led_active = false;
-    let mut str_buf = String::<12>::from("");
+    let display_mode = DisplayMode::Time; // This should become something to loop through with the KY-040
     loop {
         if G_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
             t1_dcf77 = G_TIMER_TICK_DCF77.load(Ordering::Acquire);
             if !first_dcf77 {
-                lcd.set_cursor_pos(lcd_helper.get_xy(7, 0).unwrap(), &mut delay)
-                    .unwrap();
-                str_buf.clear();
-                let _ = write!(
-                    str_buf,
-                    "{} {:<10}",
-                    if G_EDGE_LOW_DCF77.load(Ordering::Acquire) {
-                        'L'
-                    } else {
-                        'H'
-                    },
-                    time_diff(t0_dcf77, t1_dcf77)
-                );
-                lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
-                lcd.set_cursor_pos(lcd_helper.get_xy(0, 1).unwrap(), &mut delay)
-                    .unwrap();
-                str_buf.clear();
-                let _ = write!(str_buf, "{:<10}  ", t1_dcf77);
-                lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                if matches!(display_mode, DisplayMode::Pulses) {
+                    show_pulses(
+                        &mut lcd,
+                        &mut delay,
+                        &lcd_helper,
+                        0,
+                        G_EDGE_LOW_DCF77.load(Ordering::Acquire),
+                        t0_dcf77,
+                        t1_dcf77,
+                    );
+                }
+            } else {
+                dcf77_led_time.set_low().unwrap();
+                dcf77_led_error.set_low().unwrap();
             }
             t0_dcf77 = t1_dcf77;
             first_dcf77 = false;
@@ -191,40 +203,58 @@ fn main() -> ! {
         if G_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
             t1_npl = G_TIMER_TICK_NPL.load(Ordering::Acquire);
             if !first_npl {
-                lcd.set_cursor_pos(lcd_helper.get_xy(7, 2).unwrap(), &mut delay)
-                    .unwrap();
-                str_buf.clear();
-                let _ = write!(
-                    str_buf,
-                    "{} {:<10}",
-                    if G_EDGE_LOW_NPL.load(Ordering::Acquire) {
-                        'L'
-                    } else {
-                        'H'
-                    },
-                    time_diff(t0_npl, t1_npl)
-                );
-                lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
-                lcd.set_cursor_pos(lcd_helper.get_xy(0, 3).unwrap(), &mut delay)
-                    .unwrap();
-                str_buf.clear();
-                let _ = write!(str_buf, "{:<10}  ", t1_npl);
-                lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                if matches!(display_mode, DisplayMode::Pulses) {
+                    show_pulses(
+                        &mut lcd,
+                        &mut delay,
+                        &lcd_helper,
+                        2,
+                        G_EDGE_LOW_NPL.load(Ordering::Acquire),
+                        t0_npl,
+                        t1_npl,
+                    );
+                }
+            } else {
+                npl_led_time.set_low().unwrap();
+                npl_led_error.set_low().unwrap();
             }
             t0_npl = t1_npl;
             first_npl = false;
             G_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
         }
         if G_TOGGLE_LED.load(Ordering::Acquire) {
-            if led_active {
-                led_pin.set_high().unwrap();
-            } else {
-                led_pin.set_low().unwrap();
-            }
-            led_active = !led_active;
+            led_pin.toggle().unwrap();
             G_TOGGLE_LED.store(false, Ordering::Release);
         }
     }
+}
+
+// FIXME skips pulses, updating too slow? HD44780 driver perhaps uses too many delays.
+fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
+    lcd: &mut HD44780<I2CBus<I2cDisplay>>,
+    delay: &mut D,
+    lcd_helper: &Hd44780Wrapper,
+    base_row: u8,
+    is_low_edge: bool,
+    t0: u32,
+    t1: u32,
+) {
+    let mut str_buf = String::<12>::from("");
+    lcd.set_cursor_pos(lcd_helper.get_xy(7, base_row).unwrap(), delay)
+        .unwrap();
+    str_buf.clear();
+    let _ = write!(
+        str_buf,
+        "{} {:<10}",
+        if is_low_edge { 'L' } else { 'H' },
+        time_diff(t0, t1)
+    );
+    lcd.write_str(str_buf.as_str(), delay).unwrap();
+    lcd.set_cursor_pos(lcd_helper.get_xy(0, 1).unwrap(), delay)
+        .unwrap();
+    str_buf.clear();
+    let _ = write!(str_buf, "{:<10}  ", t1);
+    lcd.write_str(str_buf.as_str(), delay).unwrap();
 }
 
 #[inline]

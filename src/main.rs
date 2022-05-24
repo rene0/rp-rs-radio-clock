@@ -258,47 +258,30 @@ fn IO_IRQ_BANK0() {
     }
 
     // Our edge interrupts don't clear themselves.
-    // Do that at the end of the various conditions so we don't immediately jump back to this interrupt handler.
+    // Do that at the end of the various conditions, so we don't immediately jump back to this interrupt handler.
     if let Some(tick) = TICK_TIMER {
         let now = tick.get_counter_low();
+
         if let Some(dcf77_signal) = DCF77_PIN {
-            if dcf77_signal.is_low().unwrap() {
-                if !*PREVIOUS_DCF77_LOW {
-                    *PREVIOUS_DCF77_LOW = true;
-                    G_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-                    G_EDGE_LOW_DCF77.store(true, Ordering::Release);
-                    G_TIMER_TICK_DCF77.store(now, Ordering::Release);
-                }
-                dcf77_signal.clear_interrupt(EdgeLow);
-            } else {
-                if *PREVIOUS_DCF77_LOW {
-                    *PREVIOUS_DCF77_LOW = false;
-                    G_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-                    G_EDGE_LOW_DCF77.store(false, Ordering::Release);
-                    G_TIMER_TICK_DCF77.store(now, Ordering::Release);
-                }
-                dcf77_signal.clear_interrupt(EdgeHigh);
+            let is_low = dcf77_signal.is_low().unwrap();
+            if is_low != *PREVIOUS_DCF77_LOW {
+                *PREVIOUS_DCF77_LOW = is_low;
+                G_TIMER_TICK_DCF77.store(now, Ordering::Release);
+                G_EDGE_LOW_DCF77.store(is_low, Ordering::Release);
+                G_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
             }
+            dcf77_signal.clear_interrupt(if is_low { EdgeLow } else { EdgeHigh });
         }
 
         if let Some(npl_signal) = NPL_PIN {
-            if npl_signal.is_low().unwrap() {
-                if !*PREVIOUS_NPL_LOW {
-                    *PREVIOUS_NPL_LOW = true;
-                    G_TIMER_TICK_NPL.store(now, Ordering::Release);
-                    G_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
-                    G_EDGE_LOW_NPL.store(true, Ordering::Release);
-                }
-                npl_signal.clear_interrupt(EdgeLow);
-            } else {
-                if *PREVIOUS_NPL_LOW {
-                    *PREVIOUS_NPL_LOW = false;
-                    G_TIMER_TICK_NPL.store(now, Ordering::Release);
-                    G_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
-                    G_EDGE_LOW_NPL.store(false, Ordering::Release);
-                }
-                npl_signal.clear_interrupt(EdgeHigh);
+            let is_low = npl_signal.is_low().unwrap();
+            if is_low != *PREVIOUS_NPL_LOW {
+                *PREVIOUS_NPL_LOW = is_low;
+                G_TIMER_TICK_NPL.store(now, Ordering::Release);
+                G_EDGE_LOW_NPL.store(is_low, Ordering::Release);
+                G_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
             }
+            npl_signal.clear_interrupt(if is_low { EdgeLow } else { EdgeHigh });
         }
     }
 }

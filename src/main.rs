@@ -49,7 +49,7 @@ static G_EDGE_LOW_NPL: AtomicBool = AtomicBool::new(false);
 static G_TIMER_TICK_DCF77: AtomicU32 = AtomicU32::new(0);
 static G_TIMER_TICK_NPL: AtomicU32 = AtomicU32::new(0);
 // tick-tock
-static G_TOGGLE_LED: AtomicBool = AtomicBool::new(false);
+static G_TIMER_TICK: AtomicBool = AtomicBool::new(false);
 
 type DCF77SignalPin = gpio::Pin<gpio::bank0::Gpio11, gpio::PullDownInput>;
 type NPLSignalPin = gpio::Pin<gpio::bank0::Gpio6, gpio::PullDownInput>;
@@ -219,9 +219,9 @@ fn main() -> ! {
             first_npl = false;
             G_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
         }
-        if G_TOGGLE_LED.load(Ordering::Acquire) {
+        if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
-            G_TOGGLE_LED.store(false, Ordering::Release);
+            G_TIMER_TICK.store(false, Ordering::Release);
         }
     }
 }
@@ -328,7 +328,7 @@ fn TIMER_IRQ_0() {
         cortex_m::interrupt::free(|cs| *ALARM = GLOBAL_ALARM.borrow(cs).take());
     }
     if let Some(alarm) = ALARM {
-        G_TOGGLE_LED.store(true, Ordering::Release);
+        G_TIMER_TICK.store(true, Ordering::Release);
         alarm.clear_interrupt();
         // alarm is oneshot, so re-arm it here:
         alarm.schedule(250_000.microseconds()).unwrap();

@@ -29,7 +29,6 @@ use embedded_time::fixed_point::FixedPoint; // for .integer()
 use embedded_time::rate::Extensions as rate_extensions; // allows for plain "400" in "400.kHz()"
 use hd44780_driver::bus::I2CBus;
 use hd44780_driver::{Cursor, CursorBlink, HD44780};
-use hd44780_helpers::Hd44780Wrapper;
 use heapless::String;
 use panic_halt as _;
 use radio_datetime_utils;
@@ -120,14 +119,13 @@ fn main() -> ! {
     );
     // Initialize the display:
     let mut lcd = HD44780::new_i2c(i2c, I2C_ADDRESS, &mut delay).unwrap();
-    let lcd_helper = Hd44780Wrapper::new(DISPLAY_COLUMNS, DISPLAY_ROWS);
     lcd.reset(&mut delay).unwrap();
     lcd.clear(&mut delay).unwrap();
     lcd.set_cursor_blink(CursorBlink::Off, &mut delay).unwrap(); // small static cursor
     lcd.set_cursor_visibility(Cursor::Invisible, &mut delay)
         .unwrap(); // turn off completely
     lcd.write_str("DCF77", &mut delay).unwrap();
-    lcd.set_cursor_pos(lcd_helper.get_xy(0, 2).unwrap(), &mut delay)
+    lcd.set_cursor_pos(get_xy(0, 2).unwrap(), &mut delay)
         .unwrap();
     lcd.write_str("NPL", &mut delay).unwrap();
 
@@ -186,7 +184,6 @@ fn main() -> ! {
                     show_pulses(
                         &mut lcd,
                         &mut delay,
-                        &lcd_helper,
                         0,
                         G_EDGE_LOW_DCF77.load(Ordering::Acquire),
                         t0_dcf77,
@@ -208,7 +205,6 @@ fn main() -> ! {
                     show_pulses(
                         &mut lcd,
                         &mut delay,
-                        &lcd_helper,
                         2,
                         G_EDGE_LOW_NPL.load(Ordering::Acquire),
                         t0_npl,
@@ -234,14 +230,13 @@ fn main() -> ! {
 fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     lcd: &mut HD44780<I2CBus<I2cDisplay>>,
     delay: &mut D,
-    lcd_helper: &Hd44780Wrapper,
     base_row: u8,
     is_low_edge: bool,
     t0: u32,
     t1: u32,
 ) {
     let mut str_buf = String::<12>::from("");
-    lcd.set_cursor_pos(lcd_helper.get_xy(7, base_row).unwrap(), delay)
+    lcd.set_cursor_pos(get_xy(7, base_row).unwrap(), delay)
         .unwrap();
     str_buf.clear();
     let _ = write!(
@@ -251,11 +246,29 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
         radio_datetime_utils::time_diff(t0, t1)
     );
     lcd.write_str(str_buf.as_str(), delay).unwrap();
-    lcd.set_cursor_pos(lcd_helper.get_xy(0, 1).unwrap(), delay)
+    lcd.set_cursor_pos(get_xy(0, 1).unwrap(), delay)
         .unwrap();
     str_buf.clear();
     let _ = write!(str_buf, "{:<10}  ", t1);
     lcd.write_str(str_buf.as_str(), delay).unwrap();
+}
+
+/// Gets the one-dimensional HD44780 coordinate for position (x, y) (zero-based)
+///
+/// https://web.alfredstate.edu/faculty/weimandn/lcd/lcd_addressing/lcd_addressing_index.html
+/// Assumes type-2 addressing for 16x1 displays
+fn get_xy(x: u8, y: u8) -> Option<u8> {
+    if (x >= DISPLAY_COLUMNS) || (y >= DISPLAY_ROWS) {
+        return None;
+    }
+    let mut addr = x & 0x3f;
+    if (y & 1) == 1 {
+        addr += 0x40;
+    }
+    if (y & 2) == 2 {
+        addr += DISPLAY_COLUMNS;
+    }
+    Some(addr)
 }
 
 #[interrupt]

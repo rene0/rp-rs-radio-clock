@@ -32,6 +32,7 @@ use hd44780_driver::{Cursor, CursorBlink, HD44780};
 use hd44780_helpers::Hd44780Wrapper;
 use heapless::String;
 use panic_halt as _;
+use radio_datetime_utils;
 use rp_pico as bsp;
 
 /// I²C address of the PCF8574 adapter, change as needed
@@ -247,7 +248,7 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
         str_buf,
         "{} {:<10}",
         if is_low_edge { 'L' } else { 'H' },
-        time_diff(t0, t1)
+        radio_datetime_utils::time_diff(t0, t1)
     );
     lcd.write_str(str_buf.as_str(), delay).unwrap();
     lcd.set_cursor_pos(lcd_helper.get_xy(0, 1).unwrap(), delay)
@@ -255,17 +256,6 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     str_buf.clear();
     let _ = write!(str_buf, "{:<10}  ", t1);
     lcd.write_str(str_buf.as_str(), delay).unwrap();
-}
-
-#[inline]
-fn time_diff(t0: u32, t1: u32) -> u32 {
-    if t1 > t0 {
-        t1 - t0
-    } else if t0 > 0 {
-        u32::MAX - t0 + t1 + 1 /* wrapped, each 1h11m35s */
-    } else {
-        0 /* initial */
-    }
 }
 
 #[interrupt]

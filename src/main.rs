@@ -31,7 +31,6 @@ use hd44780_driver::bus::I2CBus;
 use hd44780_driver::{Cursor, CursorBlink, HD44780};
 use heapless::String;
 use panic_halt as _;
-use radio_datetime_utils;
 use rp_pico as bsp;
 
 /// I²C address of the PCF8574 adapter, change as needed

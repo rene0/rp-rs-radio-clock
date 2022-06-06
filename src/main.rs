@@ -247,8 +247,7 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
         radio_datetime_utils::time_diff(t0, t1)
     );
     lcd.write_str(str_buf.as_str(), delay).unwrap();
-    lcd.set_cursor_pos(get_xy(0, 1).unwrap(), delay)
-        .unwrap();
+    lcd.set_cursor_pos(get_xy(0, 1).unwrap(), delay).unwrap();
     str_buf.clear();
     let _ = write!(str_buf, "{:<10}  ", t1);
     lcd.write_str(str_buf.as_str(), delay).unwrap();

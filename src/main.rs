@@ -227,6 +227,7 @@ fn main() -> ! {
 }
 
 // FIXME skips pulses, updating too slow? HD44780 driver perhaps uses too many delays.
+//       Works fine with just showing the pulse lengths of one station.
 fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     lcd: &mut HD44780<I2CBus<I2cDisplay>>,
     delay: &mut D,

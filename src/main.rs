@@ -163,7 +163,7 @@ fn main() -> ! {
     let mut timer = bsp::hal::Timer::new(pac.TIMER, &mut pac.RESETS);
     let mut alarm0 = timer.alarm_0().unwrap();
 
-    // Give our pin and timer away to the ISR
+    // Give the signal pins and timer away to the ISR
     cortex_m::interrupt::free(|cs| GLOBAL_PIN_DCF77.borrow(cs).replace(Some(dcf77_signal_pin)));
     cortex_m::interrupt::free(|cs| GLOBAL_PIN_NPL.borrow(cs).replace(Some(npl_signal_pin)));
     cortex_m::interrupt::free(|cs| GLOBAL_TIMER.borrow(cs).replace(Some(timer)));

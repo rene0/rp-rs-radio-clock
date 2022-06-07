@@ -197,21 +197,13 @@ fn main() -> ! {
             G_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
         }
         if G_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
-            t1_npl = G_TIMER_TICK_NPL.load(Ordering::Acquire);
-            if !first_npl {
-                if matches!(display_mode, DisplayMode::Pulses) {
-                    show_pulses(
-                        &mut lcd,
-                        &mut delay,
-                        2,
-                        G_EDGE_LOW_NPL.load(Ordering::Acquire),
-                        t0_npl,
-                        t1_npl,
-                    );
-                }
-            } else {
+            let t1_npl = G_TIMER_TICK_NPL.load(Ordering::Acquire);
+            let is_low_edge = G_EDGE_LOW_NPL.load(Ordering::Acquire);
+            if first_npl {
                 npl_led_time.set_low().unwrap();
                 npl_led_error.set_low().unwrap();
+            } else if matches!(display_mode, DisplayMode::Pulses) {
+                show_pulses(&mut lcd, &mut delay, 2, is_low_edge, t0_npl, t1_npl);
             }
             t0_npl = t1_npl;
             first_npl = false;
@@ -227,7 +219,9 @@ fn main() -> ! {
                 &mut dcf77_led_error,
             );
             if dcf77.frame_counter == 1 {
-                if dcf77.new_minute /*&& !dcf77.first_minute*/ {
+                if dcf77.new_minute
+                /*&& !dcf77.first_minute*/
+                {
                     // print date/time/status
                     let mut str_buf = String::<14>::from("");
                     let _ = write!(

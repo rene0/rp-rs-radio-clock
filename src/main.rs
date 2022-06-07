@@ -21,6 +21,7 @@ use core::fmt::Write;
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use cortex_m::interrupt::Mutex;
 use cortex_m_rt::entry; // the macro for our start-up function
+use dcf77_utils::DCF77Utils;
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::blocking::delay::{DelayMs, DelayUs};
 use embedded_hal::digital::v2::{InputPin, OutputPin, ToggleableOutputPin};
@@ -47,6 +48,8 @@ static G_EDGE_LOW_NPL: AtomicBool = AtomicBool::new(false);
 // This saves hardware access to registers, atomic operations, and logic inside get_counter() which are all more expensive.
 static G_TIMER_TICK_DCF77: AtomicU32 = AtomicU32::new(0);
 static G_TIMER_TICK_NPL: AtomicU32 = AtomicU32::new(0);
+/// Ticks (frames) in each second, to control LEDs and display
+const FRAMES_PER_SECOND: u8 = 10;
 // tick-tock
 static G_TIMER_TICK: AtomicBool = AtomicBool::new(false);
 
@@ -132,9 +135,13 @@ fn main() -> ! {
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
     let mut dcf77_led_error = pins.gpio14.into_push_pull_output();
-    dcf77_led_time.set_high().unwrap();
-    dcf77_led_bit.set_low().unwrap();
-    dcf77_led_error.set_high().unwrap();
+    let mut dcf77 = DCF77Utils::new(FRAMES_PER_SECOND);
+    update_leds_dcf77(
+        &dcf77,
+        &mut dcf77_led_time,
+        &mut dcf77_led_bit,
+        &mut dcf77_led_error,
+    );
     let mut npl_led_time = pins.gpio2.into_push_pull_output();
     let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
     let mut npl_led_bit_b = pins.gpio4.into_push_pull_output();
@@ -169,32 +176,24 @@ fn main() -> ! {
         pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
     }
     let mut t0_dcf77 = 0;
-    let mut t1_dcf77;
-    let mut first_dcf77 = true;
     let mut t0_npl = 0;
-    let mut t1_npl;
     let mut first_npl = true;
     let display_mode = DisplayMode::Time; // This should become something to loop through with the KY-040
     loop {
         if G_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
-            t1_dcf77 = G_TIMER_TICK_DCF77.load(Ordering::Acquire);
-            if !first_dcf77 {
-                if matches!(display_mode, DisplayMode::Pulses) {
-                    show_pulses(
-                        &mut lcd,
-                        &mut delay,
-                        0,
-                        G_EDGE_LOW_DCF77.load(Ordering::Acquire),
-                        t0_dcf77,
-                        t1_dcf77,
-                    );
-                }
-            } else {
-                dcf77_led_time.set_low().unwrap();
-                dcf77_led_error.set_low().unwrap();
+            let t1_dcf77 = G_TIMER_TICK_DCF77.load(Ordering::Acquire);
+            let is_low_edge = G_EDGE_LOW_DCF77.load(Ordering::Acquire);
+            if matches!(display_mode, DisplayMode::Pulses) {
+                show_pulses(&mut lcd, &mut delay, 0, is_low_edge, t0_dcf77, t1_dcf77);
             }
+            dcf77.handle_new_edge(is_low_edge, t0_dcf77, t1_dcf77);
+            update_leds_dcf77(
+                &dcf77,
+                &mut dcf77_led_time,
+                &mut dcf77_led_bit,
+                &mut dcf77_led_error,
+            );
             t0_dcf77 = t1_dcf77;
-            first_dcf77 = false;
             G_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
         }
         if G_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
@@ -220,6 +219,115 @@ fn main() -> ! {
         }
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
+            dcf77.handle_new_timer_tick();
+            update_leds_dcf77(
+                &dcf77,
+                &mut dcf77_led_time,
+                &mut dcf77_led_bit,
+                &mut dcf77_led_error,
+            );
+            if dcf77.frame_counter == 1 {
+                if dcf77.new_minute /*&& !dcf77.first_minute*/ {
+                    // print date/time/status
+                    let mut str_buf = String::<14>::from("");
+                    let _ = write!(
+                        str_buf,
+                        "{}{}{}{}{}{}{}{}{}{} {}{}{}",
+                        if dcf77.radio_datetime.jump_year {
+                            'y'
+                        } else {
+                            ' '
+                        },
+                        if dcf77.radio_datetime.jump_month {
+                            'm'
+                        } else {
+                            ' '
+                        },
+                        if dcf77.radio_datetime.jump_day {
+                            'd'
+                        } else {
+                            ' '
+                        },
+                        if dcf77.radio_datetime.jump_weekday {
+                            'w'
+                        } else {
+                            ' '
+                        },
+                        if dcf77.radio_datetime.jump_hour {
+                            'h'
+                        } else {
+                            ' '
+                        },
+                        if dcf77.radio_datetime.jump_minute {
+                            'm'
+                        } else {
+                            ' '
+                        },
+                        if dcf77.radio_datetime.dst.is_some()
+                            && (dcf77.radio_datetime.dst.unwrap() & radio_datetime_utils::DST_JUMP)
+                                != 0
+                        {
+                            't'
+                        } else {
+                            ' '
+                        },
+                        if dcf77.parity_3 == Some(false) {
+                            ' '
+                        } else {
+                            '3'
+                        },
+                        if dcf77.parity_2 == Some(false) {
+                            ' '
+                        } else {
+                            '2'
+                        },
+                        if dcf77.parity_1 == Some(false) {
+                            ' '
+                        } else {
+                            '1'
+                        },
+                        dcf77.str_bit0(),
+                        dcf77.str_bit20(),
+                        dcf77.str_minute_length(),
+                    );
+                    lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
+                        .unwrap();
+                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    // Decoded date and time:
+                    let mut str_buf = String::<14>::from("");
+                    let _ = write!(
+                        str_buf,
+                        "{:>02}{:>02}{:>02} {} {:>02}{:>02}",
+                        dcf77.radio_datetime.year.unwrap_or(0),
+                        dcf77.radio_datetime.month.unwrap_or(0),
+                        dcf77.radio_datetime.day.unwrap_or(0),
+                        dcf77.str_weekday(),
+                        dcf77.radio_datetime.hour.unwrap_or(0),
+                        dcf77.radio_datetime.minute.unwrap_or(0),
+                    );
+                    lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
+                        .unwrap();
+                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    // Unusual things:
+                    let mut str_buf = String::<3>::from("");
+                    let _ = write!(
+                        str_buf,
+                        "{}{}{}",
+                        dcf77.str_call_bit(),
+                        dcf77.radio_datetime.str_dst(),
+                        dcf77.radio_datetime.str_leap_second()
+                    );
+                    lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
+                        .unwrap();
+                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                }
+                dcf77.increase_second();
+                let mut str_buf = String::<2>::from("");
+                let _ = write!(str_buf, "{:>02}", dcf77.second);
+                lcd.set_cursor_pos(get_xy(14, 1).unwrap(), &mut delay)
+                    .unwrap();
+                lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+            }
             G_TIMER_TICK.store(false, Ordering::Release);
         }
     }
@@ -250,6 +358,29 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     str_buf.clear();
     let _ = write!(str_buf, "{:<10}  ", t1);
     lcd.write_str(str_buf.as_str(), delay).unwrap();
+}
+
+fn update_leds_dcf77(
+    dcf77: &DCF77Utils,
+    led_time: &mut Pin<bsp::hal::gpio::pin::bank0::Gpio12, bsp::hal::gpio::PushPullOutput>,
+    led_bit: &mut Pin<bsp::hal::gpio::pin::bank0::Gpio13, bsp::hal::gpio::PushPullOutput>,
+    led_error: &mut Pin<bsp::hal::gpio::pin::bank0::Gpio14, bsp::hal::gpio::PushPullOutput>,
+) {
+    if dcf77.led_time {
+        led_time.set_high().unwrap();
+    } else {
+        led_time.set_low().unwrap();
+    }
+    if dcf77.led_bit {
+        led_bit.set_high().unwrap();
+    } else {
+        led_bit.set_low().unwrap();
+    }
+    if dcf77.led_error {
+        led_error.set_high().unwrap();
+    } else {
+        led_error.set_low().unwrap();
+    }
 }
 
 /// Gets the one-dimensional HD44780 coordinate for position (x, y) (zero-based)

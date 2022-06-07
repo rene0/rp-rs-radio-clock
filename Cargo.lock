@@ -131,6 +131,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "dcf77_utils"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58d77e779fc86d96effd9b8bdcc50e568a2c9d66e501628bddac432ffe5d5389"
+dependencies = [
+ "heapless",
+ "radio_datetime_utils",
+]
+
+[[package]]
 name = "debug-helper"
 version = "0.3.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -506,6 +516,7 @@ version = "0.1.0"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
+ "dcf77_utils",
  "defmt-rtt",
  "embedded-hal",
  "embedded-time",

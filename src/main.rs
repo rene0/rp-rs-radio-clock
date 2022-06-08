@@ -168,7 +168,9 @@ fn main() -> ! {
     cortex_m::interrupt::free(|cs| GLOBAL_PIN_NPL.borrow(cs).replace(Some(npl_signal_pin)));
     cortex_m::interrupt::free(|cs| GLOBAL_TIMER.borrow(cs).replace(Some(timer)));
     alarm0.enable_interrupt();
-    alarm0.schedule(250_000.microseconds()).unwrap();
+    alarm0
+        .schedule((1_000_000 / FRAMES_PER_SECOND as u32).microseconds())
+        .unwrap();
     cortex_m::interrupt::free(|cs| GLOBAL_ALARM.borrow(cs).replace(Some(alarm0)));
     // Ready, set, go!
     unsafe {
@@ -455,6 +457,8 @@ fn TIMER_IRQ_0() {
         G_TIMER_TICK.store(true, Ordering::Release);
         alarm.clear_interrupt();
         // alarm is oneshot, so re-arm it here:
-        alarm.schedule(250_000.microseconds()).unwrap();
+        alarm
+            .schedule((1_000_000 / FRAMES_PER_SECOND as u32).microseconds())
+            .unwrap();
     }
 }

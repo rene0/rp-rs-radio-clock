@@ -79,9 +79,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "cortex-m"
-version = "0.7.4"
+version = "0.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37ff967e867ca14eba0c34ac25cd71ea98c678e741e3915d923999bb2fe7c826"
+checksum = "cd20d4ac4aa86f4f75f239d59e542ef67de87cce2c282818dc6e84155d3ea126"
 dependencies = [
  "bare-metal 0.2.5",
  "bitfield",
@@ -132,9 +132,9 @@ dependencies = [
 
 [[package]]
 name = "dcf77_utils"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58d77e779fc86d96effd9b8bdcc50e568a2c9d66e501628bddac432ffe5d5389"
+checksum = "89817ab77ad5ef1875577096d31ec98b8904a0fa1bde15ca096abb43fcace517"
 dependencies = [
  "heapless",
  "radio_datetime_utils",

@@ -226,68 +226,25 @@ fn main() -> ! {
                 &mut dcf77_led_bit,
                 &mut dcf77_led_error,
             );
-            if dcf77.frame_counter == 1 {
-                if dcf77.new_minute
-                /*&& !dcf77.first_minute*/
+            if dcf77.get_frame_counter() == 1 {
+                if dcf77.get_new_minute()
+                /*&& !dcf77.get_first_minute() */
                 {
                     // print date/time/status
                     let mut str_buf = String::<14>::from("");
                     let _ = write!(
                         str_buf,
                         "{}{}{}{}{}{}{}{}{}{} {}{}{}",
-                        if dcf77.radio_datetime.jump_year {
-                            'y'
-                        } else {
-                            ' '
-                        },
-                        if dcf77.radio_datetime.jump_month {
-                            'm'
-                        } else {
-                            ' '
-                        },
-                        if dcf77.radio_datetime.jump_day {
-                            'd'
-                        } else {
-                            ' '
-                        },
-                        if dcf77.radio_datetime.jump_weekday {
-                            'w'
-                        } else {
-                            ' '
-                        },
-                        if dcf77.radio_datetime.jump_hour {
-                            'h'
-                        } else {
-                            ' '
-                        },
-                        if dcf77.radio_datetime.jump_minute {
-                            'm'
-                        } else {
-                            ' '
-                        },
-                        if dcf77.radio_datetime.dst.is_some()
-                            && (dcf77.radio_datetime.dst.unwrap() & radio_datetime_utils::DST_JUMP)
-                                != 0
-                        {
-                            't'
-                        } else {
-                            ' '
-                        },
-                        if dcf77.parity_3 == Some(false) {
-                            ' '
-                        } else {
-                            '3'
-                        },
-                        if dcf77.parity_2 == Some(false) {
-                            ' '
-                        } else {
-                            '2'
-                        },
-                        if dcf77.parity_1 == Some(false) {
-                            ' '
-                        } else {
-                            '1'
-                        },
+                        dcf77.get_radio_datetime().str_jump_year(),
+                        dcf77.get_radio_datetime().str_jump_month(),
+                        dcf77.get_radio_datetime().str_jump_day(),
+                        dcf77.get_radio_datetime().str_jump_weekday(),
+                        dcf77.get_radio_datetime().str_jump_hour(),
+                        dcf77.get_radio_datetime().str_jump_minute(),
+                        dcf77.get_radio_datetime().str_jump_dst(),
+                        dcf77.str_parity_3(),
+                        dcf77.str_parity_2(),
+                        dcf77.str_parity_1(),
                         dcf77.str_bit0(),
                         dcf77.str_bit20(),
                         dcf77.str_minute_length(),
@@ -299,13 +256,13 @@ fn main() -> ! {
                     let mut str_buf = String::<14>::from("");
                     let _ = write!(
                         str_buf,
-                        "{:>02}{:>02}{:>02} {} {:>02}{:>02}",
-                        dcf77.radio_datetime.year.unwrap_or(0),
-                        dcf77.radio_datetime.month.unwrap_or(0),
-                        dcf77.radio_datetime.day.unwrap_or(0),
-                        dcf77.str_weekday(),
-                        dcf77.radio_datetime.hour.unwrap_or(0),
-                        dcf77.radio_datetime.minute.unwrap_or(0),
+                        "{}{}{} {} {}{}",
+                        dcf77.get_radio_datetime().str_year(),
+                        dcf77.get_radio_datetime().str_month(),
+                        dcf77.get_radio_datetime().str_day(),
+                        dcf77.get_radio_datetime().str_weekday(),
+                        dcf77.get_radio_datetime().str_hour(),
+                        dcf77.get_radio_datetime().str_minute(),
                     );
                     lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
@@ -316,8 +273,8 @@ fn main() -> ! {
                         str_buf,
                         "{}{}{}",
                         dcf77.str_call_bit(),
-                        dcf77.radio_datetime.str_dst(),
-                        dcf77.radio_datetime.str_leap_second()
+                        dcf77.get_radio_datetime().str_dst(),
+                        dcf77.get_radio_datetime().str_leap_second()
                     );
                     lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
                         .unwrap();
@@ -325,7 +282,7 @@ fn main() -> ! {
                 }
                 dcf77.increase_second();
                 let mut str_buf = String::<2>::from("");
-                let _ = write!(str_buf, "{:>02}", dcf77.second);
+                let _ = write!(str_buf, "{:>02}", dcf77.get_second());
                 lcd.set_cursor_pos(get_xy(14, 1).unwrap(), &mut delay)
                     .unwrap();
                 lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
@@ -368,17 +325,17 @@ fn update_leds_dcf77(
     led_bit: &mut gpio::Pin<gpio::pin::bank0::Gpio13, gpio::PushPullOutput>,
     led_error: &mut gpio::Pin<gpio::pin::bank0::Gpio14, gpio::PushPullOutput>,
 ) {
-    if dcf77.led_time {
+    if dcf77.get_led_time() {
         led_time.set_high().unwrap();
     } else {
         led_time.set_low().unwrap();
     }
-    if dcf77.led_bit {
+    if dcf77.get_led_bit() {
         led_bit.set_high().unwrap();
     } else {
         led_bit.set_low().unwrap();
     }
-    if dcf77.led_error {
+    if dcf77.get_led_error() {
         led_error.set_high().unwrap();
     } else {
         led_error.set_low().unwrap();

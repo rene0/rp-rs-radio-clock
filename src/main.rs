@@ -2,34 +2,40 @@
 #![no_std]
 #![no_main]
 
-use crate::gpio::Pin;
-use crate::pac::I2C0;
-use bsp::hal::gpio;
-use bsp::hal::gpio::Interrupt::{EdgeHigh, EdgeLow};
-use bsp::hal::timer::Alarm0;
 use bsp::hal::{
     clocks::{init_clocks_and_plls, Clock},
+    gpio,
+    gpio::Interrupt::{EdgeHigh, EdgeLow},
     pac,
+    pac::interrupt,
     sio::Sio,
+    timer::Alarm0,
     watchdog::Watchdog,
-    I2C,
+    Timer, I2C,
 };
-use bsp::pac::interrupt;
 use bsp::XOSC_CRYSTAL_FREQ;
-use core::cell::RefCell;
-use core::fmt::Write;
-use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use core::{
+    cell::RefCell,
+    fmt::Write,
+    sync::atomic::{AtomicBool, AtomicU32, Ordering},
+};
 use cortex_m::interrupt::Mutex;
 use cortex_m_rt::entry; // the macro for our start-up function
 use dcf77_utils::DCF77Utils;
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
-use embedded_hal::blocking::delay::{DelayMs, DelayUs};
-use embedded_hal::digital::v2::{InputPin, OutputPin, ToggleableOutputPin};
-use embedded_time::duration::Extensions;
-use embedded_time::fixed_point::FixedPoint; // for .integer()
-use embedded_time::rate::Extensions as rate_extensions; // allows for plain "400" in "400.kHz()"
-use hd44780_driver::bus::I2CBus;
-use hd44780_driver::{Cursor, CursorBlink, HD44780};
+use embedded_hal::{
+    blocking::delay::{DelayMs, DelayUs},
+    digital::v2::{InputPin, OutputPin, ToggleableOutputPin},
+};
+use embedded_time::{
+    duration::Extensions,
+    fixed_point::FixedPoint,             // for .integer()
+    rate::Extensions as rate_extensions, // allows for plain "400" in "400.kHz()"
+};
+use hd44780_driver::{
+    bus::I2CBus,
+    {Cursor, CursorBlink, HD44780},
+};
 use heapless::String;
 use panic_halt as _;
 use rp_pico as bsp;
@@ -58,15 +64,15 @@ type NPLSignalPin = gpio::Pin<gpio::bank0::Gpio6, gpio::PullDownInput>;
 // needed to transfer our pin(s) into the ISR:
 static GLOBAL_PIN_DCF77: Mutex<RefCell<Option<DCF77SignalPin>>> = Mutex::new(RefCell::new(None));
 static GLOBAL_PIN_NPL: Mutex<RefCell<Option<NPLSignalPin>>> = Mutex::new(RefCell::new(None));
-static GLOBAL_TIMER: Mutex<RefCell<Option<bsp::hal::Timer>>> = Mutex::new(RefCell::new(None));
+static GLOBAL_TIMER: Mutex<RefCell<Option<Timer>>> = Mutex::new(RefCell::new(None));
 // and one for the timer alarm:
 static GLOBAL_ALARM: Mutex<RefCell<Option<Alarm0>>> = Mutex::new(RefCell::new(None));
 
 type I2cDisplay = I2C<
-    I2C0,
+    pac::I2C0,
     (
-        Pin<bsp::hal::gpio::pin::bank0::Gpio0, bsp::hal::gpio::FunctionI2C>,
-        Pin<bsp::hal::gpio::pin::bank0::Gpio1, bsp::hal::gpio::FunctionI2C>,
+        gpio::Pin<gpio::pin::bank0::Gpio0, gpio::FunctionI2C>,
+        gpio::Pin<gpio::pin::bank0::Gpio1, gpio::FunctionI2C>,
     ),
 >;
 enum DisplayMode {
@@ -109,9 +115,9 @@ fn main() -> ! {
     // Create the I²C drive, using the two pre-configured pins. This will fail
     // at compile time if the pins are in the wrong mode, or if this I²C
     // peripheral isn't available on these pins!
-    let sda_pin = pins.gpio0.into_mode::<bsp::hal::gpio::FunctionI2C>();
-    let scl_pin = pins.gpio1.into_mode::<bsp::hal::gpio::FunctionI2C>();
-    let i2c = bsp::hal::I2C::i2c0(
+    let sda_pin = pins.gpio0.into_mode::<gpio::FunctionI2C>();
+    let scl_pin = pins.gpio1.into_mode::<gpio::FunctionI2C>();
+    let i2c = I2C::i2c0(
         pac.I2C0,
         sda_pin,
         scl_pin,
@@ -160,7 +166,7 @@ fn main() -> ! {
     let npl_signal_pin = pins.gpio6.into_mode();
     npl_signal_pin.set_interrupt_enabled(EdgeHigh, true);
     npl_signal_pin.set_interrupt_enabled(EdgeLow, true);
-    let mut timer = bsp::hal::Timer::new(pac.TIMER, &mut pac.RESETS);
+    let mut timer = Timer::new(pac.TIMER, &mut pac.RESETS);
     let mut alarm0 = timer.alarm_0().unwrap();
 
     // Give the signal pins and timer away to the ISR
@@ -358,9 +364,9 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
 
 fn update_leds_dcf77(
     dcf77: &DCF77Utils,
-    led_time: &mut Pin<bsp::hal::gpio::pin::bank0::Gpio12, bsp::hal::gpio::PushPullOutput>,
-    led_bit: &mut Pin<bsp::hal::gpio::pin::bank0::Gpio13, bsp::hal::gpio::PushPullOutput>,
-    led_error: &mut Pin<bsp::hal::gpio::pin::bank0::Gpio14, bsp::hal::gpio::PushPullOutput>,
+    led_time: &mut gpio::Pin<gpio::pin::bank0::Gpio12, gpio::PushPullOutput>,
+    led_bit: &mut gpio::Pin<gpio::pin::bank0::Gpio13, gpio::PushPullOutput>,
+    led_error: &mut gpio::Pin<gpio::pin::bank0::Gpio14, gpio::PushPullOutput>,
 ) {
     if dcf77.led_time {
         led_time.set_high().unwrap();
@@ -399,7 +405,7 @@ fn get_xy(x: u8, y: u8) -> Option<u8> {
 
 #[interrupt]
 fn IO_IRQ_BANK0() {
-    static mut TICK_TIMER: Option<bsp::hal::Timer> = None;
+    static mut TICK_TIMER: Option<Timer> = None;
     static mut DCF77_PIN: Option<DCF77SignalPin> = None;
     static mut PREVIOUS_DCF77_LOW: bool = false;
     static mut NPL_PIN: Option<NPLSignalPin> = None;

@@ -282,11 +282,9 @@ fn main() -> ! {
                     lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
                 }
                 dcf77.increase_second();
-                let mut str_buf = String::<2>::from("");
-                let _ = write!(str_buf, "{:>02}", dcf77.get_second());
                 lcd.set_cursor_pos(get_xy(14, 1).unwrap(), &mut delay)
                     .unwrap();
-                lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                lcd.write_str( str_02(Some(dcf77.get_second())).as_str(), &mut delay).unwrap();
             }
             G_TIMER_TICK.store(false, Ordering::Release);
         }

@@ -132,11 +132,10 @@ dependencies = [
 
 [[package]]
 name = "dcf77_utils"
-version = "0.1.1"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89817ab77ad5ef1875577096d31ec98b8904a0fa1bde15ca096abb43fcace517"
+checksum = "28b6285b7590e7767c8b58ad20aba3c144264c07b8edc60469974ac929c9a803"
 dependencies = [
- "heapless",
  "radio_datetime_utils",
 ]
 
@@ -443,9 +442,9 @@ dependencies = [
 
 [[package]]
 name = "radio_datetime_utils"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "939374236505c0b9ea6b298a078b031cce93fd2b943b806fceb1f86eda194e5c"
+checksum = "ce522171ae6198b915210bdbf72e179312b2945d4821252c3d9bab8d48ec1f04"
 dependencies = [
  "heapless",
 ]

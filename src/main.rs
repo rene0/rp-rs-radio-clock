@@ -396,7 +396,7 @@ fn str_dst(dcf77: &DCF77Utils) -> char {
         }
         res_dst
     } else {
-        'x'
+        '*'
     }
 }
 
@@ -415,7 +415,7 @@ fn str_leap_second(dcf77: &DCF77Utils) -> char {
             ' ' // LEAP_NONE
         }
     } else {
-        'x'
+        '*'
     }
 }
 

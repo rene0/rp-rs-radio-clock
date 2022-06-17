@@ -228,9 +228,7 @@ fn main() -> ! {
                 &mut dcf77_led_error,
             );
             if dcf77.get_frame_counter() == 1 {
-                if dcf77.get_new_minute()
-                /*&& !dcf77.get_first_minute() */
-                {
+                if dcf77.get_new_minute() && !dcf77.get_first_minute() {
                     // print date/time/status
                     let mut str_buf = String::<14>::from("");
                     let _ = write!(

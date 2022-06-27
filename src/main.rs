@@ -13,7 +13,7 @@ use bsp::hal::{
     watchdog::Watchdog,
     Timer, I2C,
 };
-use bsp::{XOSC_CRYSTAL_FREQ, entry};
+use bsp::{entry, XOSC_CRYSTAL_FREQ};
 use core::{
     cell::RefCell,
     cmp::Ordering as spaceship,

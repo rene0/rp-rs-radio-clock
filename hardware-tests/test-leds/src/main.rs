@@ -7,8 +7,7 @@ use bsp::hal::{
     sio::Sio,
     watchdog::Watchdog,
 };
-use bsp::XOSC_CRYSTAL_FREQ;
-use cortex_m_rt::entry;
+use bsp::{entry, XOSC_CRYSTAL_FREQ};
 use defmt_rtt as _;
 use embedded_hal::digital::v2::OutputPin;
 use embedded_time::fixed_point::FixedPoint;

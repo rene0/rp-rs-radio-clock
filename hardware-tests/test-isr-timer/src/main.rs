@@ -1,19 +1,18 @@
 #![no_std]
 #![no_main]
 
+use bsp::entry;
+use bsp::hal::timer::{Alarm, Alarm0};
 use bsp::hal::{pac, sio::Sio};
 use bsp::pac::interrupt;
 use core::cell::RefCell;
 use core::sync::atomic::{AtomicBool, Ordering};
 use cortex_m::interrupt::Mutex;
-use cortex_m_rt::entry; // the macro for our start-up function
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::digital::v2::OutputPin;
 use embedded_time::duration::Extensions;
 use panic_halt as _;
 use rp_pico as bsp;
-
-use rp_pico::hal::timer::Alarm0;
 
 static GLOBAL_PINS: Mutex<RefCell<Option<Alarm0>>> = Mutex::new(RefCell::new(None));
 static G_TOGGLE_LED: AtomicBool = AtomicBool::new(false);

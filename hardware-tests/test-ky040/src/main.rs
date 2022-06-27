@@ -1,8 +1,8 @@
 #![no_std]
 #![no_main]
 
+use bsp::entry;
 use bsp::hal::{pac, sio::Sio};
-use cortex_m_rt::entry;
 use defmt_rtt as _;
 use embedded_hal::digital::v2::{InputPin, OutputPin};
 use panic_halt as _;

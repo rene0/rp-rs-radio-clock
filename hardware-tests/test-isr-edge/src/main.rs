@@ -1,12 +1,12 @@
 #![no_std]
 #![no_main]
 
+use bsp::entry;
 use bsp::hal::{pac, sio::Sio};
 use bsp::pac::interrupt;
 use core::cell::RefCell;
 use core::sync::atomic::{AtomicBool, Ordering};
 use cortex_m::interrupt::Mutex;
-use cortex_m_rt::entry; // the macro for our start-up function
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::digital::v2::{InputPin, OutputPin};
 use panic_halt as _;

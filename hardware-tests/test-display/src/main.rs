@@ -7,9 +7,8 @@ use bsp::hal::{
     sio::Sio,
     watchdog::Watchdog,
 };
-use bsp::XOSC_CRYSTAL_FREQ;
+use bsp::{entry, XOSC_CRYSTAL_FREQ};
 use core::fmt::Write;
-use cortex_m_rt::entry;
 use defmt_rtt as _;
 use embedded_time::fixed_point::FixedPoint;
 use embedded_time::rate::Extensions;

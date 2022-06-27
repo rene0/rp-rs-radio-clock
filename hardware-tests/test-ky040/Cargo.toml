@@ -6,15 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cortex-m = "0.7.3"
-cortex-m-rt = "0.7.0"
-embedded-hal = { version = "0.2.5", features = ["unproven"] }
+cortex-m = "0.7.5"
+cortex-m-rt = "0.7.1"
+embedded-hal = { version = "0.2.7", features = ["unproven"] }
 
-defmt-rtt = "0.3.0"
+defmt-rtt = "0.3.2"
 panic-halt = "0.2.0"
 
 # We're using a Pico by default on this template
-rp-pico = "0.3.0"
+rp-pico = "0.4.1"
 
 # cargo build/run
 [profile.dev]

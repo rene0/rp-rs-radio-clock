@@ -9,11 +9,11 @@ use bsp::hal::{
     pac,
     pac::interrupt,
     sio::Sio,
-    timer::Alarm0,
+    timer::{Alarm, Alarm0},
     watchdog::Watchdog,
     Timer, I2C,
 };
-use bsp::XOSC_CRYSTAL_FREQ;
+use bsp::{XOSC_CRYSTAL_FREQ, entry};
 use core::{
     cell::RefCell,
     cmp::Ordering as spaceship,
@@ -21,7 +21,6 @@ use core::{
     sync::atomic::{AtomicBool, AtomicU32, Ordering},
 };
 use cortex_m::interrupt::Mutex;
-use cortex_m_rt::entry; // the macro for our start-up function
 use dcf77_utils::DCF77Utils;
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::{

@@ -1,5 +1,8 @@
 [package]
 authors = ["the rp-rs team", "René Ladan <rene0+github@freedom.nl>"]
+description = "DCF77 and NPL receiver on a Raspberry Pi Pico"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rene0/rp-rs-radio-clock"
 edition = "2021"
 readme = "README.md"
 name = "rp-rs-radio-clock"

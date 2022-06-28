@@ -442,9 +442,9 @@ dependencies = [
 
 [[package]]
 name = "radio_datetime_utils"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce522171ae6198b915210bdbf72e179312b2945d4821252c3d9bab8d48ec1f04"
+checksum = "db2235230be41c86f4876e6aef797767a1cc12053989b00150729f71d497cdd5"
 dependencies = [
  "heapless",
 ]

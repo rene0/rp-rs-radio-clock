@@ -218,15 +218,10 @@ dependencies = [
 [[package]]
 name = "hd44780-driver"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aab2b13fdeaed7dde9133a57c28b2cbde4a8fc8c3196b5631428aad114857d3a"
+source = "git+https://github.com/JohnDoneth/hd44780-driver?rev=f599c54#f599c547d5eeeea1ba2063ce8d1bc372cc9d64ac"
 dependencies = [
  "embedded-hal",
 ]
-
-[[package]]
-name = "hd44780_helpers"
-version = "0.1.0"
 
 [[package]]
 name = "heapless"
@@ -647,7 +642,6 @@ dependencies = [
  "embedded-hal",
  "embedded-time",
  "hd44780-driver",
- "hd44780_helpers",
  "heapless",
  "panic-halt",
  "rp-pico",

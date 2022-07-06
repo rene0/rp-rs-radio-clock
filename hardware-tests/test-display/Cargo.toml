@@ -10,8 +10,7 @@ cortex-m = "0.7.5"
 cortex-m-rt = "0.7.1"
 embedded-hal = { version = "0.2.7", features = ["unproven"] }
 embedded-time = "0.12.1"
-hd44780-driver = "0.4.0"
-hd44780_helpers = { path = "./../../hd44780_helpers" }
+hd44780-driver = { git = "https://github.com/JohnDoneth/hd44780-driver", rev = "f599c54" } # > 0.4.0 for set_cursor_xy((x,y),delay)
 
 defmt-rtt = "0.3.2"
 panic-halt = "0.2.0"

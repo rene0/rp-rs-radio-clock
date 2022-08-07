@@ -31,10 +31,7 @@ use embedded_time::{
     fixed_point::FixedPoint,             // for .integer()
     rate::Extensions as rate_extensions, // allows for plain "400" in "400.kHz()"
 };
-use hd44780_driver::{
-    bus::I2CBus,
-    {Cursor, CursorBlink, HD44780},
-};
+use hd44780_driver::{bus::I2CBus, Cursor, CursorBlink, HD44780};
 use heapless::String;
 use npl_utils::NPLUtils;
 use panic_halt as _;

@@ -36,6 +36,7 @@ use hd44780_driver::{
     {Cursor, CursorBlink, HD44780},
 };
 use heapless::String;
+use npl_utils::NPLUtils;
 use panic_halt as _;
 use rp_pico as bsp;
 use crate::frontend::*;
@@ -154,10 +155,14 @@ fn main() -> ! {
     let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
     let mut npl_led_bit_b = pins.gpio4.into_push_pull_output();
     let mut npl_led_error = pins.gpio5.into_push_pull_output();
-    npl_led_time.set_high().unwrap();
-    npl_led_bit_a.set_low().unwrap();
-    npl_led_bit_b.set_low().unwrap();
-    npl_led_error.set_high().unwrap();
+    let mut npl = NPLUtils::new(FRAMES_PER_SECOND);
+    npl::update_leds(
+        &npl,
+        &mut npl_led_time,
+        &mut npl_led_bit_a,
+        &mut npl_led_bit_b,
+        &mut npl_led_error,
+    );
 
     let mut led_pin = pins.led.into_push_pull_output();
     led_pin.set_low().unwrap();
@@ -187,7 +192,6 @@ fn main() -> ! {
     }
     let mut t0_dcf77 = 0;
     let mut t0_npl = 0;
-    let mut first_npl = true;
     let display_mode = DisplayMode::Time; // This should become something to loop through with the KY-040
     loop {
         if G_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
@@ -209,14 +213,18 @@ fn main() -> ! {
         if G_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
             let t1_npl = G_TIMER_TICK_NPL.load(Ordering::Acquire);
             let is_low_edge = G_EDGE_LOW_NPL.load(Ordering::Acquire);
-            if first_npl {
-                npl_led_time.set_low().unwrap();
-                npl_led_error.set_low().unwrap();
-            } else if matches!(display_mode, DisplayMode::Pulses) {
+            if matches!(display_mode, DisplayMode::Pulses) {
                 show_pulses(&mut lcd, &mut delay, 2, is_low_edge, t0_npl, t1_npl);
             }
+            npl.handle_new_edge(is_low_edge, t0_npl, t1_npl);
+            npl::update_leds(
+                &npl,
+                &mut npl_led_time,
+                &mut npl_led_bit_a,
+                &mut npl_led_bit_b,
+                &mut npl_led_error,
+            );
             t0_npl = t1_npl;
-            first_npl = false;
             G_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
         }
         if G_TIMER_TICK.load(Ordering::Acquire) {
@@ -286,6 +294,15 @@ fn main() -> ! {
                 lcd.write_str(str_02(Some(dcf77.get_second())).as_str(), &mut delay)
                     .unwrap();
             }
+            npl.handle_new_timer_tick();
+            npl::update_leds(
+                &npl,
+                &mut npl_led_time,
+                &mut npl_led_bit_a,
+                &mut npl_led_bit_b,
+                &mut npl_led_error,
+            );
+            if npl.get_frame_counter() == 1 {}
             G_TIMER_TICK.store(false, Ordering::Release);
         }
     }
@@ -305,6 +322,7 @@ fn str_02(value: Option<u8>) -> String<2> {
 /// Return a textual representation of the weekday, Mo-Su or ** for None.
 fn str_weekday(weekday: Option<u8>) -> String<2> {
     String::<2>::from(match weekday {
+        Some(0) => "Su",
         Some(1) => "Mo",
         Some(2) => "Tu",
         Some(3) => "We",

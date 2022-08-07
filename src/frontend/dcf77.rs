@@ -1,8 +1,8 @@
 use dcf77_utils::DCF77Utils;
 
+use core::cmp::Ordering as spaceship;
 use embedded_hal::digital::v2::OutputPin;
 use rp_pico::hal::gpio;
-use core::cmp::Ordering as spaceship;
 
 pub fn update_leds(
     dcf77: &DCF77Utils,
@@ -26,7 +26,6 @@ pub fn update_leds(
         led_error.set_low().unwrap();
     }
 }
-
 
 /// Return if the year has jumped unexpectedly, 'y' or ' '
 pub fn str_jump_year(dcf77: &DCF77Utils) -> char {

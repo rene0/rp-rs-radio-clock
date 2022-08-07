@@ -2,6 +2,7 @@
 #![no_std]
 #![no_main]
 
+use crate::frontend::*;
 use bsp::hal::{
     clocks::{init_clocks_and_plls, Clock},
     gpio,
@@ -36,7 +37,6 @@ use heapless::String;
 use npl_utils::NPLUtils;
 use panic_halt as _;
 use rp_pico as bsp;
-use crate::frontend::*;
 
 mod frontend;
 

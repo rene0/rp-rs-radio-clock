@@ -178,14 +178,14 @@ pub fn str_leap_second(dcf77: &DCF77Utils) -> char {
     if let Some(leap_second) = dcf77.get_radio_datetime().get_leap_second() {
         if (leap_second & radio_datetime_utils::LEAP_PROCESSED) != 0 {
             'L'
-        } else if (leap_second & radio_datetime_utils::LEAP_NON_ZERO) != 0 {
+        } else if dcf77.get_leap_second_is_one() == Some(true) {
             '1'
         } else if (leap_second & radio_datetime_utils::LEAP_MISSING) != 0 {
             'm'
         } else if (leap_second & radio_datetime_utils::LEAP_ANNOUNCED) != 0 {
             'l'
         } else {
-            ' ' // LEAP_NONE
+            ' '
         }
     } else {
         '*'

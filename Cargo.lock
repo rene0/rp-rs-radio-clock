@@ -79,9 +79,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "cortex-m"
-version = "0.7.5"
+version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd20d4ac4aa86f4f75f239d59e542ef67de87cce2c282818dc6e84155d3ea126"
+checksum = "70858629a458fdfd39f9675c4dc309411f2a3f83bede76988d81bf1a0ecee9e0"
 dependencies = [
  "bare-metal 0.2.5",
  "bitfield",
@@ -132,9 +132,9 @@ dependencies = [
 
 [[package]]
 name = "dcf77_utils"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc207ca6954327f1269b5fa03c320484160be5081ae517bf58e2194a951e3842"
+checksum = "e627e4fb74d901004d68aabb2a804c1f5103b8e7fb4eeb4f2cfce813b7d4cb2f"
 dependencies = [
  "radio_datetime_utils",
 ]
@@ -235,9 +235,9 @@ dependencies = [
 
 [[package]]
 name = "heapless"
-version = "0.7.14"
+version = "0.7.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "065681e99f9ef7e0e813702a0326aedbcbbde7db5e55f097aedd1bf50b9dca43"
+checksum = "db04bc24a18b9ea980628ecf00e6c0264f3c1426dac36c00cb49b6fbad8b0743"
 dependencies = [
  "atomic-polyfill",
  "hash32",
@@ -451,9 +451,9 @@ dependencies = [
 
 [[package]]
 name = "radio_datetime_utils"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1979c48c3aa5caf25ea3265b57c34e20a3a7e03138fbef027b3e6817ec305d0a"
+checksum = "ec3506be6584d75136063ca1697cbc93acb295036f84f3260c9f23b586da5c2e"
 dependencies = [
  "heapless",
 ]

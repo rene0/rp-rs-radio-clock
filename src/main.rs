@@ -84,7 +84,7 @@ enum DisplayMode {
 /// Entry point to our bare-metal application.
 ///
 /// The `#[entry]` macro ensures the Cortex-M start-up code calls this function
-/// as soon as all global variables are initialised.
+/// as soon as all global variables and the spinlock are initialised.
 #[entry]
 fn main() -> ! {
     let mut pac = pac::Peripherals::take().unwrap();

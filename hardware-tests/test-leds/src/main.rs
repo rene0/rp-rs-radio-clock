@@ -10,7 +10,6 @@ use bsp::hal::{
 use bsp::{entry, XOSC_CRYSTAL_FREQ};
 use defmt_rtt as _;
 use embedded_hal::digital::v2::OutputPin;
-use embedded_time::fixed_point::FixedPoint;
 use panic_halt as _;
 use rp_pico as bsp;
 
@@ -64,7 +63,7 @@ fn main() -> ! {
     .ok()
     .unwrap();
 
-    let delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().integer());
+    let delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
 
     let pins = bsp::Pins::new(
         pac.IO_BANK0,

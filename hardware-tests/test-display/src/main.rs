@@ -10,8 +10,7 @@ use bsp::hal::{
 use bsp::{entry, XOSC_CRYSTAL_FREQ};
 use core::fmt::Write;
 use defmt_rtt as _;
-use embedded_time::fixed_point::FixedPoint;
-use embedded_time::rate::Extensions;
+use fugit::RateExtU32;
 use hd44780_driver::{Cursor, CursorBlink, HD44780};
 use heapless::String;
 use panic_halt as _;
@@ -39,7 +38,7 @@ fn main() -> ! {
     .ok()
     .unwrap();
 
-    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().integer());
+    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
     let pins = bsp::Pins::new(
         pac.IO_BANK0,
         pac.PADS_BANK0,
@@ -59,7 +58,7 @@ fn main() -> ! {
         scl_pin,
         400.kHz(),
         &mut pac.RESETS,
-        clocks.peripheral_clock,
+        &clocks.peripheral_clock,
     );
     let mut lcd = HD44780::new_i2c(i2c, I2C_ADDRESS, &mut delay).unwrap();
     lcd.reset(&mut delay).unwrap();

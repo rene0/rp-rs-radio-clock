@@ -6,18 +6,18 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cortex-m = "0.7.5"
+cortex-m = "0.7.6"
 cortex-m-rt = "0.7.1"
 embedded-hal = { version = "0.2.7", features = ["unproven"] }
-embedded-time = "0.12.1"
-hd44780-driver = { git = "https://github.com/JohnDoneth/hd44780-driver", rev = "f599c54" } # > 0.4.0 for set_cursor_xy((x,y),delay)
+fugit = "0.3.6"
+hd44780-driver = { git = "https://github.com/JohnDoneth/hd44780-driver", rev = "f599c547" } # > 0.4.0 for set_cursor_xy((x,y),delay)
 
-defmt-rtt = "0.3.2"
+defmt-rtt = "0.4.0"
 panic-halt = "0.2.0"
 heapless = "0.7.14"
 
 # We're using a Pico by default on this template
-rp-pico = "0.4.1"
+rp-pico = "0.5.0"
 
 # cargo build/run
 [profile.dev]

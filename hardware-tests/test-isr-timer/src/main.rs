@@ -10,7 +10,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use cortex_m::interrupt::Mutex;
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::digital::v2::OutputPin;
-use embedded_time::duration::Extensions;
+use fugit::MicrosDurationU32;
 use panic_halt as _;
 use rp_pico as bsp;
 
@@ -36,7 +36,7 @@ fn main() -> ! {
     let mut timer = bsp::hal::Timer::new(pac.TIMER, &mut pac.RESETS);
     let mut alarm0 = timer.alarm_0().unwrap();
     alarm0.enable_interrupt();
-    alarm0.schedule(250_000.microseconds()).unwrap();
+    alarm0.schedule(MicrosDurationU32::micros(250_000)).unwrap();
     cortex_m::interrupt::free(|cs| GLOBAL_PINS.borrow(cs).replace(Some(alarm0)));
     unsafe {
         pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
@@ -69,6 +69,6 @@ fn TIMER_IRQ_0() {
         G_TOGGLE_LED.store(true, Ordering::Release);
         alarm.clear_interrupt();
         // alarm is oneshot, so re-arm it here:
-        alarm.schedule(250_000.microseconds()).unwrap();
+        alarm.schedule(MicrosDurationU32::micros(250_000)).unwrap();
     }
 }

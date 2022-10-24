@@ -27,11 +27,7 @@ use embedded_hal::{
     blocking::delay::{DelayMs, DelayUs},
     digital::v2::{InputPin, OutputPin, ToggleableOutputPin},
 };
-use embedded_time::{
-    duration::Extensions,
-    fixed_point::FixedPoint,             // for .integer()
-    rate::Extensions as rate_extensions, // allows for plain "400" in "400.kHz()"
-};
+use fugit::{MicrosDurationU32, RateExtU32};
 use hd44780_driver::{bus::I2CBus, Cursor, CursorBlink, HD44780};
 use heapless::String;
 use npl_utils::NPLUtils;
@@ -104,7 +100,7 @@ fn main() -> ! {
     .ok()
     .unwrap();
 
-    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().integer());
+    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
     let pins = bsp::Pins::new(
         pac.IO_BANK0,
         pac.PADS_BANK0,
@@ -112,18 +108,20 @@ fn main() -> ! {
         &mut pac.RESETS,
     );
 
+    // Configure two pins as being I²C, not GPIO
+    let sda_pin = pins.gpio0.into_mode::<gpio::FunctionI2C>();
+    let scl_pin = pins.gpio1.into_mode::<gpio::FunctionI2C>();
+
     // Create the I²C drive, using the two pre-configured pins. This will fail
     // at compile time if the pins are in the wrong mode, or if this I²C
     // peripheral isn't available on these pins!
-    let sda_pin = pins.gpio0.into_mode::<gpio::FunctionI2C>();
-    let scl_pin = pins.gpio1.into_mode::<gpio::FunctionI2C>();
     let i2c = I2C::i2c0(
         pac.I2C0,
         sda_pin,
         scl_pin,
         400.kHz(),
         &mut pac.RESETS,
-        clocks.peripheral_clock,
+        &clocks.peripheral_clock,
     );
     // Initialize the display:
     let mut lcd = HD44780::new_i2c(i2c, I2C_ADDRESS, &mut delay).unwrap();
@@ -179,7 +177,9 @@ fn main() -> ! {
     cortex_m::interrupt::free(|cs| GLOBAL_TIMER.borrow(cs).replace(Some(timer)));
     alarm0.enable_interrupt();
     alarm0
-        .schedule((1_000_000 / FRAMES_PER_SECOND as u32).microseconds())
+        .schedule(MicrosDurationU32::micros(
+            1_000_000 / FRAMES_PER_SECOND as u32,
+        ))
         .unwrap();
     cortex_m::interrupt::free(|cs| GLOBAL_ALARM.borrow(cs).replace(Some(alarm0)));
     // Ready, set, go!
@@ -437,7 +437,9 @@ fn TIMER_IRQ_0() {
         alarm.clear_interrupt();
         // alarm is oneshot, so re-arm it here:
         alarm
-            .schedule((1_000_000 / FRAMES_PER_SECOND as u32).microseconds())
+            .schedule(MicrosDurationU32::micros(
+                1_000_000 / FRAMES_PER_SECOND as u32,
+            ))
             .unwrap();
     }
 }

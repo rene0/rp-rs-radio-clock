@@ -364,7 +364,8 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
 
 /// Gets the one-dimensional HD44780 coordinate for position (x, y) (zero-based)
 ///
-/// <https://web.alfredstate.edu/faculty/weimandn/lcd/lcd_addressing/lcd_addressing_index.html>
+/// See <https://web.alfredstate.edu/faculty/weimandn/lcd/lcd_addressing/lcd_addressing_index.html>
+///
 /// Assumes type-2 addressing for 16x1 displays
 fn get_xy(x: u8, y: u8) -> Option<u8> {
     if (x >= DISPLAY_COLUMNS) || (y >= DISPLAY_ROWS) {

@@ -237,7 +237,7 @@ fn main() -> ! {
                 if dcf77.get_new_minute() && !dcf77.get_first_minute() {
                     // print date/time/status
                     let mut str_buf = String::<14>::from("");
-                    let _ = write!(
+                    write!(
                         str_buf,
                         "{}{}{}{}{}{}{}{}{}{} {}{}{}",
                         dcf77::str_jump_year(&dcf77),
@@ -253,13 +253,14 @@ fn main() -> ! {
                         dcf77::str_bit_0(&dcf77),
                         dcf77::str_bit_20(&dcf77),
                         dcf77::str_minute_length(&dcf77),
-                    );
+                    )
+                    .unwrap();
                     lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
                     // Decoded date and time:
                     let mut str_buf = String::<14>::from("");
-                    let _ = write!(
+                    write!(
                         str_buf,
                         "{}{}{} {} {}{}",
                         str_02(dcf77.get_radio_datetime().get_year()),
@@ -268,19 +269,21 @@ fn main() -> ! {
                         str_weekday(dcf77.get_radio_datetime().get_weekday()),
                         str_02(dcf77.get_radio_datetime().get_hour()),
                         str_02(dcf77.get_radio_datetime().get_minute()),
-                    );
+                    )
+                    .unwrap();
                     lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
                     // Unusual things:
                     let mut str_buf = String::<3>::from("");
-                    let _ = write!(
+                    write!(
                         str_buf,
                         "{}{}{}",
                         dcf77::str_call_bit(&dcf77),
                         dcf77::str_dst(&dcf77),
                         dcf77::str_leap_second(&dcf77)
-                    );
+                    )
+                    .unwrap();
                     lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
@@ -345,16 +348,17 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     lcd.set_cursor_pos(get_xy(7, base_row).unwrap(), delay)
         .unwrap();
     str_buf.clear();
-    let _ = write!(
+    write!(
         str_buf,
         "{} {:<10}",
         if is_low_edge { 'L' } else { 'H' },
         radio_datetime_utils::time_diff(t0, t1)
-    );
+    )
+    .unwrap();
     lcd.write_str(str_buf.as_str(), delay).unwrap();
     lcd.set_cursor_pos(get_xy(0, 1).unwrap(), delay).unwrap();
     str_buf.clear();
-    let _ = write!(str_buf, "{:<10}  ", t1);
+    write!(str_buf, "{:<10}  ", t1).unwrap();
     lcd.write_str(str_buf.as_str(), delay).unwrap();
 }
 

@@ -10,6 +10,7 @@ pub fn update_leds(
     led_bit: &mut gpio::Pin<gpio::pin::bank0::Gpio13, gpio::PushPullOutput>,
     led_error: &mut gpio::Pin<gpio::pin::bank0::Gpio14, gpio::PushPullOutput>,
 ) {
+/*
     if dcf77.get_ind_time() {
         led_time.set_high().unwrap();
     } else {
@@ -25,6 +26,7 @@ pub fn update_leds(
     } else {
         led_error.set_low().unwrap();
     }
+*/
 }
 
 /// Return if the year has jumped unexpectedly, 'y' or ' '
@@ -112,7 +114,7 @@ pub fn str_dst(dcf77: &DCF77Utils) -> char {
 
 /// Return a character representation of the minute length status.
 pub fn str_minute_length(dcf77: &DCF77Utils) -> char {
-    match dcf77.get_second().cmp(&dcf77.get_minute_length()) {
+    match dcf77.get_second().cmp(&dcf77.get_this_minute_length()) {
         spaceship::Less => '<',
         spaceship::Equal => ' ',
         spaceship::Greater => '>',

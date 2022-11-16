@@ -9,6 +9,7 @@ pub fn update_leds(
     led_bit_b: &mut gpio::Pin<gpio::pin::bank0::Gpio4, gpio::PushPullOutput>,
     led_error: &mut gpio::Pin<gpio::pin::bank0::Gpio5, gpio::PushPullOutput>,
 ) {
+/*
     if npl.get_ind_time() {
         led_time.set_high().unwrap();
     } else {
@@ -29,4 +30,5 @@ pub fn update_leds(
     } else {
         led_error.set_low().unwrap();
     }
+*/
 }

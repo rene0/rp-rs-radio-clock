@@ -139,7 +139,7 @@ fn main() -> ! {
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
     let mut dcf77_led_error = pins.gpio14.into_push_pull_output();
-    let mut dcf77 = DCF77Utils::new(FRAMES_PER_SECOND);
+    let mut dcf77 = DCF77Utils::default();
     dcf77::update_leds(
         &dcf77,
         &mut dcf77_led_time,
@@ -150,7 +150,7 @@ fn main() -> ! {
     let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
     let mut npl_led_bit_b = pins.gpio4.into_push_pull_output();
     let mut npl_led_error = pins.gpio5.into_push_pull_output();
-    let mut npl = NPLUtils::new(FRAMES_PER_SECOND);
+    let mut npl = NPLUtils::default();
     npl::update_leds(
         &npl,
         &mut npl_led_time,
@@ -197,7 +197,7 @@ fn main() -> ! {
             if matches!(display_mode, DisplayMode::Pulses) {
                 show_pulses(&mut lcd, &mut delay, 0, is_low_edge, t0_dcf77, t1_dcf77);
             }
-            dcf77.handle_new_edge(is_low_edge, t0_dcf77, t1_dcf77);
+            dcf77.handle_new_edge(is_low_edge, t1_dcf77);
             dcf77::update_leds(
                 &dcf77,
                 &mut dcf77_led_time,
@@ -213,7 +213,7 @@ fn main() -> ! {
             if matches!(display_mode, DisplayMode::Pulses) {
                 show_pulses(&mut lcd, &mut delay, 2, is_low_edge, t0_npl, t1_npl);
             }
-            npl.handle_new_edge(is_low_edge, t0_npl, t1_npl);
+            npl.handle_new_edge(is_low_edge, t1_npl);
             npl::update_leds(
                 &npl,
                 &mut npl_led_time,
@@ -226,13 +226,14 @@ fn main() -> ! {
         }
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
-            dcf77.handle_new_timer_tick();
+//          dcf77.handle_new_timer_tick();
             dcf77::update_leds(
                 &dcf77,
                 &mut dcf77_led_time,
                 &mut dcf77_led_bit,
                 &mut dcf77_led_error,
             );
+/*
             if dcf77.get_frame_counter() == 1 {
                 if dcf77.get_new_minute() && !dcf77.get_first_minute() {
                     // print date/time/status
@@ -294,7 +295,8 @@ fn main() -> ! {
                 lcd.write_str(str_02(Some(dcf77.get_second())).as_str(), &mut delay)
                     .unwrap();
             }
-            npl.handle_new_timer_tick();
+*/
+//          npl.handle_new_timer_tick();
             npl::update_leds(
                 &npl,
                 &mut npl_led_time,
@@ -302,7 +304,7 @@ fn main() -> ! {
                 &mut npl_led_bit_b,
                 &mut npl_led_error,
             );
-            if npl.get_frame_counter() == 1 {}
+//          if npl.get_frame_counter() == 1 {}
             G_TIMER_TICK.store(false, Ordering::Release);
         }
     }

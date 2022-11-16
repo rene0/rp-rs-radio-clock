@@ -138,11 +138,11 @@ checksum = "6548a0ad5d2549e111e1f6a11a6c2e2d00ce6a3dafe22948d67c2b443f775e52"
 
 [[package]]
 name = "dcf77_utils"
-version = "0.2.2"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e627e4fb74d901004d68aabb2a804c1f5103b8e7fb4eeb4f2cfce813b7d4cb2f"
+checksum = "35ba13bb462105ccd8139c107425920a16a2e02640cf33feee8a5deafd403b71"
 dependencies = [
- "radio_datetime_utils 0.4.1",
+ "radio_datetime_utils",
 ]
 
 [[package]]
@@ -303,11 +303,11 @@ checksum = "546c37ac5d9e56f55e73b677106873d9d9f5190605e41a856503623648488cae"
 
 [[package]]
 name = "npl_utils"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "791ff8c7e1be910650710205bf53e52e39627ee632272da30c24a7b997afe8ed"
+checksum = "21a0440495071aa03bb974521fee48a4ccda664bccc17a71fe5a780f51331aa8"
 dependencies = [
- "radio_datetime_utils 0.3.0",
+ "radio_datetime_utils",
 ]
 
 [[package]]
@@ -397,18 +397,9 @@ dependencies = [
 
 [[package]]
 name = "radio_datetime_utils"
-version = "0.3.0"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1979c48c3aa5caf25ea3265b57c34e20a3a7e03138fbef027b3e6817ec305d0a"
-dependencies = [
- "heapless",
-]
-
-[[package]]
-name = "radio_datetime_utils"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a2462941395ceaa79264fa716f4c14189d30a533eab64ea55ceb052aee40fe8"
+checksum = "7b97b1d5411bc28bbaa1848797d912cc1de368f9baf23a6babd86e7acbc392d6"
 
 [[package]]
 name = "rand_core"
@@ -482,7 +473,7 @@ dependencies = [
  "heapless",
  "npl_utils",
  "panic-halt",
- "radio_datetime_utils 0.4.1",
+ "radio_datetime_utils",
  "rp-pico",
 ]
 

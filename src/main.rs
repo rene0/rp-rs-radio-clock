@@ -308,14 +308,13 @@ fn str_02(value: Option<u8>) -> String<2> {
 /// Return a textual representation of the weekday, Mo-Su or ** for None.
 fn str_weekday(weekday: Option<u8>) -> String<2> {
     String::<2>::from(match weekday {
-        Some(0) => "Su",
+        Some(0) | Some(7) => "Su",
         Some(1) => "Mo",
         Some(2) => "Tu",
         Some(3) => "We",
         Some(4) => "Th",
         Some(5) => "Fr",
         Some(6) => "Sa",
-        Some(7) => "Su",
         _ => "**",
     })
 }

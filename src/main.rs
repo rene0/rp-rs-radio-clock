@@ -152,6 +152,7 @@ fn main() -> ! {
     let mut npl_led_error = pins.gpio5.into_push_pull_output();
     npl_led_error.set_high().unwrap();
 
+    // Set up the on-board heartbeat LED:
     let mut led_pin = pins.led.into_push_pull_output();
     led_pin.set_low().unwrap();
 

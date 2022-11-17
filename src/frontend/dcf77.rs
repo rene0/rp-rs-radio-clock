@@ -1,32 +1,48 @@
 use dcf77_utils::DCF77Utils;
 
+use crate::FRAMES_PER_SECOND;
 use core::cmp::Ordering as spaceship;
 use embedded_hal::digital::v2::OutputPin;
 use rp_pico::hal::gpio;
 
-pub fn update_leds(
+/// Turn the time LED on or off depending on whether a new second or minute arrived.
+pub fn update_time_led(
+    tick: u8,
     dcf77: &DCF77Utils,
     led_time: &mut gpio::Pin<gpio::pin::bank0::Gpio12, gpio::PushPullOutput>,
+) {
+    if dcf77.get_new_second() {
+        led_time.set_high().unwrap();
+    } else if (!dcf77.get_new_minute() && tick >= FRAMES_PER_SECOND * 2 / 10)
+        || (dcf77.get_new_minute() && tick >= FRAMES_PER_SECOND * 8 / 10)
+    {
+        led_time.set_low().unwrap();
+    }
+}
+
+/// Turn the bit LEDs (is-one and error) on or off.
+pub fn update_bit_leds(
+    tick: u8,
+    dcf77: &DCF77Utils,
     led_bit: &mut gpio::Pin<gpio::pin::bank0::Gpio13, gpio::PushPullOutput>,
     led_error: &mut gpio::Pin<gpio::pin::bank0::Gpio14, gpio::PushPullOutput>,
 ) {
-/*
-    if dcf77.get_ind_time() {
-        led_time.set_high().unwrap();
-    } else {
-        led_time.set_low().unwrap();
-    }
-    if dcf77.get_ind_bit() {
-        led_bit.set_high().unwrap();
-    } else {
+    if tick == 0 {
         led_bit.set_low().unwrap();
-    }
-    if dcf77.get_ind_error() {
-        led_error.set_high().unwrap();
-    } else {
         led_error.set_low().unwrap();
+    } else if tick >= FRAMES_PER_SECOND * 2 / 10 {
+        if dcf77.get_current_bit().is_none() {
+            led_bit.set_low().unwrap();
+            led_error.set_high().unwrap();
+        } else {
+            if dcf77.get_current_bit() == Some(true) {
+                led_bit.set_high().unwrap();
+            } else {
+                led_bit.set_low().unwrap();
+            }
+            led_error.set_low().unwrap();
+        }
     }
-*/
 }
 
 /// Return if the year has jumped unexpectedly, 'y' or ' '

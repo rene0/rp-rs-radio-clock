@@ -137,27 +137,20 @@ fn main() -> ! {
 
     // Set up the LEDs and signal the "looking for signal" state (time and error LEDs on):
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();
+    dcf77_led_time.set_high().unwrap();
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
+    dcf77_led_bit.set_low().unwrap();
     let mut dcf77_led_error = pins.gpio14.into_push_pull_output();
-    let mut dcf77 = DCF77Utils::default();
-    dcf77::update_leds(
-        &dcf77,
-        &mut dcf77_led_time,
-        &mut dcf77_led_bit,
-        &mut dcf77_led_error,
-    );
+    dcf77_led_error.set_high().unwrap();
+
     let mut npl_led_time = pins.gpio2.into_push_pull_output();
+    npl_led_time.set_high().unwrap();
     let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
+    npl_led_bit_a.set_low().unwrap();
     let mut npl_led_bit_b = pins.gpio4.into_push_pull_output();
+    npl_led_bit_b.set_low().unwrap();
     let mut npl_led_error = pins.gpio5.into_push_pull_output();
-    let mut npl = NPLUtils::default();
-    npl::update_leds(
-        &npl,
-        &mut npl_led_time,
-        &mut npl_led_bit_a,
-        &mut npl_led_bit_b,
-        &mut npl_led_error,
-    );
+    npl_led_error.set_high().unwrap();
 
     let mut led_pin = pins.led.into_push_pull_output();
     led_pin.set_low().unwrap();
@@ -189,7 +182,10 @@ fn main() -> ! {
     }
     let mut t0_dcf77 = 0;
     let mut t0_npl = 0;
+    let mut tick = 0;
     let display_mode = DisplayMode::Time; // This should become something to loop through with the KY-040
+    let mut dcf77 = DCF77Utils::default();
+    let mut npl = NPLUtils::default();
     loop {
         if G_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
             let t1_dcf77 = G_TIMER_TICK_DCF77.load(Ordering::Acquire);
@@ -198,12 +194,7 @@ fn main() -> ! {
                 show_pulses(&mut lcd, &mut delay, 0, is_low_edge, t0_dcf77, t1_dcf77);
             }
             dcf77.handle_new_edge(is_low_edge, t1_dcf77);
-            dcf77::update_leds(
-                &dcf77,
-                &mut dcf77_led_time,
-                &mut dcf77_led_bit,
-                &mut dcf77_led_error,
-            );
+            dcf77::update_bit_leds(tick, &dcf77, &mut dcf77_led_bit, &mut dcf77_led_error);
             t0_dcf77 = t1_dcf77;
             G_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
         }
@@ -214,9 +205,9 @@ fn main() -> ! {
                 show_pulses(&mut lcd, &mut delay, 2, is_low_edge, t0_npl, t1_npl);
             }
             npl.handle_new_edge(is_low_edge, t1_npl);
-            npl::update_leds(
+            npl::update_bit_leds(
+                tick,
                 &npl,
-                &mut npl_led_time,
                 &mut npl_led_bit_a,
                 &mut npl_led_bit_b,
                 &mut npl_led_error,
@@ -227,12 +218,7 @@ fn main() -> ! {
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
 //          dcf77.handle_new_timer_tick();
-            dcf77::update_leds(
-                &dcf77,
-                &mut dcf77_led_time,
-                &mut dcf77_led_bit,
-                &mut dcf77_led_error,
-            );
+            dcf77::update_time_led(tick, &dcf77, &mut dcf77_led_time);
 /*
             if dcf77.get_frame_counter() == 1 {
                 if dcf77.get_new_minute() && !dcf77.get_first_minute() {
@@ -297,14 +283,12 @@ fn main() -> ! {
             }
 */
 //          npl.handle_new_timer_tick();
-            npl::update_leds(
-                &npl,
-                &mut npl_led_time,
-                &mut npl_led_bit_a,
-                &mut npl_led_bit_b,
-                &mut npl_led_error,
-            );
+            npl::update_time_led(tick, &npl, &mut npl_led_time);
 //          if npl.get_frame_counter() == 1 {}
+            tick += 1;
+            if tick == FRAMES_PER_SECOND {
+                tick = 0;
+            }
             G_TIMER_TICK.store(false, Ordering::Release);
         }
     }

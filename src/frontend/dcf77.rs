@@ -30,18 +30,16 @@ pub fn update_bit_leds(
     if tick == 0 {
         led_bit.set_low().unwrap();
         led_error.set_low().unwrap();
-    } else if tick >= FRAMES_PER_SECOND * 2 / 10 {
-        if dcf77.get_current_bit().is_none() {
-            led_bit.set_low().unwrap();
-            led_error.set_high().unwrap();
+    } else if dcf77.get_current_bit().is_none() {
+        led_bit.set_low().unwrap();
+        led_error.set_high().unwrap();
+    } else {
+        if dcf77.get_current_bit() == Some(true) {
+            led_bit.set_high().unwrap();
         } else {
-            if dcf77.get_current_bit() == Some(true) {
-                led_bit.set_high().unwrap();
-            } else {
-                led_bit.set_low().unwrap();
-            }
-            led_error.set_low().unwrap();
+            led_bit.set_low().unwrap();
         }
+        led_error.set_low().unwrap();
     }
 }
 

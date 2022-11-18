@@ -30,23 +30,21 @@ pub fn update_bit_leds(
         led_bit_a.set_low().unwrap();
         led_bit_b.set_low().unwrap();
         led_error.set_low().unwrap();
-    } else if tick >= FRAMES_PER_SECOND * 2 / 10 {
-        if npl.get_current_bit_a().is_none() || npl.get_current_bit_b().is_none() {
-            led_bit_a.set_low().unwrap();
-            led_bit_b.set_low().unwrap();
-            led_error.set_high().unwrap();
+    } else if npl.get_current_bit_a().is_none() || npl.get_current_bit_b().is_none() {
+        led_bit_a.set_low().unwrap();
+        led_bit_b.set_low().unwrap();
+        led_error.set_high().unwrap();
+    } else {
+        if npl.get_current_bit_a() == Some(true) {
+            led_bit_a.set_high().unwrap();
         } else {
-            if npl.get_current_bit_a() == Some(true) {
-                led_bit_a.set_high().unwrap();
-            } else {
-                led_bit_a.set_low().unwrap();
-            }
-            if npl.get_current_bit_b() == Some(true) {
-                led_bit_b.set_high().unwrap();
-            } else {
-                led_bit_b.set_low().unwrap();
-            }
-            led_error.set_low().unwrap();
+            led_bit_a.set_low().unwrap();
         }
+        if npl.get_current_bit_b() == Some(true) {
+            led_bit_b.set_high().unwrap();
+        } else {
+            led_bit_b.set_low().unwrap();
+        }
+        led_error.set_low().unwrap();
     }
 }

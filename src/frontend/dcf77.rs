@@ -11,7 +11,7 @@ pub fn update_time_led(
     dcf77: &DCF77Utils,
     led_time: &mut gpio::Pin<gpio::pin::bank0::Gpio12, gpio::PushPullOutput>,
 ) {
-    if dcf77.get_new_second() {
+    if tick == 0 {
         led_time.set_high().unwrap();
     } else if (!dcf77.get_new_minute() && tick >= FRAMES_PER_SECOND * 2 / 10)
         || (dcf77.get_new_minute() && tick >= FRAMES_PER_SECOND * 8 / 10)

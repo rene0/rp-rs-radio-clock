@@ -9,7 +9,7 @@ pub fn update_time_led(
     npl: &NPLUtils,
     led_time: &mut gpio::Pin<gpio::pin::bank0::Gpio2, gpio::PushPullOutput>,
 ) {
-    if npl.get_new_second() {
+    if tick == 0 {
         led_time.set_high().unwrap();
     } else if (!npl.get_new_minute() && tick >= FRAMES_PER_SECOND * 2 / 10)
         || (npl.get_new_minute() && tick >= FRAMES_PER_SECOND * 8 / 10)

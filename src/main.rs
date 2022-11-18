@@ -195,6 +195,7 @@ fn main() -> ! {
                 show_pulses(&mut lcd, &mut delay, 0, is_low_edge, t0_dcf77, t1_dcf77);
             }
             dcf77.handle_new_edge(is_low_edge, t1_dcf77);
+            if dcf77.get_new_second() { tick = 0; }
             dcf77::update_bit_leds(tick, &dcf77, &mut dcf77_led_bit, &mut dcf77_led_error);
             t0_dcf77 = t1_dcf77;
             G_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
@@ -206,6 +207,7 @@ fn main() -> ! {
                 show_pulses(&mut lcd, &mut delay, 2, is_low_edge, t0_npl, t1_npl);
             }
             npl.handle_new_edge(is_low_edge, t1_npl);
+            if npl.get_new_second() { tick = 0; }
             npl::update_bit_leds(
                 tick,
                 &npl,

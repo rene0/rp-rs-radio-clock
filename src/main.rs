@@ -228,6 +228,7 @@ fn main() -> ! {
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
             dcf77::update_time_led(dcf77_tick, &dcf77, &mut dcf77_led_time);
+            npl::update_time_led(npl_tick, &npl, &mut npl_led_time);
             if dcf77_tick == 1 {
                 // print date/time/status
                 if dcf77.get_new_minute() {
@@ -296,7 +297,6 @@ fn main() -> ! {
             if dcf77_tick == FRAMES_PER_SECOND {
                 dcf77_tick = 0;
             }
-            npl::update_time_led(npl_tick, &npl, &mut npl_led_time);
             npl_tick += 1;
             if npl_tick == FRAMES_PER_SECOND {
                 npl_tick = 0;

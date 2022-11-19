@@ -230,8 +230,8 @@ fn main() -> ! {
             dcf77::update_time_led(dcf77_tick, &dcf77, &mut dcf77_led_time);
             npl::update_time_led(npl_tick, &npl, &mut npl_led_time);
             if dcf77_tick == 1 {
-                // print date/time/status
                 if dcf77.get_new_minute() {
+                    // print date/time/status
                     dcf77.decode_time();
                     if !dcf77.get_first_minute() {
                         let mut str_buf = String::<14>::from("");

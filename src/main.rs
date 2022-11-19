@@ -67,8 +67,8 @@ static GLOBAL_ALARM: Mutex<RefCell<Option<Alarm0>>> = Mutex::new(RefCell::new(No
 type I2cDisplay = I2C<
     pac::I2C0,
     (
-        gpio::Pin<gpio::pin::bank0::Gpio0, gpio::FunctionI2C>,
-        gpio::Pin<gpio::pin::bank0::Gpio1, gpio::FunctionI2C>,
+        gpio::Pin<gpio::bank0::Gpio0, gpio::FunctionI2C>,
+        gpio::Pin<gpio::bank0::Gpio1, gpio::FunctionI2C>,
     ),
 >;
 enum DisplayMode {

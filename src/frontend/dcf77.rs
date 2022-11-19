@@ -9,7 +9,7 @@ use rp_pico::hal::gpio;
 pub fn update_time_led(
     tick: u8,
     dcf77: &DCF77Utils,
-    led_time: &mut gpio::Pin<gpio::pin::bank0::Gpio12, gpio::PushPullOutput>,
+    led_time: &mut gpio::Pin<gpio::bank0::Gpio12, gpio::PushPullOutput>,
 ) {
     if tick == 0 {
         led_time.set_high().unwrap();
@@ -24,8 +24,8 @@ pub fn update_time_led(
 pub fn update_bit_leds(
     tick: u8,
     dcf77: &DCF77Utils,
-    led_bit: &mut gpio::Pin<gpio::pin::bank0::Gpio13, gpio::PushPullOutput>,
-    led_error: &mut gpio::Pin<gpio::pin::bank0::Gpio14, gpio::PushPullOutput>,
+    led_bit: &mut gpio::Pin<gpio::bank0::Gpio13, gpio::PushPullOutput>,
+    led_error: &mut gpio::Pin<gpio::bank0::Gpio14, gpio::PushPullOutput>,
 ) {
     if tick == 0 {
         led_bit.set_low().unwrap();

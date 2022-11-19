@@ -176,8 +176,9 @@ fn main() -> ! {
         pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
     }
     let mut t0_dcf77 = 0;
+    let mut dcf77_tick = 0;
     let mut t0_npl = 0;
-    let mut tick = 0;
+    let mut npl_tick = 0;
     let display_mode = DisplayMode::Time; // This should become something to loop through with the KY-040
     let mut dcf77 = DCF77Utils::default();
     let mut npl = NPLUtils::default();
@@ -189,8 +190,8 @@ fn main() -> ! {
                 show_pulses(&mut lcd, &mut delay, 0, is_low_edge, t0_dcf77, t1_dcf77);
             }
             dcf77.handle_new_edge(is_low_edge, t1_dcf77);
-            if dcf77.get_new_second() { tick = 0; }
-            dcf77::update_bit_leds(tick, &dcf77, &mut dcf77_led_bit, &mut dcf77_led_error);
+            if dcf77.get_new_second() { dcf77_tick = 0; }
+            dcf77::update_bit_leds(dcf77_tick, &dcf77, &mut dcf77_led_bit, &mut dcf77_led_error);
             t0_dcf77 = t1_dcf77;
             G_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
         }
@@ -201,9 +202,9 @@ fn main() -> ! {
                 show_pulses(&mut lcd, &mut delay, 2, is_low_edge, t0_npl, t1_npl);
             }
             npl.handle_new_edge(is_low_edge, t1_npl);
-            if npl.get_new_second() { tick = 0; }
+            if npl.get_new_second() { npl_tick = 0; }
             npl::update_bit_leds(
-                tick,
+                npl_tick,
                 &npl,
                 &mut npl_led_bit_a,
                 &mut npl_led_bit_b,
@@ -214,8 +215,8 @@ fn main() -> ! {
         }
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
-            dcf77::update_time_led(tick, &dcf77, &mut dcf77_led_time);
-            if tick == 1 {
+            dcf77::update_time_led(dcf77_tick, &dcf77, &mut dcf77_led_time);
+            if dcf77_tick == 1 {
                 // print date/time/status
                 if dcf77.get_new_minute() {
                     dcf77.decode_time();
@@ -279,10 +280,14 @@ fn main() -> ! {
                     .unwrap();
                 dcf77.increase_second();
             }
-            npl::update_time_led(tick, &npl, &mut npl_led_time);
-            tick += 1;
-            if tick == FRAMES_PER_SECOND {
-                tick = 0;
+            dcf77_tick += 1;
+            if dcf77_tick == FRAMES_PER_SECOND {
+                dcf77_tick = 0;
+            }
+            npl::update_time_led(npl_tick, &npl, &mut npl_led_time);
+            npl_tick += 1;
+            if npl_tick == FRAMES_PER_SECOND {
+                npl_tick = 0;
             }
             G_TIMER_TICK.store(false, Ordering::Release);
         }

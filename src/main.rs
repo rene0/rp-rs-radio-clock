@@ -3,18 +3,6 @@
 #![no_main]
 
 use crate::frontend::*;
-use rp_pico::hal::{
-    clocks::{init_clocks_and_plls, Clock},
-    gpio,
-    gpio::Interrupt::{EdgeHigh, EdgeLow},
-    pac,
-    pac::interrupt,
-    sio::Sio,
-    timer::{Alarm, Alarm0},
-    watchdog::Watchdog,
-    Timer, I2C,
-};
-use rp_pico::{entry, XOSC_CRYSTAL_FREQ};
 use core::{
     cell::RefCell,
     fmt::Write,
@@ -32,6 +20,18 @@ use hd44780_driver::{bus::I2CBus, Cursor, CursorBlink, HD44780};
 use heapless::String;
 use npl_utils::NPLUtils;
 use panic_halt as _;
+use rp_pico::hal::{
+    clocks::{init_clocks_and_plls, Clock},
+    gpio,
+    gpio::Interrupt::{EdgeHigh, EdgeLow},
+    pac,
+    pac::interrupt,
+    sio::Sio,
+    timer::{Alarm, Alarm0},
+    watchdog::Watchdog,
+    Timer, I2C,
+};
+use rp_pico::{entry, XOSC_CRYSTAL_FREQ};
 
 mod frontend;
 
@@ -51,8 +51,7 @@ static G_TIMER_TICK_DCF77: AtomicU32 = AtomicU32::new(0);
 static G_TIMER_TICK_NPL: AtomicU32 = AtomicU32::new(0);
 /// Ticks (frames) in each second, to control LEDs and display
 const FRAMES_PER_SECOND: u8 = 10;
-// tick-tock
-static G_TIMER_TICK: AtomicBool = AtomicBool::new(false);
+static G_TIMER_TICK: AtomicBool = AtomicBool::new(false); // tick-tock
 
 type DCF77SignalPin = gpio::Pin<gpio::bank0::Gpio11, gpio::PullDownInput>;
 type NPLSignalPin = gpio::Pin<gpio::bank0::Gpio6, gpio::PullDownInput>;
@@ -138,13 +137,22 @@ fn main() -> ! {
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
     let mut dcf77_led_error = pins.gpio14.into_push_pull_output();
-    dcf77::init_leds(&mut dcf77_led_time, &mut dcf77_led_bit, &mut dcf77_led_error);
+    dcf77::init_leds(
+        &mut dcf77_led_time,
+        &mut dcf77_led_bit,
+        &mut dcf77_led_error,
+    );
 
     let mut npl_led_time = pins.gpio2.into_push_pull_output();
     let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
     let mut npl_led_bit_b = pins.gpio4.into_push_pull_output();
     let mut npl_led_error = pins.gpio5.into_push_pull_output();
-    npl::init_leds(&mut npl_led_time, &mut npl_led_bit_a, &mut npl_led_bit_b, &mut npl_led_error);
+    npl::init_leds(
+        &mut npl_led_time,
+        &mut npl_led_bit_a,
+        &mut npl_led_bit_b,
+        &mut npl_led_error,
+    );
 
     // Set up the on-board heartbeat LED:
     let mut led_pin = pins.led.into_push_pull_output();
@@ -190,7 +198,9 @@ fn main() -> ! {
                 show_pulses(&mut lcd, &mut delay, 0, is_low_edge, t0_dcf77, t1_dcf77);
             }
             dcf77.handle_new_edge(is_low_edge, t1_dcf77);
-            if dcf77.get_new_second() { dcf77_tick = 0; }
+            if dcf77.get_new_second() {
+                dcf77_tick = 0;
+            }
             dcf77::update_bit_leds(dcf77_tick, &dcf77, &mut dcf77_led_bit, &mut dcf77_led_error);
             t0_dcf77 = t1_dcf77;
             G_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
@@ -202,7 +212,9 @@ fn main() -> ! {
                 show_pulses(&mut lcd, &mut delay, 2, is_low_edge, t0_npl, t1_npl);
             }
             npl.handle_new_edge(is_low_edge, t1_npl);
-            if npl.get_new_second() { npl_tick = 0; }
+            if npl.get_new_second() {
+                npl_tick = 0;
+            }
             npl::update_bit_leds(
                 npl_tick,
                 &npl,
@@ -221,58 +233,58 @@ fn main() -> ! {
                 if dcf77.get_new_minute() {
                     dcf77.decode_time();
                     if !dcf77.get_first_minute() {
-                    let mut str_buf = String::<14>::from("");
-                    write!(
-                        str_buf,
-                        "{}{}{}{}{}{}{}{}{}{} {}{}{}",
-                        dcf77::str_jump_year(&dcf77),
-                        dcf77::str_jump_month(&dcf77),
-                        dcf77::str_jump_day(&dcf77),
-                        dcf77::str_jump_weekday(&dcf77),
-                        dcf77::str_jump_hour(&dcf77),
-                        dcf77::str_jump_minute(&dcf77),
-                        dcf77::str_jump_dst(&dcf77),
-                        dcf77::str_parity_3(&dcf77),
-                        dcf77::str_parity_2(&dcf77),
-                        dcf77::str_parity_1(&dcf77),
-                        dcf77::str_bit_0(&dcf77),
-                        dcf77::str_bit_20(&dcf77),
-                        dcf77::str_minute_length(&dcf77),
-                    )
-                    .unwrap();
-                    lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
+                        let mut str_buf = String::<14>::from("");
+                        write!(
+                            str_buf,
+                            "{}{}{}{}{}{}{}{}{}{} {}{}{}",
+                            dcf77::str_jump_year(&dcf77),
+                            dcf77::str_jump_month(&dcf77),
+                            dcf77::str_jump_day(&dcf77),
+                            dcf77::str_jump_weekday(&dcf77),
+                            dcf77::str_jump_hour(&dcf77),
+                            dcf77::str_jump_minute(&dcf77),
+                            dcf77::str_jump_dst(&dcf77),
+                            dcf77::str_parity_3(&dcf77),
+                            dcf77::str_parity_2(&dcf77),
+                            dcf77::str_parity_1(&dcf77),
+                            dcf77::str_bit_0(&dcf77),
+                            dcf77::str_bit_20(&dcf77),
+                            dcf77::str_minute_length(&dcf77),
+                        )
                         .unwrap();
-                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
-                    // Decoded date and time:
-                    let mut str_buf = String::<14>::from("");
-                    write!(
-                        str_buf,
-                        "{}{}{} {} {}{}",
-                        str_02(dcf77.get_radio_datetime().get_year()),
-                        str_02(dcf77.get_radio_datetime().get_month()),
-                        str_02(dcf77.get_radio_datetime().get_day()),
-                        str_weekday(dcf77.get_radio_datetime().get_weekday()),
-                        str_02(dcf77.get_radio_datetime().get_hour()),
-                        str_02(dcf77.get_radio_datetime().get_minute()),
-                    )
-                    .unwrap();
-                    lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
+                        lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
+                            .unwrap();
+                        lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                        // Decoded date and time:
+                        let mut str_buf = String::<14>::from("");
+                        write!(
+                            str_buf,
+                            "{}{}{} {} {}{}",
+                            str_02(dcf77.get_radio_datetime().get_year()),
+                            str_02(dcf77.get_radio_datetime().get_month()),
+                            str_02(dcf77.get_radio_datetime().get_day()),
+                            str_weekday(dcf77.get_radio_datetime().get_weekday()),
+                            str_02(dcf77.get_radio_datetime().get_hour()),
+                            str_02(dcf77.get_radio_datetime().get_minute()),
+                        )
                         .unwrap();
-                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
-                    // Unusual things:
-                    let mut str_buf = String::<3>::from("");
-                    write!(
-                        str_buf,
-                        "{}{}{}",
-                        dcf77::str_call_bit(&dcf77),
-                        dcf77::str_dst(&dcf77),
-                        dcf77::str_leap_second(&dcf77)
-                    )
-                    .unwrap();
-                    lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
+                        lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
+                            .unwrap();
+                        lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                        // Unusual things:
+                        let mut str_buf = String::<3>::from("");
+                        write!(
+                            str_buf,
+                            "{}{}{}",
+                            dcf77::str_call_bit(&dcf77),
+                            dcf77::str_dst(&dcf77),
+                            dcf77::str_leap_second(&dcf77)
+                        )
                         .unwrap();
-                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
-                }
+                        lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
+                            .unwrap();
+                        lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    }
                 }
                 lcd.set_cursor_pos(get_xy(14, 1).unwrap(), &mut delay)
                     .unwrap();

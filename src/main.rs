@@ -137,20 +137,15 @@ fn main() -> ! {
 
     // Set up the LEDs and signal the "looking for signal" state (time and error LEDs on):
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();
-    dcf77_led_time.set_high().unwrap();
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
-    dcf77_led_bit.set_low().unwrap();
     let mut dcf77_led_error = pins.gpio14.into_push_pull_output();
-    dcf77_led_error.set_high().unwrap();
+    dcf77::init_leds(&mut dcf77_led_time, &mut dcf77_led_bit, &mut dcf77_led_error);
 
     let mut npl_led_time = pins.gpio2.into_push_pull_output();
-    npl_led_time.set_high().unwrap();
     let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
-    npl_led_bit_a.set_low().unwrap();
     let mut npl_led_bit_b = pins.gpio4.into_push_pull_output();
-    npl_led_bit_b.set_low().unwrap();
     let mut npl_led_error = pins.gpio5.into_push_pull_output();
-    npl_led_error.set_high().unwrap();
+    npl::init_leds(&mut npl_led_time, &mut npl_led_bit_a, &mut npl_led_bit_b, &mut npl_led_error);
 
     // Set up the on-board heartbeat LED:
     let mut led_pin = pins.led.into_push_pull_output();

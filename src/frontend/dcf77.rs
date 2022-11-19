@@ -5,6 +5,17 @@ use core::cmp::Ordering as spaceship;
 use embedded_hal::digital::v2::OutputPin;
 use rp_pico::hal::gpio;
 
+/// Put the LEDs in their initial state.
+pub fn init_leds(
+    led_time: &mut gpio::Pin<gpio::bank0::Gpio12, gpio::PushPullOutput>,
+    led_bit: &mut gpio::Pin<gpio::bank0::Gpio13, gpio::PushPullOutput>,
+    led_error: &mut gpio::Pin<gpio::bank0::Gpio14, gpio::PushPullOutput>,
+) {
+    led_time.set_high().unwrap();
+    led_bit.set_low().unwrap();
+    led_error.set_high().unwrap();
+}
+
 /// Turn the time LED on or off depending on whether a new second or minute arrived.
 pub fn update_time_led(
     tick: u8,

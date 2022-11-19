@@ -3,7 +3,7 @@
 #![no_main]
 
 use crate::frontend::*;
-use bsp::hal::{
+use rp_pico::hal::{
     clocks::{init_clocks_and_plls, Clock},
     gpio,
     gpio::Interrupt::{EdgeHigh, EdgeLow},
@@ -14,7 +14,7 @@ use bsp::hal::{
     watchdog::Watchdog,
     Timer, I2C,
 };
-use bsp::{entry, XOSC_CRYSTAL_FREQ};
+use rp_pico::{entry, XOSC_CRYSTAL_FREQ};
 use core::{
     cell::RefCell,
     fmt::Write,
@@ -32,7 +32,6 @@ use hd44780_driver::{bus::I2CBus, Cursor, CursorBlink, HD44780};
 use heapless::String;
 use npl_utils::NPLUtils;
 use panic_halt as _;
-use rp_pico as bsp;
 
 mod frontend;
 
@@ -101,7 +100,7 @@ fn main() -> ! {
     .unwrap();
 
     let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
-    let pins = bsp::Pins::new(
+    let pins = rp_pico::Pins::new(
         pac.IO_BANK0,
         pac.PADS_BANK0,
         sio.gpio_bank0,

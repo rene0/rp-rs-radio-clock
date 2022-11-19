@@ -297,6 +297,13 @@ fn main() -> ! {
             if dcf77_tick == FRAMES_PER_SECOND {
                 dcf77_tick = 0;
             }
+            if npl_tick == 1 {
+                lcd.set_cursor_pos(get_xy(14, 3).unwrap(), &mut delay)
+                    .unwrap();
+                lcd.write_str(str_02(Some(npl.get_second())).as_str(), &mut delay)
+                    .unwrap();
+                npl.increase_second();
+            }
             npl_tick += 1;
             if npl_tick == FRAMES_PER_SECOND {
                 npl_tick = 0;

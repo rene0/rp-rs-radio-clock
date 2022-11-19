@@ -214,12 +214,12 @@ fn main() -> ! {
         }
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
-//          dcf77.handle_new_timer_tick();
             dcf77::update_time_led(tick, &dcf77, &mut dcf77_led_time);
-/*
-            if dcf77.get_frame_counter() == 1 {
-                if dcf77.get_new_minute() && !dcf77.get_first_minute() {
-                    // print date/time/status
+            if tick == 1 {
+                // print date/time/status
+                if dcf77.get_new_minute() {
+                    dcf77.decode_time();
+                    if !dcf77.get_first_minute() {
                     let mut str_buf = String::<14>::from("");
                     write!(
                         str_buf,
@@ -272,16 +272,14 @@ fn main() -> ! {
                         .unwrap();
                     lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
                 }
-                dcf77.increase_second();
+                }
                 lcd.set_cursor_pos(get_xy(14, 1).unwrap(), &mut delay)
                     .unwrap();
                 lcd.write_str(str_02(Some(dcf77.get_second())).as_str(), &mut delay)
                     .unwrap();
+                dcf77.increase_second();
             }
-*/
-//          npl.handle_new_timer_tick();
             npl::update_time_led(tick, &npl, &mut npl_led_time);
-//          if npl.get_frame_counter() == 1 {}
             tick += 1;
             if tick == FRAMES_PER_SECOND {
                 tick = 0;

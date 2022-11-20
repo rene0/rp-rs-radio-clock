@@ -146,30 +146,39 @@ pub fn str_minute_length(dcf77: &DCF77Utils) -> char {
     }
 }
 
-/// Get a textual version of the minute parity bit, ' ' for OK or '1' for error.
+/// Get a textual version of the minute parity bit, ' ' for OK, 'A' for error, or 'a' for unknown.
 pub fn str_parity_1(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_parity_1() == Some(false) {
+    let value = dcf77.get_parity_1();
+    if value == Some(false) {
         ' '
+    } else if value == Some(true) {
+        'A'
     } else {
-        '1'
+        'a'
     }
 }
 
-/// Get a textual version of the hour parity bit, ' ' for OK or '2' for error.
+/// Get a textual version of the hour parity bit, ' ' for OK, 'B' for error, or 'b' for unknown.
 pub fn str_parity_2(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_parity_2() == Some(false) {
+    let value = dcf77.get_parity_2();
+    if value == Some(false) {
         ' '
+    } else if value == Some(true) {
+        'B'
     } else {
-        '2'
+        'b'
     }
 }
 
-/// Get a textual version of the date parity bit, ' ' for OK or '3' for error.
+/// Get a textual version of the date parity bit, ' ' for OK, 'C' for error, or 'c' for unknown.
 pub fn str_parity_3(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_parity_3() == Some(false) {
+    let value = dcf77.get_parity_3();
+    if value == Some(false) {
         ' '
+    } else if value == Some(true) {
+        'C'
     } else {
-        '3'
+        'c'
     }
 }
 

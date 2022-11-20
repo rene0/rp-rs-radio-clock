@@ -243,63 +243,61 @@ fn main() -> ! {
                 lcd.write_str(str_02(Some(second)).as_str(), &mut delay)
                     .unwrap();
             }
-            if dcf77_tick == 1 {
-                if dcf77.get_new_minute() {
-                    // print date/time/status
-                    dcf77.decode_time();
-                    if !dcf77.get_first_minute() {
-                        let mut str_buf = String::<14>::from("");
-                        write!(
-                            str_buf,
-                            "{}{}{}{}{}{}{}{}{}{} {}{}{}",
-                            dcf77::str_jump_year(&dcf77),
-                            dcf77::str_jump_month(&dcf77),
-                            dcf77::str_jump_day(&dcf77),
-                            dcf77::str_jump_weekday(&dcf77),
-                            dcf77::str_jump_hour(&dcf77),
-                            dcf77::str_jump_minute(&dcf77),
-                            dcf77::str_jump_dst(&dcf77),
-                            dcf77::str_parity_3(&dcf77),
-                            dcf77::str_parity_2(&dcf77),
-                            dcf77::str_parity_1(&dcf77),
-                            dcf77::str_bit_0(&dcf77),
-                            dcf77::str_bit_20(&dcf77),
-                            dcf77::str_minute_length(&dcf77),
-                        )
+            if dcf77_tick == 1 && dcf77.get_new_minute() {
+                // print date/time/status
+                dcf77.decode_time();
+                if !dcf77.get_first_minute() {
+                    let mut str_buf = String::<14>::from("");
+                    write!(
+                        str_buf,
+                        "{}{}{}{}{}{}{}{}{}{} {}{}{}",
+                        dcf77::str_jump_year(&dcf77),
+                        dcf77::str_jump_month(&dcf77),
+                        dcf77::str_jump_day(&dcf77),
+                        dcf77::str_jump_weekday(&dcf77),
+                        dcf77::str_jump_hour(&dcf77),
+                        dcf77::str_jump_minute(&dcf77),
+                        dcf77::str_jump_dst(&dcf77),
+                        dcf77::str_parity_3(&dcf77),
+                        dcf77::str_parity_2(&dcf77),
+                        dcf77::str_parity_1(&dcf77),
+                        dcf77::str_bit_0(&dcf77),
+                        dcf77::str_bit_20(&dcf77),
+                        dcf77::str_minute_length(&dcf77),
+                    )
+                    .unwrap();
+                    lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
                         .unwrap();
-                        lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
-                            .unwrap();
-                        lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
-                        // Decoded date and time:
-                        let mut str_buf = String::<14>::from("");
-                        write!(
-                            str_buf,
-                            "{}{}{} {} {}{}",
-                            str_02(dcf77.get_radio_datetime().get_year()),
-                            str_02(dcf77.get_radio_datetime().get_month()),
-                            str_02(dcf77.get_radio_datetime().get_day()),
-                            str_weekday(dcf77.get_radio_datetime().get_weekday()),
-                            str_02(dcf77.get_radio_datetime().get_hour()),
-                            str_02(dcf77.get_radio_datetime().get_minute()),
-                        )
+                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    // Decoded date and time:
+                    let mut str_buf = String::<14>::from("");
+                    write!(
+                        str_buf,
+                        "{}{}{} {} {}{}",
+                        str_02(dcf77.get_radio_datetime().get_year()),
+                        str_02(dcf77.get_radio_datetime().get_month()),
+                        str_02(dcf77.get_radio_datetime().get_day()),
+                        str_weekday(dcf77.get_radio_datetime().get_weekday()),
+                        str_02(dcf77.get_radio_datetime().get_hour()),
+                        str_02(dcf77.get_radio_datetime().get_minute()),
+                    )
+                    .unwrap();
+                    lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
-                        lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
-                            .unwrap();
-                        lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
-                        // Other things:
-                        let mut str_buf = String::<3>::from("");
-                        write!(
-                            str_buf,
-                            "{}{}{}",
-                            dcf77::str_call_bit(&dcf77),
-                            dcf77::str_dst(&dcf77),
-                            dcf77::str_leap_second(&dcf77)
-                        )
+                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    // Other things:
+                    let mut str_buf = String::<3>::from("");
+                    write!(
+                        str_buf,
+                        "{}{}{}",
+                        dcf77::str_call_bit(&dcf77),
+                        dcf77::str_dst(&dcf77),
+                        dcf77::str_leap_second(&dcf77)
+                    )
+                    .unwrap();
+                    lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
                         .unwrap();
-                        lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
-                            .unwrap();
-                        lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
-                    }
+                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
                 }
             }
             if dcf77_tick == 7 {

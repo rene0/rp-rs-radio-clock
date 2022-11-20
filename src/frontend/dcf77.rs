@@ -1,7 +1,6 @@
-use dcf77_utils::DCF77Utils;
-
 use crate::FRAMES_PER_SECOND;
 use core::cmp::Ordering as spaceship;
+use dcf77_utils::DCF77Utils;
 use embedded_hal::digital::v2::OutputPin;
 use rp_pico::hal::gpio;
 

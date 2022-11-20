@@ -230,7 +230,7 @@ fn main() -> ! {
             if t0_dcf77 != 0 {
                 dcf77::update_time_led(dcf77_tick, &dcf77, &mut dcf77_led_time);
             }
-            if t0_npl !=0 {
+            if t0_npl != 0 {
                 npl::update_time_led(npl_tick, &npl, &mut npl_led_time);
             }
             if dcf77_tick == 0 {
@@ -240,7 +240,8 @@ fn main() -> ! {
                 }
                 lcd.set_cursor_pos(get_xy(14, 1).unwrap(), &mut delay)
                     .unwrap();
-                lcd.write_str(str_02(Some(second)).as_str(), &mut delay).unwrap();
+                lcd.write_str(str_02(Some(second)).as_str(), &mut delay)
+                    .unwrap();
             }
             if dcf77_tick == 1 {
                 if dcf77.get_new_minute() {
@@ -339,7 +340,7 @@ fn main() -> ! {
                         npl::str_parity_1(&npl),
                         npl::str_minute_length(&npl),
                     )
-                        .unwrap();
+                    .unwrap();
                     lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
@@ -355,18 +356,13 @@ fn main() -> ! {
                         str_02(npl.get_radio_datetime().get_hour()),
                         str_02(npl.get_radio_datetime().get_minute()),
                     )
-                        .unwrap();
+                    .unwrap();
                     lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
                     // Other things:
                     let mut str_buf = String::<1>::from("");
-                    write!(
-                        str_buf,
-                        "{}",
-                        npl::str_dst(&npl),
-                    )
-                        .unwrap();
+                    write!(str_buf, "{}", npl::str_dst(&npl),).unwrap();
                     lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(str_buf.as_str(), &mut delay).unwrap();

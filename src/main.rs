@@ -286,7 +286,7 @@ fn main() -> ! {
                         lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
                             .unwrap();
                         lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
-                        // Unusual things:
+                        // Other things:
                         let mut str_buf = String::<3>::from("");
                         write!(
                             str_buf,

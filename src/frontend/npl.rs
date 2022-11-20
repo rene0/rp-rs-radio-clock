@@ -1,4 +1,5 @@
 use crate::FRAMES_PER_SECOND;
+use core::cmp::Ordering as spaceship;
 use embedded_hal::digital::v2::OutputPin;
 use npl_utils::NPLUtils;
 use rp_pico::hal::gpio;
@@ -59,5 +60,145 @@ pub fn update_bit_leds(
             led_bit_b.set_low().unwrap();
         }
         led_error.set_low().unwrap();
+    }
+}
+
+/// Return if the year has jumped unexpectedly, 'y' or ' '
+pub fn str_jump_year(npl: &NPLUtils) -> char {
+    if npl.get_radio_datetime().get_jump_year() {
+        'y'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the month has jumped unexpectedly, 'm' or ' '
+pub fn str_jump_month(npl: &NPLUtils) -> char {
+    if npl.get_radio_datetime().get_jump_month() {
+        'm'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the day-of-month has jumped unexpectedly, 'd' or ' '.
+pub fn str_jump_day(npl: &NPLUtils) -> char {
+    if npl.get_radio_datetime().get_jump_day() {
+        'd'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the day-of-week has jumped unexpectedly, 'w' or ' '.
+pub fn str_jump_weekday(npl: &NPLUtils) -> char {
+    if npl.get_radio_datetime().get_jump_weekday() {
+        'w'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the hour has jumped unexpectedly, 'h' or ' '.
+pub fn str_jump_hour(npl: &NPLUtils) -> char {
+    if npl.get_radio_datetime().get_jump_hour() {
+        'h'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the minute has jumped unexpectedly, 'm' or ' '.
+pub fn str_jump_minute(npl: &NPLUtils) -> char {
+    if npl.get_radio_datetime().get_jump_minute() {
+        'm'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the daylight saving time status jumped unexpectedly, 't' or ' '.
+pub fn str_jump_dst(npl: &NPLUtils) -> char {
+    if npl.get_radio_datetime().get_dst().is_some()
+        && (npl.get_radio_datetime().get_dst().unwrap() & radio_datetime_utils::DST_JUMP) != 0
+    {
+        't'
+    } else {
+        ' '
+    }
+}
+
+/// Returns a character representation of the current DST status.
+pub fn str_dst(npl: &NPLUtils) -> char {
+    if let Some(dst) = npl.get_radio_datetime().get_dst() {
+        let mut res_dst = if (dst & radio_datetime_utils::DST_SUMMER) != 0 {
+            's'
+        } else {
+            'w'
+        };
+        if (dst & (radio_datetime_utils::DST_ANNOUNCED | radio_datetime_utils::DST_PROCESSED)) != 0
+        {
+            res_dst = res_dst.to_ascii_uppercase();
+        }
+        res_dst
+    } else {
+        '*'
+    }
+}
+
+/// Return a character representation of the minute length status.
+pub fn str_minute_length(npl: &NPLUtils) -> char {
+    match npl.get_second().cmp(&npl.get_minute_length()) {
+        spaceship::Less => '<',
+        spaceship::Equal => ' ',
+        spaceship::Greater => '>',
+    }
+}
+
+/// Get a textual version of the year parity bit, ' ' for OK, 'A' for error, or 'a' for unknown.
+pub fn str_parity_1(npl: &NPLUtils) -> char {
+    let value = npl.get_parity_1();
+    if value == Some(false) {
+        'A'
+    } else if value == Some(true) {
+        ' '
+    } else {
+        'a'
+    }
+}
+
+/// Get a textual version of the month/day parity bit, ' ' for OK, 'B' for error, or 'b' for unknown.
+pub fn str_parity_2(npl: &NPLUtils) -> char {
+    let value = npl.get_parity_2();
+    if value == Some(false) {
+        'B'
+    } else if value == Some(true) {
+        ' '
+    } else {
+        'b'
+    }
+}
+
+/// Get a textual version of the weekday parity bit, ' ' for OK, 'C' for error, or 'c' for unknown.
+pub fn str_parity_3(npl: &NPLUtils) -> char {
+    let value = npl.get_parity_3();
+    if value == Some(false) {
+        'C'
+    } else if value == Some(true) {
+        ' '
+    } else {
+        'c'
+    }
+}
+
+/// Get a textual version of the hour/minute parity bit, ' ' for OK, 'D' for  error, or 'd' for unknown.
+pub fn str_parity_4(npl: &NPLUtils) -> char {
+    let value = npl.get_parity_4();
+    if value == Some(false) {
+        'D'
+    } else if value == Some(true) {
+        ' '
+    } else {
+        'm'
     }
 }

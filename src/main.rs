@@ -227,8 +227,12 @@ fn main() -> ! {
         }
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
-            dcf77::update_time_led(dcf77_tick, &dcf77, &mut dcf77_led_time);
-            npl::update_time_led(npl_tick, &npl, &mut npl_led_time);
+            if t0_dcf77 != 0 {
+                dcf77::update_time_led(dcf77_tick, &dcf77, &mut dcf77_led_time);
+            }
+            if t0_npl !=0 {
+                npl::update_time_led(npl_tick, &npl, &mut npl_led_time);
+            }
             if dcf77_tick == 1 {
                 if dcf77.get_new_minute() {
                     // print date/time/status

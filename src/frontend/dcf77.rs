@@ -182,30 +182,39 @@ pub fn str_parity_3(dcf77: &DCF77Utils) -> char {
     }
 }
 
-/// Return a character representation of the bit 0 status
+/// Return a character representation of the bit 0 status or 'm' for unknown.
 pub fn str_bit_0(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_bit_0() == Some(false) {
+    let value = dcf77.get_bit_0();
+    if value == Some(false) {
         ' '
-    } else {
+    } else if value == Some(true) {
         'M'
+    } else {
+        'm'
     }
 }
 
-/// Return a character representation of the call bit status
+/// Return a character representation of the call bit status or 'c' for unknown.
 pub fn str_call_bit(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_call_bit() == Some(true) {
+    let value = dcf77.get_call_bit();
+    if value == Some(true) {
         'C'
-    } else {
+    } else if value == Some(false) {
         ' '
+    } else {
+        'c'
     }
 }
 
-/// Return a character representation of the bit 20 status
+/// Return a character representation of the bit 20 status or 's' for unknown.
 pub fn str_bit_20(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_bit_20() == Some(true) {
+    let value = dcf77.get_bit_20();
+    if value == Some(true) {
         ' '
-    } else {
+    } else if value == Some(false) {
         'S'
+    } else {
+        's'
     }
 }
 

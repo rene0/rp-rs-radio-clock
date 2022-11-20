@@ -233,6 +233,15 @@ fn main() -> ! {
             if t0_npl !=0 {
                 npl::update_time_led(npl_tick, &npl, &mut npl_led_time);
             }
+            if dcf77_tick == 0 {
+                let mut second = dcf77.get_second() + 1;
+                if second == dcf77.get_next_minute_length() + 1 {
+                    second = 0;
+                }
+                lcd.set_cursor_pos(get_xy(14, 1).unwrap(), &mut delay)
+                    .unwrap();
+                lcd.write_str(str_02(Some(second)).as_str(), &mut delay).unwrap();
+            }
             if dcf77_tick == 1 {
                 if dcf77.get_new_minute() {
                     // print date/time/status
@@ -291,22 +300,28 @@ fn main() -> ! {
                         lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
                     }
                 }
+            }
+            if dcf77_tick == 7 {
                 dcf77.increase_second();
-                lcd.set_cursor_pos(get_xy(14, 1).unwrap(), &mut delay)
-                    .unwrap();
-                lcd.write_str(str_02(Some(dcf77.get_second())).as_str(), &mut delay)
-                    .unwrap();
             }
             dcf77_tick += 1;
             if dcf77_tick == FRAMES_PER_SECOND {
                 dcf77_tick = 0;
             }
-            if npl_tick == 1 {
-                npl.increase_second();
+            if npl_tick == 0 {
+                let mut second = npl.get_second() + 1;
+                if second == npl.get_minute_length() + 1 {
+                    second = 0;
+                }
                 lcd.set_cursor_pos(get_xy(14, 3).unwrap(), &mut delay)
                     .unwrap();
-                lcd.write_str(str_02(Some(npl.get_second())).as_str(), &mut delay)
+                lcd.write_str(str_02(Some(second)).as_str(), &mut delay)
                     .unwrap();
+            }
+            if npl_tick == 1 {
+            }
+            if npl_tick == 7 {
+                npl.increase_second();
             }
             npl_tick += 1;
             if npl_tick == FRAMES_PER_SECOND {

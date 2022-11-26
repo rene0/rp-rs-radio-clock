@@ -62,7 +62,7 @@ static GLOBAL_TIMER: Mutex<RefCell<Option<Timer>>> = Mutex::new(RefCell::new(Non
 // and one for the timer alarm:
 static GLOBAL_ALARM: Mutex<RefCell<Option<Alarm0>>> = Mutex::new(RefCell::new(None));
 
-type I2cDisplay = I2C<
+type I2CDisplay = I2C<
     pac::I2C0,
     (
         gpio::Pin<gpio::bank0::Gpio0, gpio::FunctionI2C>,
@@ -73,6 +73,8 @@ enum DisplayMode {
     Time,
     #[allow(dead_code)]
     Pulses,
+    #[allow(dead_code)]
+    Times,
 }
 
 /// Entry point to our bare-metal application.
@@ -196,6 +198,8 @@ fn main() -> ! {
             let is_low_edge = G_EDGE_LOW_DCF77.load(Ordering::Acquire);
             if matches!(display_mode, DisplayMode::Pulses) {
                 show_pulses(&mut lcd, &mut delay, 0, is_low_edge, t0_dcf77, t1_dcf77);
+            } else if matches!(display_mode, DisplayMode::Times) {
+                show_times(&mut lcd, &mut delay, 0, t1_dcf77);
             }
             dcf77.handle_new_edge(is_low_edge, t1_dcf77);
             if dcf77.get_new_second() {
@@ -210,6 +214,8 @@ fn main() -> ! {
             let is_low_edge = G_EDGE_LOW_NPL.load(Ordering::Acquire);
             if matches!(display_mode, DisplayMode::Pulses) {
                 show_pulses(&mut lcd, &mut delay, 2, is_low_edge, t0_npl, t1_npl);
+            } else if matches!(display_mode, DisplayMode::Times) {
+                show_times(&mut lcd, &mut delay, 0, t1_npl);
             }
             npl.handle_new_edge(is_low_edge, t1_npl);
             if npl.get_new_second() {
@@ -403,19 +409,17 @@ fn str_weekday(weekday: Option<u8>) -> String<2> {
     })
 }
 
-// FIXME skips pulses, updating too slow? HD44780 driver perhaps uses too many delays.
-//       Works fine with just showing the pulse lengths of one station.
 fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
-    lcd: &mut HD44780<I2CBus<I2cDisplay>>,
+    lcd: &mut HD44780<I2CBus<I2CDisplay>>,
     delay: &mut D,
     base_row: u8,
     is_low_edge: bool,
     t0: u32,
     t1: u32,
 ) {
-    let mut str_buf = String::<12>::from("");
     lcd.set_cursor_pos(get_xy(7, base_row).unwrap(), delay)
         .unwrap();
+    let mut str_buf = String::<12>::from("");
     str_buf.clear();
     write!(
         str_buf,
@@ -425,9 +429,19 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     )
     .unwrap();
     lcd.write_str(str_buf.as_str(), delay).unwrap();
-    lcd.set_cursor_pos(get_xy(0, 1).unwrap(), delay).unwrap();
+}
+
+fn show_times<D: DelayUs<u16> + DelayMs<u8>>(
+    lcd: &mut HD44780<I2CBus<I2CDisplay>>,
+    delay: &mut D,
+    base_row: u8,
+    t1: u32,
+) {
+    lcd.set_cursor_pos(get_xy(7, base_row).unwrap(), delay)
+        .unwrap();
+    let mut str_buf = String::<12>::from("");
     str_buf.clear();
-    write!(str_buf, "{:<10}  ", t1).unwrap();
+    write!(str_buf, "T {:<10}", t1).unwrap();
     lcd.write_str(str_buf.as_str(), delay).unwrap();
 }
 

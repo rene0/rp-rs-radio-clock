@@ -1,4 +1,4 @@
-use crate::FRAMES_PER_SECOND;
+use crate::{dst_str, FRAMES_PER_SECOND};
 use core::cmp::Ordering as spaceship;
 use dcf77_utils::DCF77Utils;
 use embedded_hal::digital::v2::OutputPin;
@@ -121,16 +121,7 @@ pub fn str_jump_dst(dcf77: &DCF77Utils) -> char {
 /// Returns a character representation of the current DST status.
 pub fn str_dst(dcf77: &DCF77Utils) -> char {
     if let Some(dst) = dcf77.get_radio_datetime().get_dst() {
-        let mut res_dst = if (dst & radio_datetime_utils::DST_SUMMER) != 0 {
-            's'
-        } else {
-            'w'
-        };
-        if (dst & (radio_datetime_utils::DST_ANNOUNCED | radio_datetime_utils::DST_PROCESSED)) != 0
-        {
-            res_dst = res_dst.to_ascii_uppercase();
-        }
-        res_dst
+        dst_str(dst)
     } else {
         '*'
     }

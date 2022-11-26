@@ -1,4 +1,4 @@
-use crate::FRAMES_PER_SECOND;
+use crate::{dst_str, FRAMES_PER_SECOND};
 use core::cmp::Ordering as spaceship;
 use embedded_hal::digital::v2::OutputPin;
 use npl_utils::NPLUtils;
@@ -131,16 +131,7 @@ pub fn str_jump_dst(npl: &NPLUtils) -> char {
 /// Returns a character representation of the current DST status.
 pub fn str_dst(npl: &NPLUtils) -> char {
     if let Some(dst) = npl.get_radio_datetime().get_dst() {
-        let mut res_dst = if (dst & radio_datetime_utils::DST_SUMMER) != 0 {
-            's'
-        } else {
-            'w'
-        };
-        if (dst & (radio_datetime_utils::DST_ANNOUNCED | radio_datetime_utils::DST_PROCESSED)) != 0
-        {
-            res_dst = res_dst.to_ascii_uppercase();
-        }
-        res_dst
+        dst_str(dst)
     } else {
         '*'
     }

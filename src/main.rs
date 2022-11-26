@@ -409,6 +409,18 @@ fn str_weekday(weekday: Option<u8>) -> String<2> {
     })
 }
 
+fn dst_str(dst: u8) -> char {
+    let mut res_dst = if (dst & radio_datetime_utils::DST_SUMMER) != 0 {
+        's'
+    } else {
+        'w'
+    };
+    if (dst & (radio_datetime_utils::DST_ANNOUNCED | radio_datetime_utils::DST_PROCESSED)) != 0 {
+        res_dst = res_dst.to_ascii_uppercase();
+    }
+    res_dst
+}
+
 fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     lcd: &mut HD44780<I2CBus<I2CDisplay>>,
     delay: &mut D,

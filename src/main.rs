@@ -253,28 +253,30 @@ fn main() -> ! {
                 // print date/time/status
                 dcf77.decode_time();
                 if !dcf77.get_first_minute() {
-                    let mut str_buf = String::<14>::from("");
-                    write!(
-                        str_buf,
-                        "{}{}{}{}{}{}{}{}{}{} {}{}{}",
-                        dcf77::str_jump_year(&dcf77),
-                        dcf77::str_jump_month(&dcf77),
-                        dcf77::str_jump_day(&dcf77),
-                        dcf77::str_jump_weekday(&dcf77),
-                        dcf77::str_jump_hour(&dcf77),
-                        dcf77::str_jump_minute(&dcf77),
-                        dcf77::str_jump_dst(&dcf77),
-                        dcf77::str_parity_3(&dcf77),
-                        dcf77::str_parity_2(&dcf77),
-                        dcf77::str_parity_1(&dcf77),
-                        dcf77::str_bit_0(&dcf77),
-                        dcf77::str_bit_20(&dcf77),
-                        dcf77::str_minute_length(&dcf77),
-                    )
-                    .unwrap();
-                    lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
+                    if matches!(display_mode, DisplayMode::Time) {
+                        let mut str_buf = String::<14>::from("");
+                        write!(
+                            str_buf,
+                            "{}{}{}{}{}{}{}{}{}{} {}{}{}",
+                            dcf77::str_jump_year(&dcf77),
+                            dcf77::str_jump_month(&dcf77),
+                            dcf77::str_jump_day(&dcf77),
+                            dcf77::str_jump_weekday(&dcf77),
+                            dcf77::str_jump_hour(&dcf77),
+                            dcf77::str_jump_minute(&dcf77),
+                            dcf77::str_jump_dst(&dcf77),
+                            dcf77::str_parity_3(&dcf77),
+                            dcf77::str_parity_2(&dcf77),
+                            dcf77::str_parity_1(&dcf77),
+                            dcf77::str_bit_0(&dcf77),
+                            dcf77::str_bit_20(&dcf77),
+                            dcf77::str_minute_length(&dcf77),
+                        )
                         .unwrap();
-                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                        lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
+                            .unwrap();
+                        lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    }
                     // Decoded date and time:
                     let mut str_buf = String::<14>::from("");
                     write!(
@@ -327,27 +329,29 @@ fn main() -> ! {
                 // print date/time/status
                 npl.decode_time();
                 if !npl.get_first_minute() {
-                    let mut str_buf = String::<12>::from("");
-                    write!(
-                        str_buf,
-                        "{}{}{}{}{}{}{}{}{}{}{}{}",
-                        npl::str_jump_year(&npl),
-                        npl::str_jump_month(&npl),
-                        npl::str_jump_day(&npl),
-                        npl::str_jump_weekday(&npl),
-                        npl::str_jump_hour(&npl),
-                        npl::str_jump_minute(&npl),
-                        npl::str_jump_dst(&npl),
-                        npl::str_parity_4(&npl),
-                        npl::str_parity_3(&npl),
-                        npl::str_parity_2(&npl),
-                        npl::str_parity_1(&npl),
-                        npl::str_minute_length(&npl),
-                    )
-                    .unwrap();
-                    lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
+                    if matches!(display_mode, DisplayMode::Time) {
+                        let mut str_buf = String::<12>::from("");
+                        write!(
+                            str_buf,
+                            "{}{}{}{}{}{}{}{}{}{}{}{}",
+                            npl::str_jump_year(&npl),
+                            npl::str_jump_month(&npl),
+                            npl::str_jump_day(&npl),
+                            npl::str_jump_weekday(&npl),
+                            npl::str_jump_hour(&npl),
+                            npl::str_jump_minute(&npl),
+                            npl::str_jump_dst(&npl),
+                            npl::str_parity_4(&npl),
+                            npl::str_parity_3(&npl),
+                            npl::str_parity_2(&npl),
+                            npl::str_parity_1(&npl),
+                            npl::str_minute_length(&npl),
+                        )
                         .unwrap();
-                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                        lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
+                            .unwrap();
+                        lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    }
                     // Decoded date and time:
                     let mut str_buf = String::<14>::from("");
                     write!(

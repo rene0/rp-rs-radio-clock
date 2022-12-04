@@ -74,33 +74,30 @@ TY 170 260 5 4 0 0 0 Bitstream++Charter
 TY 160 240 5 4 0 0 0 Bitstream++Charter white (014)
 LI 160 260 160 250 0
 LI 170 260 170 250 0
-RV 315 260 230 285 0
-TY 265 260 4 3 0 0 0 Bitstream++Charter NPL V2
+RV 295 260 230 285 0
+TY 265 260 4 3 0 0 0 Bitstream++Charter NPL V3
 MC 240 250 0 0 130
 FCJ
 TY 250 260 5 4 0 0 0 Bitstream++Charter 
 TY 240 240 5 4 0 0 0 Bitstream++Charter orange FR-H
 LI 240 260 240 250 0
 LI 250 260 250 250 0
-MC 285 285 1 0 ey_libraries.refpnt2
+MC 275 285 1 0 ey_libraries.refpnt2
 FCJ
-TY 280 290 5 4 0 0 0 Bitstream++Charter /NPL
-TY 295 300 5 4 0 0 0 Bitstream++Charter 
+TY 270 290 5 4 0 0 0 Bitstream++Charter /NPL
+TY 285 300 5 4 0 0 0 Bitstream++Charter 
 MC 245 290 3 0 ey_libraries.refpnt1
-MC 255 290 3 0 ey_libraries.refpnt1
-MC 275 290 3 0 ey_libraries.refpnt1
+MC 265 290 3 0 ey_libraries.refpnt1
 MC 235 285 1 0 010
 FCJ
 TY 230 290 4 3 0 0 0 Bitstream++Charter 
 TY 230 290 4 3 0 0 0 Bitstream++Charter 3.3V
-TY 235 285 4 3 90 0 0 Bitstream++Charter 3-5.5V
-TY 245 285 4 3 90 0 0 Bitstream++Charter 4-15V
-TY 295 285 4 3 90 0 0 Bitstream++Charter GND
-TY 305 285 4 3 90 0 0 Bitstream++Charter LED
-TY 275 285 4 3 90 0 0 Bitstream++Charter OUT
-TY 285 285 4 3 90 0 0 Bitstream++Charter /OUT
-TY 255 285 4 3 90 0 0 Bitstream++Charter AON
-TY 265 285 4 3 90 0 0 Bitstream++Charter PDN
+TY 235 285 4 3 90 0 0 Bitstream++Charter 3-15V
+TY 285 285 4 3 90 0 0 Bitstream++Charter GND
+TY 265 285 4 3 90 0 0 Bitstream++Charter OUT
+TY 275 285 4 3 90 0 0 Bitstream++Charter /OUT
+TY 245 285 4 3 90 0 0 Bitstream++Charter AON
+TY 255 285 4 3 90 0 0 Bitstream++Charter PDN
 MC 110 180 3 0 pcb.ndil4006
 MC 190 40 0 0 ey_libraries.genics0
 FCJ
@@ -258,9 +255,8 @@ MC 210 330 1 0 ey_libraries.refpnt1
 MC 220 330 1 0 ey_libraries.refpnt1
 MC 175 285 0 0 ey_libraries.refpnt0
 MC 205 285 0 0 ey_libraries.refpnt0
-MC 305 285 0 0 ey_libraries.refpnt0
-MC 295 285 0 0 ey_libraries.refpnt0
-MC 265 285 0 0 ey_libraries.refpnt0
+MC 285 285 0 0 ey_libraries.refpnt0
+MC 255 285 0 0 ey_libraries.refpnt0
 MC 310 390 0 0 ey_libraries.refpnt0
 MC 355 295 0 0 ey_libraries.refpnt0
 LI 355 295 360 295 0

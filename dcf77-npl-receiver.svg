@@ -211,8 +211,8 @@
 </g>
 <line x1="360.0" y1="1190.0" x2="360.0" y2="1140.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <line x1="410.0" y1="1190.0" x2="410.0" y2="1140.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<rect x="710.0" y="1190.0" rx="0" ry="0" width="425.0" height="125.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<g transform="translate(885.0,1190.0) scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">NPL V2</text>
+<rect x="710.0" y="1190.0" rx="0" ry="0" width="325.0" height="125.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
+<g transform="translate(885.0,1190.0) scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">NPL V3</text>
 </g>
 <path d="M 770.0,1140.0 C 770.0,1130.0 780.0,1130.0 780.0,1140.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <path d="M 780.0,1140.0 C 780.0,1130.0 790.0,1130.0 790.0,1140.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
@@ -224,37 +224,31 @@
 </g>
 <line x1="760.0" y1="1190.0" x2="760.0" y2="1140.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <line x1="810.0" y1="1190.0" x2="810.0" y2="1140.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="985.0" y1="1315.0" x2="985.0" y2="1320.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<polygon points="985.0,1340.0 985.0,1340.0 990.0,1335.0 990.0,1320.0 980.0,1320.0 980.0,1335.0 " style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<g transform="translate(960.0,1340.0) scale(1.0160427807486632,1) "><text x="0.0" y="34.0" font-family="Bitstream Charter" font-size="34.0" font-style="" font-weigth="" fill="#000000">/NPL</text>
+<line x1="935.0" y1="1315.0" x2="935.0" y2="1320.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
+<polygon points="935.0,1340.0 935.0,1340.0 940.0,1335.0 940.0,1320.0 930.0,1320.0 930.0,1335.0 " style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
+<g transform="translate(910.0,1340.0) scale(1.0160427807486632,1) "><text x="0.0" y="34.0" font-family="Bitstream Charter" font-size="34.0" font-style="" font-weigth="" fill="#000000">/NPL</text>
 </g>
 <line x1="785.0" y1="1330.0" x2="785.0" y2="1315.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <ellipse cx="785.0" cy="1335.0" rx="5.0" ry="5.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="835.0" y1="1330.0" x2="835.0" y2="1315.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<ellipse cx="835.0" cy="1335.0" rx="5.0" ry="5.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="935.0" y1="1330.0" x2="935.0" y2="1315.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<ellipse cx="935.0" cy="1335.0" rx="5.0" ry="5.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
+<line x1="885.0" y1="1330.0" x2="885.0" y2="1315.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
+<ellipse cx="885.0" cy="1335.0" rx="5.0" ry="5.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <line x1="735.0" y1="1315.0" x2="735.0" y2="1325.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <ellipse cx="735.0" cy="1335.0" rx="10.0" ry="10.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <line x1="735.0" y1="1330.0" x2="735.0" y2="1340.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <line x1="740.0" y1="1335.0" x2="730.0" y2="1335.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <g transform="translate(710.0,1340.0) scale(0.9965034965034963,1) "><text x="0.0" y="26.0" font-family="Bitstream Charter" font-size="26.0" font-style="" font-weigth="" fill="#000000">3.3V</text>
 </g>
-<g transform="translate(735.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">3-5.5V</text>
+<g transform="translate(735.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">3-15V</text>
 </g>
-<g transform="translate(785.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">4-15V</text>
+<g transform="translate(985.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">GND</text>
 </g>
-<g transform="translate(1035.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">GND</text>
+<g transform="translate(885.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">OUT</text>
 </g>
-<g transform="translate(1085.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">LED</text>
+<g transform="translate(935.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">/OUT</text>
 </g>
-<g transform="translate(935.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">OUT</text>
+<g transform="translate(785.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">AON</text>
 </g>
-<g transform="translate(985.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">/OUT</text>
-</g>
-<g transform="translate(835.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">AON</text>
-</g>
-<g transform="translate(885.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">PDN</text>
+<g transform="translate(835.0,1315.0) rotate(-90.0)  scale(1.2954545454545454,1) "><text x="0.0" y="20.0" font-family="Bitstream Charter" font-size="20.0" font-style="" font-weigth="" fill="#000000">PDN</text>
 </g>
 <circle cx="110.0" cy="790.0" r="10.0" style="stroke:white;stroke-width:0.33" fill="white"/>
 <circle cx="210.0" cy="790.0" r="10.0" style="stroke:white;stroke-width:0.33" fill="white"/>
@@ -553,12 +547,10 @@
 <line x1="435.0" y1="1315.0" x2="435.0" y2="1325.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <polygon points="570.0,1325.0 600.0,1325.0 585.0,1340.0 585.0,1340.0 " style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <line x1="585.0" y1="1315.0" x2="585.0" y2="1325.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<polygon points="1070.0,1325.0 1100.0,1325.0 1085.0,1340.0 1085.0,1340.0 " style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1085.0" y1="1315.0" x2="1085.0" y2="1325.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<polygon points="1020.0,1325.0 1050.0,1325.0 1035.0,1340.0 1035.0,1340.0 " style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1035.0" y1="1315.0" x2="1035.0" y2="1325.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<polygon points="870.0,1325.0 900.0,1325.0 885.0,1340.0 885.0,1340.0 " style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="885.0" y1="1315.0" x2="885.0" y2="1325.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
+<polygon points="970.0,1325.0 1000.0,1325.0 985.0,1340.0 985.0,1340.0 " style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
+<line x1="985.0" y1="1315.0" x2="985.0" y2="1325.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
+<polygon points="820.0,1325.0 850.0,1325.0 835.0,1340.0 835.0,1340.0 " style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
+<line x1="835.0" y1="1315.0" x2="835.0" y2="1325.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <polygon points="1095.0,1850.0 1125.0,1850.0 1110.0,1865.0 1110.0,1865.0 " style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <line x1="1110.0" y1="1840.0" x2="1110.0" y2="1850.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <polygon points="1320.0,1375.0 1350.0,1375.0 1335.0,1390.0 1335.0,1390.0 " style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>

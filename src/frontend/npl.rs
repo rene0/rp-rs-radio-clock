@@ -1,9 +1,9 @@
+use crate::frontend::dst_str;
 use crate::FRAMES_PER_SECOND;
 use core::cmp::Ordering as spaceship;
 use embedded_hal::digital::v2::OutputPin;
 use npl_utils::NPLUtils;
 use rp_pico::hal::gpio;
-use crate::frontend::dst_str;
 
 /// Put the LEDs in their initial state.
 pub fn init_leds(

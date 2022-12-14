@@ -41,4 +41,3 @@ pub fn str_weekday(weekday: Option<u8>) -> String<2> {
         _ => "**",
     })
 }
-

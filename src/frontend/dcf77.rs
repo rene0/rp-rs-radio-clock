@@ -1,8 +1,9 @@
-use crate::{dst_str, FRAMES_PER_SECOND};
+use crate::FRAMES_PER_SECOND;
 use core::cmp::Ordering as spaceship;
 use dcf77_utils::DCF77Utils;
 use embedded_hal::digital::v2::OutputPin;
 use rp_pico::hal::gpio;
+use crate::frontend::dst_str;
 
 /// Put the LEDs in their initial state.
 pub fn init_leds(

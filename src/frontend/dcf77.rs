@@ -1,8 +1,10 @@
 use crate::frontend::dst_str;
 use crate::FRAMES_PER_SECOND;
 use core::cmp::Ordering as spaceship;
+use core::fmt::Write;
 use dcf77_utils::DCF77Utils;
 use embedded_hal::digital::v2::OutputPin;
+use heapless::String;
 use rp_pico::hal::gpio;
 
 /// Put the LEDs in their initial state.
@@ -54,8 +56,32 @@ pub fn update_bit_leds(
     }
 }
 
+/// Return the status overview as a compact string
+pub fn str_status(dcf77: &DCF77Utils) -> String<14> {
+    let mut str_buf = String::<14>::from("");
+    write!(
+        str_buf,
+        "{}{}{}{}{}{}{}{}{}{} {}{}{}",
+        str_jump_year(dcf77),
+        str_jump_month(dcf77),
+        str_jump_day(dcf77),
+        str_jump_weekday(dcf77),
+        str_jump_hour(dcf77),
+        str_jump_minute(dcf77),
+        str_jump_dst(dcf77),
+        str_parity_3(dcf77),
+        str_parity_2(dcf77),
+        str_parity_1(dcf77),
+        str_bit_0(dcf77),
+        str_bit_20(dcf77),
+        str_minute_length(dcf77),
+    )
+    .unwrap();
+    str_buf
+}
+
 /// Return if the year has jumped unexpectedly, 'y' or ' '
-pub fn str_jump_year(dcf77: &DCF77Utils) -> char {
+fn str_jump_year(dcf77: &DCF77Utils) -> char {
     if dcf77.get_radio_datetime().get_jump_year() {
         'y'
     } else {
@@ -64,7 +90,7 @@ pub fn str_jump_year(dcf77: &DCF77Utils) -> char {
 }
 
 /// Return if the month has jumped unexpectedly, 'm' or ' '
-pub fn str_jump_month(dcf77: &DCF77Utils) -> char {
+fn str_jump_month(dcf77: &DCF77Utils) -> char {
     if dcf77.get_radio_datetime().get_jump_month() {
         'm'
     } else {
@@ -73,7 +99,7 @@ pub fn str_jump_month(dcf77: &DCF77Utils) -> char {
 }
 
 /// Return if the day-of-month has jumped unexpectedly, 'd' or ' '.
-pub fn str_jump_day(dcf77: &DCF77Utils) -> char {
+fn str_jump_day(dcf77: &DCF77Utils) -> char {
     if dcf77.get_radio_datetime().get_jump_day() {
         'd'
     } else {
@@ -82,7 +108,7 @@ pub fn str_jump_day(dcf77: &DCF77Utils) -> char {
 }
 
 /// Return if the day-of-week has jumped unexpectedly, 'w' or ' '.
-pub fn str_jump_weekday(dcf77: &DCF77Utils) -> char {
+fn str_jump_weekday(dcf77: &DCF77Utils) -> char {
     if dcf77.get_radio_datetime().get_jump_weekday() {
         'w'
     } else {
@@ -91,7 +117,7 @@ pub fn str_jump_weekday(dcf77: &DCF77Utils) -> char {
 }
 
 /// Return if the hour has jumped unexpectedly, 'h' or ' '.
-pub fn str_jump_hour(dcf77: &DCF77Utils) -> char {
+fn str_jump_hour(dcf77: &DCF77Utils) -> char {
     if dcf77.get_radio_datetime().get_jump_hour() {
         'h'
     } else {
@@ -100,7 +126,7 @@ pub fn str_jump_hour(dcf77: &DCF77Utils) -> char {
 }
 
 /// Return if the minute has jumped unexpectedly, 'm' or ' '.
-pub fn str_jump_minute(dcf77: &DCF77Utils) -> char {
+fn str_jump_minute(dcf77: &DCF77Utils) -> char {
     if dcf77.get_radio_datetime().get_jump_minute() {
         'm'
     } else {
@@ -109,7 +135,7 @@ pub fn str_jump_minute(dcf77: &DCF77Utils) -> char {
 }
 
 /// Return if the daylight saving time status jumped unexpectedly, 't' or ' '.
-pub fn str_jump_dst(dcf77: &DCF77Utils) -> char {
+fn str_jump_dst(dcf77: &DCF77Utils) -> char {
     if dcf77.get_radio_datetime().get_dst().is_some()
         && (dcf77.get_radio_datetime().get_dst().unwrap() & radio_datetime_utils::DST_JUMP) != 0
     {
@@ -129,7 +155,7 @@ pub fn str_dst(dcf77: &DCF77Utils) -> char {
 }
 
 /// Return a character representation of the minute length status.
-pub fn str_minute_length(dcf77: &DCF77Utils) -> char {
+fn str_minute_length(dcf77: &DCF77Utils) -> char {
     match dcf77.get_second().cmp(&dcf77.get_this_minute_length()) {
         spaceship::Less => '<',
         spaceship::Equal => ' ',
@@ -138,7 +164,7 @@ pub fn str_minute_length(dcf77: &DCF77Utils) -> char {
 }
 
 /// Get a textual version of the minute parity bit, ' ' for OK, 'A' for error, or 'a' for unknown.
-pub fn str_parity_1(dcf77: &DCF77Utils) -> char {
+fn str_parity_1(dcf77: &DCF77Utils) -> char {
     let value = dcf77.get_parity_1();
     if value == Some(false) {
         ' '
@@ -150,7 +176,7 @@ pub fn str_parity_1(dcf77: &DCF77Utils) -> char {
 }
 
 /// Get a textual version of the hour parity bit, ' ' for OK, 'B' for error, or 'b' for unknown.
-pub fn str_parity_2(dcf77: &DCF77Utils) -> char {
+fn str_parity_2(dcf77: &DCF77Utils) -> char {
     let value = dcf77.get_parity_2();
     if value == Some(false) {
         ' '
@@ -162,7 +188,7 @@ pub fn str_parity_2(dcf77: &DCF77Utils) -> char {
 }
 
 /// Get a textual version of the date parity bit, ' ' for OK, 'C' for error, or 'c' for unknown.
-pub fn str_parity_3(dcf77: &DCF77Utils) -> char {
+fn str_parity_3(dcf77: &DCF77Utils) -> char {
     let value = dcf77.get_parity_3();
     if value == Some(false) {
         ' '
@@ -174,7 +200,7 @@ pub fn str_parity_3(dcf77: &DCF77Utils) -> char {
 }
 
 /// Return a character representation of the bit 0 status or 'm' for unknown.
-pub fn str_bit_0(dcf77: &DCF77Utils) -> char {
+fn str_bit_0(dcf77: &DCF77Utils) -> char {
     let value = dcf77.get_bit_0();
     if value == Some(false) {
         ' '
@@ -198,7 +224,7 @@ pub fn str_call_bit(dcf77: &DCF77Utils) -> char {
 }
 
 /// Return a character representation of the bit 20 status or 's' for unknown.
-pub fn str_bit_20(dcf77: &DCF77Utils) -> char {
+fn str_bit_20(dcf77: &DCF77Utils) -> char {
     let value = dcf77.get_bit_20();
     if value == Some(true) {
         ' '

@@ -37,10 +37,6 @@ mod frontend;
 
 /// I²C address of the PCF8574 adapter, change as needed
 const I2C_ADDRESS: u8 = 0x27;
-/// Number of rows on the display, change as needed
-const DISPLAY_ROWS: u8 = 4;
-/// Number of columns on the display, change as needed
-const DISPLAY_COLUMNS: u8 = 20;
 static G_EDGE_RECEIVED_DCF77: AtomicBool = AtomicBool::new(false);
 static G_EDGE_LOW_DCF77: AtomicBool = AtomicBool::new(false);
 static G_EDGE_RECEIVED_NPL: AtomicBool = AtomicBool::new(false);
@@ -422,25 +418,6 @@ fn show_times<D: DelayUs<u16> + DelayMs<u8>>(
     str_buf.clear();
     write!(str_buf, "T {:<10}", t1).unwrap();
     lcd.write_str(str_buf.as_str(), delay).unwrap();
-}
-
-/// Gets the one-dimensional HD44780 coordinate for position (x, y) (zero-based)
-///
-/// See <https://web.alfredstate.edu/faculty/weimandn/lcd/lcd_addressing/lcd_addressing_index.html>
-///
-/// Assumes type-2 addressing for 16x1 displays
-fn get_xy(x: u8, y: u8) -> Option<u8> {
-    if (x >= DISPLAY_COLUMNS) || (y >= DISPLAY_ROWS) {
-        return None;
-    }
-    let mut addr = x & 0x3f;
-    if (y & 1) == 1 {
-        addr += 0x40;
-    }
-    if (y & 2) == 2 {
-        addr += DISPLAY_COLUMNS;
-    }
-    Some(addr)
 }
 
 #[interrupt]

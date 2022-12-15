@@ -106,6 +106,13 @@ pub fn str_datetime(npl: &NPLUtils) -> String<14> {
     str_buf
 }
 
+/// Return a compact string with miscellaneous information
+pub fn str_misc(npl: &NPLUtils) -> String<1> {
+    let mut str_buf = String::<1>::from("");
+    write!(str_buf, "{}", str_dst(npl)).unwrap();
+    str_buf
+}
+
 /// Return if the year has jumped unexpectedly, 'y' or ' '
 fn str_jump_year(npl: &NPLUtils) -> char {
     if npl.get_radio_datetime().get_jump_year() {
@@ -172,7 +179,7 @@ fn str_jump_dst(npl: &NPLUtils) -> char {
 }
 
 /// Returns a character representation of the current DST status.
-pub fn str_dst(npl: &NPLUtils) -> char {
+fn str_dst(npl: &NPLUtils) -> char {
     if let Some(dst) = npl.get_radio_datetime().get_dst() {
         dst_str(dst)
     } else {

@@ -261,18 +261,10 @@ fn main() -> ! {
                     lcd.write_str(dcf77::str_datetime(&dcf77).as_str(), &mut delay)
                         .unwrap();
                     // Other things:
-                    let mut str_buf = String::<3>::from("");
-                    write!(
-                        str_buf,
-                        "{}{}{}",
-                        dcf77::str_call_bit(&dcf77),
-                        dcf77::str_dst(&dcf77),
-                        dcf77::str_leap_second(&dcf77)
-                    )
-                    .unwrap();
                     lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
                         .unwrap();
-                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    lcd.write_str(dcf77::str_misc(&dcf77).as_str(), &mut delay)
+                        .unwrap();
                 }
             }
             if dcf77_tick == 7 {
@@ -308,11 +300,10 @@ fn main() -> ! {
                     lcd.write_str(npl::str_datetime(&npl).as_str(), &mut delay)
                         .unwrap();
                     // Other things:
-                    let mut str_buf = String::<1>::from("");
-                    write!(str_buf, "{}", npl::str_dst(&npl),).unwrap();
                     lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
                         .unwrap();
-                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    lcd.write_str(npl::str_misc(&npl).as_str(), &mut delay)
+                        .unwrap();
                 }
             }
             if npl_tick == 7 {

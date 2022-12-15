@@ -80,6 +80,20 @@ pub fn str_status(dcf77: &DCF77Utils) -> String<14> {
     str_buf
 }
 
+/// Return a compact string with miscellaneous information
+pub fn str_misc(dcf77: &DCF77Utils) -> String<3> {
+    let mut str_buf = String::<3>::from("");
+    write!(
+        str_buf,
+        "{}{}{}",
+        str_call_bit(dcf77),
+        str_dst(dcf77),
+        str_leap_second(dcf77)
+    )
+    .unwrap();
+    str_buf
+}
+
 /// Return the current date and time as a string
 pub fn str_datetime(dcf77: &DCF77Utils) -> String<14> {
     let mut str_buf = String::<14>::from("");
@@ -163,7 +177,7 @@ fn str_jump_dst(dcf77: &DCF77Utils) -> char {
 }
 
 /// Returns a character representation of the current DST status.
-pub fn str_dst(dcf77: &DCF77Utils) -> char {
+fn str_dst(dcf77: &DCF77Utils) -> char {
     if let Some(dst) = dcf77.get_radio_datetime().get_dst() {
         dst_str(dst)
     } else {
@@ -229,7 +243,7 @@ fn str_bit_0(dcf77: &DCF77Utils) -> char {
 }
 
 /// Return a character representation of the call bit status or 'c' for unknown.
-pub fn str_call_bit(dcf77: &DCF77Utils) -> char {
+fn str_call_bit(dcf77: &DCF77Utils) -> char {
     let value = dcf77.get_call_bit();
     if value == Some(true) {
         'C'
@@ -253,7 +267,7 @@ fn str_bit_20(dcf77: &DCF77Utils) -> char {
 }
 
 /// Returns a character representation of the current leap second status.
-pub fn str_leap_second(dcf77: &DCF77Utils) -> char {
+fn str_leap_second(dcf77: &DCF77Utils) -> char {
     if let Some(leap_second) = dcf77.get_radio_datetime().get_leap_second() {
         if (leap_second & radio_datetime_utils::LEAP_PROCESSED) != 0 {
             'L'

@@ -1,5 +1,6 @@
 use core::fmt::Write;
 use heapless::String;
+use radio_datetime_utils::RadioDateTimeUtils;
 
 pub mod dcf77;
 pub mod npl;
@@ -69,4 +70,21 @@ pub fn str_weekday(weekday: Option<u8>) -> String<2> {
         Some(6) => "Sa",
         _ => "**",
     })
+}
+
+/// Return the given date and time as a string
+pub fn str_datetime(rdt: RadioDateTimeUtils) -> String<14> {
+    let mut str_buf = String::<14>::from("");
+    write!(
+        str_buf,
+        "{}{}{} {} {}{}",
+        str_02(rdt.get_year()),
+        str_02(rdt.get_month()),
+        str_02(rdt.get_day()),
+        str_weekday(rdt.get_weekday()),
+        str_02(rdt.get_hour()),
+        str_02(rdt.get_minute()),
+    )
+    .unwrap();
+    str_buf
 }

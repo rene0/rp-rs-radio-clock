@@ -1,4 +1,4 @@
-use crate::frontend::{dst_str, str_02, str_weekday};
+use crate::frontend::dst_str;
 use crate::FRAMES_PER_SECOND;
 use core::cmp::Ordering as spaceship;
 use core::fmt::Write;
@@ -84,23 +84,6 @@ pub fn str_status(npl: &NPLUtils) -> String<12> {
         str_parity_2(npl),
         str_parity_1(npl),
         str_minute_length(npl),
-    )
-    .unwrap();
-    str_buf
-}
-
-/// Return the current date and time as a string
-pub fn str_datetime(npl: &NPLUtils) -> String<14> {
-    let mut str_buf = String::<14>::from("");
-    write!(
-        str_buf,
-        "{}{}{} {} {}{}",
-        str_02(npl.get_radio_datetime().get_year()),
-        str_02(npl.get_radio_datetime().get_month()),
-        str_02(npl.get_radio_datetime().get_day()),
-        str_weekday(npl.get_radio_datetime().get_weekday()),
-        str_02(npl.get_radio_datetime().get_hour()),
-        str_02(npl.get_radio_datetime().get_minute()),
     )
     .unwrap();
     str_buf

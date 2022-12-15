@@ -258,8 +258,11 @@ fn main() -> ! {
                     // Decoded date and time:
                     lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
-                    lcd.write_str(dcf77::str_datetime(&dcf77).as_str(), &mut delay)
-                        .unwrap();
+                    lcd.write_str(
+                        str_datetime(dcf77.get_radio_datetime()).as_str(),
+                        &mut delay,
+                    )
+                    .unwrap();
                     // Other things:
                     lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
                         .unwrap();
@@ -297,7 +300,7 @@ fn main() -> ! {
                     // Decoded date and time:
                     lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
-                    lcd.write_str(npl::str_datetime(&npl).as_str(), &mut delay)
+                    lcd.write_str(str_datetime(npl.get_radio_datetime()).as_str(), &mut delay)
                         .unwrap();
                     // Other things:
                     lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)

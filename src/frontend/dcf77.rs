@@ -1,4 +1,4 @@
-use crate::frontend::dst_str;
+use crate::frontend::{dst_str, str_parity};
 use crate::FRAMES_PER_SECOND;
 use core::cmp::Ordering as spaceship;
 use core::fmt::Write;
@@ -69,9 +69,9 @@ pub fn str_status(dcf77: &DCF77Utils) -> String<14> {
         str_jump_hour(dcf77),
         str_jump_minute(dcf77),
         str_jump_dst(dcf77),
-        str_parity_3(dcf77),
-        str_parity_2(dcf77),
-        str_parity_1(dcf77),
+        str_parity(dcf77.get_parity_3(), false, 'c'),
+        str_parity(dcf77.get_parity_2(), false, 'b'),
+        str_parity(dcf77.get_parity_1(), false, 'a'),
         str_bit_0(dcf77),
         str_bit_20(dcf77),
         str_minute_length(dcf77),
@@ -174,42 +174,6 @@ fn str_minute_length(dcf77: &DCF77Utils) -> char {
         spaceship::Less => '<',
         spaceship::Equal => ' ',
         spaceship::Greater => '>',
-    }
-}
-
-/// Get a textual version of the minute parity bit, ' ' for OK, 'A' for error, or 'a' for unknown.
-fn str_parity_1(dcf77: &DCF77Utils) -> char {
-    let value = dcf77.get_parity_1();
-    if value == Some(false) {
-        ' '
-    } else if value == Some(true) {
-        'A'
-    } else {
-        'a'
-    }
-}
-
-/// Get a textual version of the hour parity bit, ' ' for OK, 'B' for error, or 'b' for unknown.
-fn str_parity_2(dcf77: &DCF77Utils) -> char {
-    let value = dcf77.get_parity_2();
-    if value == Some(false) {
-        ' '
-    } else if value == Some(true) {
-        'B'
-    } else {
-        'b'
-    }
-}
-
-/// Get a textual version of the date parity bit, ' ' for OK, 'C' for error, or 'c' for unknown.
-fn str_parity_3(dcf77: &DCF77Utils) -> char {
-    let value = dcf77.get_parity_3();
-    if value == Some(false) {
-        ' '
-    } else if value == Some(true) {
-        'C'
-    } else {
-        'c'
     }
 }
 

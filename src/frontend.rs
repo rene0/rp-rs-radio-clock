@@ -88,3 +88,14 @@ pub fn str_datetime(rdt: RadioDateTimeUtils) -> String<14> {
     .unwrap();
     str_buf
 }
+
+/// Get a textual version of a parity bit, ' ' for OK, 'X' for error, or 'x' for unknown for some 'x'.
+pub fn str_parity(parity: Option<bool>, ok: bool, name: char) -> char {
+    if parity == Some(ok) {
+        ' '
+    } else if parity == Some(!ok) {
+        name.to_ascii_uppercase()
+    } else {
+        name
+    }
+}

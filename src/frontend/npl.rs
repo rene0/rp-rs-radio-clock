@@ -1,4 +1,4 @@
-use crate::frontend::dst_str;
+use crate::frontend::{dst_str, str_parity};
 use crate::FRAMES_PER_SECOND;
 use core::cmp::Ordering as spaceship;
 use core::fmt::Write;
@@ -79,10 +79,10 @@ pub fn str_status(npl: &NPLUtils) -> String<12> {
         str_jump_hour(npl),
         str_jump_minute(npl),
         str_jump_dst(npl),
-        str_parity_4(npl),
-        str_parity_3(npl),
-        str_parity_2(npl),
-        str_parity_1(npl),
+        str_parity(npl.get_parity_4(), true, 'd'),
+        str_parity(npl.get_parity_3(), true, 'c'),
+        str_parity(npl.get_parity_2(), true, 'b'),
+        str_parity(npl.get_parity_1(), true, 'a'),
         str_minute_length(npl),
     )
     .unwrap();
@@ -176,53 +176,5 @@ fn str_minute_length(npl: &NPLUtils) -> char {
         spaceship::Less => '<',
         spaceship::Equal => ' ',
         spaceship::Greater => '>',
-    }
-}
-
-/// Get a textual version of the year parity bit, ' ' for OK, 'A' for error, or 'a' for unknown.
-fn str_parity_1(npl: &NPLUtils) -> char {
-    let value = npl.get_parity_1();
-    if value == Some(false) {
-        'A'
-    } else if value == Some(true) {
-        ' '
-    } else {
-        'a'
-    }
-}
-
-/// Get a textual version of the month/day parity bit, ' ' for OK, 'B' for error, or 'b' for unknown.
-fn str_parity_2(npl: &NPLUtils) -> char {
-    let value = npl.get_parity_2();
-    if value == Some(false) {
-        'B'
-    } else if value == Some(true) {
-        ' '
-    } else {
-        'b'
-    }
-}
-
-/// Get a textual version of the weekday parity bit, ' ' for OK, 'C' for error, or 'c' for unknown.
-fn str_parity_3(npl: &NPLUtils) -> char {
-    let value = npl.get_parity_3();
-    if value == Some(false) {
-        'C'
-    } else if value == Some(true) {
-        ' '
-    } else {
-        'c'
-    }
-}
-
-/// Get a textual version of the hour/minute parity bit, ' ' for OK, 'D' for  error, or 'd' for unknown.
-fn str_parity_4(npl: &NPLUtils) -> char {
-    let value = npl.get_parity_4();
-    if value == Some(false) {
-        'D'
-    } else if value == Some(true) {
-        ' '
-    } else {
-        'm'
     }
 }

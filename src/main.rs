@@ -256,21 +256,10 @@ fn main() -> ! {
                             .unwrap();
                     }
                     // Decoded date and time:
-                    let mut str_buf = String::<14>::from("");
-                    write!(
-                        str_buf,
-                        "{}{}{} {} {}{}",
-                        str_02(dcf77.get_radio_datetime().get_year()),
-                        str_02(dcf77.get_radio_datetime().get_month()),
-                        str_02(dcf77.get_radio_datetime().get_day()),
-                        str_weekday(dcf77.get_radio_datetime().get_weekday()),
-                        str_02(dcf77.get_radio_datetime().get_hour()),
-                        str_02(dcf77.get_radio_datetime().get_minute()),
-                    )
-                    .unwrap();
                     lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
-                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    lcd.write_str(dcf77::str_datetime(&dcf77).as_str(), &mut delay)
+                        .unwrap();
                     // Other things:
                     let mut str_buf = String::<3>::from("");
                     write!(
@@ -314,21 +303,10 @@ fn main() -> ! {
                             .unwrap();
                     }
                     // Decoded date and time:
-                    let mut str_buf = String::<14>::from("");
-                    write!(
-                        str_buf,
-                        "{}{}{} {} {}{}",
-                        str_02(npl.get_radio_datetime().get_year()),
-                        str_02(npl.get_radio_datetime().get_month()),
-                        str_02(npl.get_radio_datetime().get_day()),
-                        str_weekday(npl.get_radio_datetime().get_weekday()),
-                        str_02(npl.get_radio_datetime().get_hour()),
-                        str_02(npl.get_radio_datetime().get_minute()),
-                    )
-                    .unwrap();
                     lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
-                    lcd.write_str(str_buf.as_str(), &mut delay).unwrap();
+                    lcd.write_str(npl::str_datetime(&npl).as_str(), &mut delay)
+                        .unwrap();
                     // Other things:
                     let mut str_buf = String::<1>::from("");
                     write!(str_buf, "{}", npl::str_dst(&npl),).unwrap();

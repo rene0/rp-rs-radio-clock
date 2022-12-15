@@ -1,4 +1,4 @@
-use crate::frontend::dst_str;
+use crate::frontend::{dst_str, str_02, str_weekday};
 use crate::FRAMES_PER_SECOND;
 use core::cmp::Ordering as spaceship;
 use core::fmt::Write;
@@ -75,6 +75,23 @@ pub fn str_status(dcf77: &DCF77Utils) -> String<14> {
         str_bit_0(dcf77),
         str_bit_20(dcf77),
         str_minute_length(dcf77),
+    )
+    .unwrap();
+    str_buf
+}
+
+/// Return the current date and time as a string
+pub fn str_datetime(dcf77: &DCF77Utils) -> String<14> {
+    let mut str_buf = String::<14>::from("");
+    write!(
+        str_buf,
+        "{}{}{} {} {}{}",
+        str_02(dcf77.get_radio_datetime().get_year()),
+        str_02(dcf77.get_radio_datetime().get_month()),
+        str_02(dcf77.get_radio_datetime().get_day()),
+        str_weekday(dcf77.get_radio_datetime().get_weekday()),
+        str_02(dcf77.get_radio_datetime().get_hour()),
+        str_02(dcf77.get_radio_datetime().get_minute()),
     )
     .unwrap();
     str_buf

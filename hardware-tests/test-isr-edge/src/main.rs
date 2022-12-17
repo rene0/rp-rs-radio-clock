@@ -102,8 +102,7 @@ fn IO_IRQ_BANK0() {
     // Our interrupts don't clear themselves.
     // Do that here at the end of each condition so we don't immediately jump back to this interrupt handler.
 
-    if let Some(gpio_pin) = DCF77_SIGNAL_PIN {
-        let dcf77_signal = gpio_pin;
+    if let Some(dcf77_signal) = DCF77_SIGNAL_PIN {
         if dcf77_signal.is_low().unwrap() {
             G_LOW_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
             dcf77_signal.clear_interrupt(EdgeLow);
@@ -112,8 +111,7 @@ fn IO_IRQ_BANK0() {
             dcf77_signal.clear_interrupt(EdgeHigh);
         }
     }
-    if let Some(gpio_pin) = NPL_SIGNAL_PIN {
-        let npl_signal = gpio_pin;
+    if let Some(npl_signal) = NPL_SIGNAL_PIN {
         if npl_signal.is_low().unwrap() {
             G_LOW_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
             npl_signal.clear_interrupt(EdgeLow);

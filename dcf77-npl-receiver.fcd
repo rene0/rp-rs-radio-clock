@@ -287,13 +287,7 @@ MC 305 345 0 0 ey_libraries.refpnt2
 FCJ
 TY 285 340 5 4 0 0 0 Bitstream++Charter SW
 TY 315 340 5 4 0 0 0 Bitstream++Charter K_SW
-MC 305 360 1 0 ey_libraries.pasres0
-FCJ
-TY 310 350 5 4 0 0 0 Bitstream++Charter R8
-TY 310 365 5 4 0 0 0 Bitstream++Charter 10k
 LI 300 325 305 325 0
 LI 300 335 305 335 0
 LI 300 345 305 345 0
 LI 305 380 300 380 0
-LI 305 345 305 355 0
-LI 305 380 305 370 0

@@ -597,25 +597,10 @@
 <g transform="translate(1135.0,1590.0) scale(1.0160427807486632,1) "><text x="0.0" y="34.0" font-family="Bitstream Charter" font-size="34.0" font-style="" font-weigth="" fill="#000000">K</text>
 <text x="21.0" y="41.2" font-family="Bitstream Charter" font-size="27.2" font-style="" font-weigth="" fill="#000000">SW</text>
 </g>
-<line x1="1095.0" y1="1690.0" x2="1075.0" y2="1695.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1075.0" y1="1695.0" x2="1095.0" y2="1700.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1095.0" y1="1700.0" x2="1075.0" y2="1705.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1075.0" y1="1705.0" x2="1095.0" y2="1710.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1095.0" y1="1710.0" x2="1075.0" y2="1715.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1085.0" y1="1665.0" x2="1085.0" y2="1685.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1095.0" y1="1690.0" x2="1085.0" y2="1685.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1085.0" y1="1740.0" x2="1085.0" y2="1720.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1075.0" y1="1715.0" x2="1085.0" y2="1720.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<g transform="translate(1110.0,1640.0) scale(1.0160427807486632,1) "><text x="0.0" y="34.0" font-family="Bitstream Charter" font-size="34.0" font-style="" font-weigth="" fill="#000000">R8</text>
-</g>
-<g transform="translate(1110.0,1715.0) scale(1.0160427807486632,1) "><text x="0.0" y="34.0" font-family="Bitstream Charter" font-size="34.0" font-style="" font-weigth="" fill="#000000">10k</text>
-</g>
 <line x1="1060.0" y1="1515.0" x2="1085.0" y2="1515.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <line x1="1060.0" y1="1565.0" x2="1085.0" y2="1565.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <line x1="1060.0" y1="1615.0" x2="1085.0" y2="1615.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <line x1="1085.0" y1="1790.0" x2="1060.0" y2="1790.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1085.0" y1="1615.0" x2="1085.0" y2="1665.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
-<line x1="1085.0" y1="1790.0" x2="1085.0" y2="1740.0" style="stroke:#000000;stroke-width:2.5;fill-rule: evenodd;" fill="none"/>
 <rect x="90.0" y="740.0" rx="0" ry="0" width="40.0" height="100.0" style="stroke:#000000;stroke-width:0.33" fill="#000000"/>
 <rect x="190.0" y="740.0" rx="2.5" ry="2.5" width="40.0" height="100.0" style="stroke:#000000;stroke-width:0.33" fill="#000000"/>
 <rect x="290.0" y="740.0" rx="2.5" ry="2.5" width="40.0" height="100.0" style="stroke:#000000;stroke-width:0.33" fill="#000000"/>

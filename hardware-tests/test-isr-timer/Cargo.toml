@@ -14,7 +14,7 @@ fugit = "0.3.6"
 panic-halt = "0.2.0"
 
 # We're using a Pico by default on this template
-rp-pico = "0.5.0"
+rp-pico = "0.6.0"
 
 # cargo build/run
 [profile.dev]

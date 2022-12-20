@@ -24,7 +24,7 @@ npl_utils = "0.2.0"
 radio_datetime_utils = "0.4.2"
 
 # We're using a Pico by default on this template
-rp-pico = "0.5.0"
+rp-pico = "0.6.0"
 
 # cargo build/run
 [profile.dev]

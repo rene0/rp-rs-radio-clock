@@ -237,7 +237,7 @@ fn main() -> ! {
             }
             if dcf77_tick == 0 {
                 let mut second = dcf77.get_second() + 1;
-                if second == dcf77.get_next_minute_length() + 1 {
+                if second == dcf77.get_next_minute_length() {
                     second = 0;
                 }
                 lcd.set_cursor_pos(get_xy(14, 1).unwrap(), &mut delay)
@@ -279,7 +279,7 @@ fn main() -> ! {
             }
             if npl_tick == 0 {
                 let mut second = npl.get_second() + 1;
-                if second == npl.get_minute_length() + 1 {
+                if second == npl.get_minute_length() {
                     second = 0;
                 }
                 lcd.set_cursor_pos(get_xy(14, 3).unwrap(), &mut delay)

@@ -511,6 +511,70 @@ dependencies = [
 ]
 
 [[package]]
+name = "test-display"
+version = "0.1.1"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "defmt-rtt",
+ "embedded-hal",
+ "fugit",
+ "hd44780-driver",
+ "heapless",
+ "panic-halt",
+ "rp-pico",
+]
+
+[[package]]
+name = "test-isr-edge"
+version = "0.1.1"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "defmt-rtt",
+ "embedded-hal",
+ "panic-halt",
+ "rp-pico",
+]
+
+[[package]]
+name = "test-isr-timer"
+version = "0.1.1"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "defmt-rtt",
+ "embedded-hal",
+ "fugit",
+ "panic-halt",
+ "rp-pico",
+]
+
+[[package]]
+name = "test-ky040"
+version = "0.1.1"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "defmt-rtt",
+ "embedded-hal",
+ "panic-halt",
+ "rp-pico",
+]
+
+[[package]]
+name = "test-leds"
+version = "0.1.1"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "defmt-rtt",
+ "embedded-hal",
+ "panic-halt",
+ "rp-pico",
+]
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 
+use crate::hd44780_helper::get_xy;
 use bsp::hal::{
     clocks::{init_clocks_and_plls, Clock},
     pac,
@@ -15,6 +16,8 @@ use hd44780_driver::{Cursor, CursorBlink, HD44780};
 use heapless::String;
 use panic_halt as _;
 use rp_pico as bsp;
+
+mod hd44780_helper;
 
 /// I²C address of the PCF8574 adapter, change as needed
 const I2C_ADDRESS: u8 = 0x27;
@@ -72,12 +75,14 @@ fn main() -> ! {
     lcd.write_str("rp-hal on", &mut delay).unwrap();
 
     // Move the cursor
-    lcd.set_cursor_xy((8, 2), &mut delay).unwrap();
+    lcd.set_cursor_pos(get_xy(8, 2).unwrap(), &mut delay)
+        .unwrap();
 
     // Write more more text
     lcd.write_str("HD44780!", &mut delay).unwrap();
 
-    lcd.set_cursor_xy((11, 3), &mut delay).unwrap();
+    lcd.set_cursor_pos(get_xy(11, 3).unwrap(), &mut delay)
+        .unwrap();
     lcd.write_str("at (11,3)", &mut delay).unwrap();
 
     let timer = bsp::hal::Timer::new(pac.TIMER, &mut pac.RESETS);
@@ -91,7 +96,8 @@ fn main() -> ! {
         // `write` for `heapless::String` returns an error if the buffer is full,
         // but because the buffer here is 20 bytes large, the u64 will fit.
         let _ = write!(data, "{}", dist);
-        lcd.set_cursor_xy((0, 1), &mut delay).unwrap();
+        lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
+            .unwrap();
         lcd.write_str(data.as_str(), &mut delay).unwrap();
         old_value = new_value;
     }

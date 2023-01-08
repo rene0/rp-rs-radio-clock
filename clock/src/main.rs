@@ -3,6 +3,7 @@
 #![no_main]
 
 use crate::frontend::*;
+use crate::hd44780_helper::get_xy;
 use core::{
     cell::RefCell,
     fmt::Write,
@@ -34,6 +35,7 @@ use rp_pico::hal::{
 use rp_pico::{entry, XOSC_CRYSTAL_FREQ};
 
 mod frontend;
+mod hd44780_helper;
 
 /// I²C address of the PCF8574 adapter, change as needed
 const I2C_ADDRESS: u8 = 0x27;

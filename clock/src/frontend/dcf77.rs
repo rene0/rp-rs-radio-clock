@@ -1,17 +1,16 @@
-use crate::frontend::{dst_str, str_parity};
-use crate::FRAMES_PER_SECOND;
-use core::cmp::Ordering as spaceship;
+use crate::frontend;
+use core::cmp::Ordering;
 use core::fmt::Write;
 use dcf77_utils::DCF77Utils;
 use embedded_hal::digital::v2::OutputPin;
 use heapless::String;
-use rp_pico::hal::gpio;
+use rp_pico::hal::gpio::{bank0, Pin, PushPullOutput};
 
 /// Put the LEDs in their initial state.
 pub fn init_leds(
-    led_time: &mut gpio::Pin<gpio::bank0::Gpio12, gpio::PushPullOutput>,
-    led_bit: &mut gpio::Pin<gpio::bank0::Gpio13, gpio::PushPullOutput>,
-    led_error: &mut gpio::Pin<gpio::bank0::Gpio14, gpio::PushPullOutput>,
+    led_time: &mut Pin<bank0::Gpio12, PushPullOutput>,
+    led_bit: &mut Pin<bank0::Gpio13, PushPullOutput>,
+    led_error: &mut Pin<bank0::Gpio14, PushPullOutput>,
 ) {
     led_time.set_high().unwrap();
     led_bit.set_low().unwrap();
@@ -22,12 +21,12 @@ pub fn init_leds(
 pub fn update_time_led(
     tick: u8,
     dcf77: &DCF77Utils,
-    led_time: &mut gpio::Pin<gpio::bank0::Gpio12, gpio::PushPullOutput>,
+    led_time: &mut Pin<bank0::Gpio12, PushPullOutput>,
 ) {
     if tick == 0 {
         led_time.set_high().unwrap();
-    } else if (!dcf77.get_new_minute() && tick >= FRAMES_PER_SECOND * 2 / 10)
-        || (dcf77.get_new_minute() && tick >= FRAMES_PER_SECOND * 8 / 10)
+    } else if (!dcf77.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 2 / 10)
+        || (dcf77.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 8 / 10)
     {
         led_time.set_low().unwrap();
     }
@@ -37,8 +36,8 @@ pub fn update_time_led(
 pub fn update_bit_leds(
     tick: u8,
     dcf77: &DCF77Utils,
-    led_bit: &mut gpio::Pin<gpio::bank0::Gpio13, gpio::PushPullOutput>,
-    led_error: &mut gpio::Pin<gpio::bank0::Gpio14, gpio::PushPullOutput>,
+    led_bit: &mut Pin<bank0::Gpio13, PushPullOutput>,
+    led_error: &mut Pin<bank0::Gpio14, PushPullOutput>,
 ) {
     if tick == 0 {
         led_bit.set_low().unwrap();
@@ -69,9 +68,9 @@ pub fn str_status(dcf77: &DCF77Utils) -> String<14> {
         str_jump_hour(dcf77),
         str_jump_minute(dcf77),
         str_jump_dst(dcf77),
-        str_parity(dcf77.get_parity_3(), false, 'c'),
-        str_parity(dcf77.get_parity_2(), false, 'b'),
-        str_parity(dcf77.get_parity_1(), false, 'a'),
+        frontend::str_parity(dcf77.get_parity_3(), false, 'c'),
+        frontend::str_parity(dcf77.get_parity_2(), false, 'b'),
+        frontend::str_parity(dcf77.get_parity_1(), false, 'a'),
         str_bit_0(dcf77),
         str_bit_20(dcf77),
         str_minute_length(dcf77),
@@ -162,7 +161,7 @@ fn str_jump_dst(dcf77: &DCF77Utils) -> char {
 /// Returns a character representation of the current DST status.
 fn str_dst(dcf77: &DCF77Utils) -> char {
     if let Some(dst) = dcf77.get_radio_datetime().get_dst() {
-        dst_str(dst)
+        frontend::dst_str(dst)
     } else {
         '*'
     }
@@ -171,9 +170,9 @@ fn str_dst(dcf77: &DCF77Utils) -> char {
 /// Return a character representation of the minute length status.
 fn str_minute_length(dcf77: &DCF77Utils) -> char {
     match dcf77.get_second().cmp(&dcf77.get_this_minute_length()) {
-        spaceship::Less => '<',
-        spaceship::Equal => ' ',
-        spaceship::Greater => '>',
+        Ordering::Less => '<',
+        Ordering::Equal => ' ',
+        Ordering::Greater => '>',
     }
 }
 

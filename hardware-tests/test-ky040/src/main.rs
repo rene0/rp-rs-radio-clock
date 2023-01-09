@@ -1,12 +1,12 @@
 #![no_std]
 #![no_main]
 
-use bsp::entry;
-use bsp::hal::{pac, sio::Sio};
 use defmt_rtt as _;
 use embedded_hal::digital::v2::{InputPin, OutputPin};
 use panic_halt as _;
-use rp_pico as bsp;
+use rp_pico::hal::sio::Sio;
+use rp_pico::pac::Peripherals;
+use rp_pico::Pins;
 
 // see also some examples from the internet:
 // https://www.brainy-bits.com/post/best-code-to-use-with-a-ky-040-rotary-encoder-let-s-find-out
@@ -14,7 +14,7 @@ use rp_pico as bsp;
 // https://michiel.vanderwulp.be/domotica/Modules/KY040-Rotary-Encoder/KY-040-Science.pdf
 // https://www.best-microcontroller-projects.com/rotary-encoder.html
 // https://arduino.stackexchange.com/questions/69307/ky-040-rotary-encoder-skipping-steps
-fn test_ky040(pins: bsp::Pins) -> ! {
+fn test_ky040(pins: Pins) -> ! {
     let sw_pin = pins.gpio7.into_pull_up_input(); // into_pull_down_input() always gives LOW output
     let dt_pin = pins.gpio8.into_floating_input();
     let clk_pin = pins.gpio9.into_floating_input();
@@ -50,12 +50,12 @@ fn test_ky040(pins: bsp::Pins) -> ! {
     }
 }
 
-#[entry]
+#[rp_pico::entry]
 fn main() -> ! {
-    let mut pac = pac::Peripherals::take().unwrap();
+    let mut pac = Peripherals::take().unwrap();
     let sio = Sio::new(pac.SIO);
 
-    let pins = bsp::Pins::new(
+    let pins = Pins::new(
         pac.IO_BANK0,
         pac.PADS_BANK0,
         sio.gpio_bank0,

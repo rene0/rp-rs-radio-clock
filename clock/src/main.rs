@@ -3,13 +3,12 @@
 #![no_main]
 
 use crate::frontend::*;
-use crate::hd44780_helper::get_xy;
 use core::{
     cell::RefCell,
     fmt::Write,
     sync::atomic::{AtomicBool, AtomicU32, Ordering},
 };
-use cortex_m::interrupt::Mutex;
+use cortex_m::{delay::Delay, interrupt::Mutex};
 use dcf77_utils::DCF77Utils;
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::{
@@ -22,17 +21,18 @@ use heapless::String;
 use npl_utils::NPLUtils;
 use panic_halt as _;
 use rp_pico::hal::{
-    clocks::{init_clocks_and_plls, Clock},
+    clocks,
+    clocks::Clock,
     gpio,
-    gpio::Interrupt::{EdgeHigh, EdgeLow},
-    pac,
-    pac::interrupt,
+    gpio::{bank0, FunctionI2C, Pin, PullDownInput},
     sio::Sio,
     timer::{Alarm, Alarm0},
     watchdog::Watchdog,
     Timer, I2C,
 };
-use rp_pico::{entry, XOSC_CRYSTAL_FREQ};
+use rp_pico::pac;
+use rp_pico::pac::{interrupt, CorePeripherals, Peripherals, I2C0, NVIC};
+use rp_pico::Pins;
 
 mod frontend;
 mod hd44780_helper;
@@ -51,8 +51,8 @@ static G_TIMER_TICK_NPL: AtomicU32 = AtomicU32::new(0);
 const FRAMES_PER_SECOND: u8 = 10;
 static G_TIMER_TICK: AtomicBool = AtomicBool::new(false); // tick-tock
 
-type DCF77SignalPin = gpio::Pin<gpio::bank0::Gpio11, gpio::PullDownInput>;
-type NPLSignalPin = gpio::Pin<gpio::bank0::Gpio6, gpio::PullDownInput>;
+type DCF77SignalPin = Pin<bank0::Gpio11, PullDownInput>;
+type NPLSignalPin = Pin<bank0::Gpio6, PullDownInput>;
 // needed to transfer our pin(s) into the ISR:
 static GLOBAL_PIN_DCF77: Mutex<RefCell<Option<DCF77SignalPin>>> = Mutex::new(RefCell::new(None));
 static GLOBAL_PIN_NPL: Mutex<RefCell<Option<NPLSignalPin>>> = Mutex::new(RefCell::new(None));
@@ -61,10 +61,10 @@ static GLOBAL_TIMER: Mutex<RefCell<Option<Timer>>> = Mutex::new(RefCell::new(Non
 static GLOBAL_ALARM: Mutex<RefCell<Option<Alarm0>>> = Mutex::new(RefCell::new(None));
 
 type I2CDisplay = I2C<
-    pac::I2C0,
+    I2C0,
     (
-        gpio::Pin<gpio::bank0::Gpio0, gpio::FunctionI2C>,
-        gpio::Pin<gpio::bank0::Gpio1, gpio::FunctionI2C>,
+        Pin<bank0::Gpio0, FunctionI2C>,
+        Pin<bank0::Gpio1, FunctionI2C>,
     ),
 >;
 enum DisplayMode {
@@ -79,15 +79,15 @@ enum DisplayMode {
 ///
 /// The `#[entry]` macro ensures the Cortex-M start-up code calls this function
 /// as soon as all global variables and the spinlock are initialised.
-#[entry]
+#[rp_pico::entry]
 fn main() -> ! {
-    let mut pac = pac::Peripherals::take().unwrap();
-    let core = pac::CorePeripherals::take().unwrap();
+    let mut pac = Peripherals::take().unwrap();
+    let core = CorePeripherals::take().unwrap();
     let mut watchdog = Watchdog::new(pac.WATCHDOG);
     let sio = Sio::new(pac.SIO);
     // boilerplate from the rp2040 template:
-    let clocks = init_clocks_and_plls(
-        XOSC_CRYSTAL_FREQ,
+    let clocks = clocks::init_clocks_and_plls(
+        rp_pico::XOSC_CRYSTAL_FREQ,
         pac.XOSC,
         pac.CLOCKS,
         pac.PLL_SYS,
@@ -98,8 +98,8 @@ fn main() -> ! {
     .ok()
     .unwrap();
 
-    let mut delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
-    let pins = rp_pico::Pins::new(
+    let mut delay = Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
+    let pins = Pins::new(
         pac.IO_BANK0,
         pac.PADS_BANK0,
         sio.gpio_bank0,
@@ -107,8 +107,8 @@ fn main() -> ! {
     );
 
     // Configure two pins as being I²C, not GPIO
-    let sda_pin = pins.gpio0.into_mode::<gpio::FunctionI2C>();
-    let scl_pin = pins.gpio1.into_mode::<gpio::FunctionI2C>();
+    let sda_pin = pins.gpio0.into_mode::<FunctionI2C>();
+    let scl_pin = pins.gpio1.into_mode::<FunctionI2C>();
 
     // Create the I²C drive, using the two pre-configured pins. This will fail
     // at compile time if the pins are in the wrong mode, or if this I²C
@@ -129,7 +129,7 @@ fn main() -> ! {
     lcd.set_cursor_visibility(Cursor::Invisible, &mut delay)
         .unwrap(); // turn off completely
     lcd.write_str("DCF77", &mut delay).unwrap();
-    lcd.set_cursor_pos(get_xy(0, 2).unwrap(), &mut delay)
+    lcd.set_cursor_pos(hd44780_helper::get_xy(0, 2).unwrap(), &mut delay)
         .unwrap();
     lcd.write_str("NPL", &mut delay).unwrap();
 
@@ -159,11 +159,11 @@ fn main() -> ! {
     led_pin.set_low().unwrap();
 
     let dcf77_signal_pin = pins.gpio11.into_mode();
-    dcf77_signal_pin.set_interrupt_enabled(EdgeHigh, true);
-    dcf77_signal_pin.set_interrupt_enabled(EdgeLow, true);
+    dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
+    dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
     let npl_signal_pin = pins.gpio6.into_mode();
-    npl_signal_pin.set_interrupt_enabled(EdgeHigh, true);
-    npl_signal_pin.set_interrupt_enabled(EdgeLow, true);
+    npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
+    npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
     let mut timer = Timer::new(pac.TIMER, &mut pac.RESETS);
     let mut alarm0 = timer.alarm_0().unwrap();
 
@@ -180,8 +180,8 @@ fn main() -> ! {
     cortex_m::interrupt::free(|cs| GLOBAL_ALARM.borrow(cs).replace(Some(alarm0)));
     // Ready, set, go!
     unsafe {
-        pac::NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
-        pac::NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
+        NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
+        NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
     }
     let mut t0_dcf77 = 0;
     let mut dcf77_tick = 0;
@@ -242,7 +242,7 @@ fn main() -> ! {
                 if second == dcf77.get_next_minute_length() {
                     second = 0;
                 }
-                lcd.set_cursor_pos(get_xy(14, 1).unwrap(), &mut delay)
+                lcd.set_cursor_pos(hd44780_helper::get_xy(14, 1).unwrap(), &mut delay)
                     .unwrap();
                 lcd.write_str(str_02(Some(second)).as_str(), &mut delay)
                     .unwrap();
@@ -252,13 +252,13 @@ fn main() -> ! {
                 dcf77.decode_time();
                 if !dcf77.get_first_minute() {
                     if matches!(display_mode, DisplayMode::Time) {
-                        lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
+                        lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
                             .unwrap();
                         lcd.write_str(dcf77::str_status(&dcf77).as_str(), &mut delay)
                             .unwrap();
                     }
                     // Decoded date and time:
-                    lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
+                    lcd.set_cursor_pos(hd44780_helper::get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(
                         str_datetime(dcf77.get_radio_datetime()).as_str(),
@@ -266,7 +266,7 @@ fn main() -> ! {
                     )
                     .unwrap();
                     // Other things:
-                    lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
+                    lcd.set_cursor_pos(hd44780_helper::get_xy(17, 1).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(dcf77::str_misc(&dcf77).as_str(), &mut delay)
                         .unwrap();
@@ -284,7 +284,7 @@ fn main() -> ! {
                 if second == npl.get_minute_length() {
                     second = 0;
                 }
-                lcd.set_cursor_pos(get_xy(14, 3).unwrap(), &mut delay)
+                lcd.set_cursor_pos(hd44780_helper::get_xy(14, 3).unwrap(), &mut delay)
                     .unwrap();
                 lcd.write_str(str_02(Some(second)).as_str(), &mut delay)
                     .unwrap();
@@ -294,18 +294,18 @@ fn main() -> ! {
                 npl.decode_time();
                 if !npl.get_first_minute() {
                     if matches!(display_mode, DisplayMode::Time) {
-                        lcd.set_cursor_pos(get_xy(6, 0).unwrap(), &mut delay)
+                        lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
                             .unwrap();
                         lcd.write_str(npl::str_status(&npl).as_str(), &mut delay)
                             .unwrap();
                     }
                     // Decoded date and time:
-                    lcd.set_cursor_pos(get_xy(0, 1).unwrap(), &mut delay)
+                    lcd.set_cursor_pos(hd44780_helper::get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(str_datetime(npl.get_radio_datetime()).as_str(), &mut delay)
                         .unwrap();
                     // Other things:
-                    lcd.set_cursor_pos(get_xy(17, 1).unwrap(), &mut delay)
+                    lcd.set_cursor_pos(hd44780_helper::get_xy(17, 1).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(npl::str_misc(&npl).as_str(), &mut delay)
                         .unwrap();
@@ -331,7 +331,7 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     t0: u32,
     t1: u32,
 ) {
-    lcd.set_cursor_pos(get_xy(7, base_row).unwrap(), delay)
+    lcd.set_cursor_pos(hd44780_helper::get_xy(7, base_row).unwrap(), delay)
         .unwrap();
     let mut str_buf = String::<12>::from("");
     str_buf.clear();
@@ -351,7 +351,7 @@ fn show_times<D: DelayUs<u16> + DelayMs<u8>>(
     base_row: u8,
     t1: u32,
 ) {
-    lcd.set_cursor_pos(get_xy(7, base_row).unwrap(), delay)
+    lcd.set_cursor_pos(hd44780_helper::get_xy(7, base_row).unwrap(), delay)
         .unwrap();
     let mut str_buf = String::<12>::from("");
     str_buf.clear();
@@ -391,7 +391,11 @@ fn IO_IRQ_BANK0() {
                 G_EDGE_LOW_DCF77.store(is_low, Ordering::Release);
                 G_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
             }
-            dcf77_signal.clear_interrupt(if is_low { EdgeLow } else { EdgeHigh });
+            dcf77_signal.clear_interrupt(if is_low {
+                gpio::Interrupt::EdgeLow
+            } else {
+                gpio::Interrupt::EdgeHigh
+            });
         }
 
         if let Some(npl_signal) = NPL_PIN {
@@ -402,7 +406,11 @@ fn IO_IRQ_BANK0() {
                 G_EDGE_LOW_NPL.store(is_low, Ordering::Release);
                 G_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
             }
-            npl_signal.clear_interrupt(if is_low { EdgeLow } else { EdgeHigh });
+            npl_signal.clear_interrupt(if is_low {
+                gpio::Interrupt::EdgeLow
+            } else {
+                gpio::Interrupt::EdgeHigh
+            });
         }
     }
 }

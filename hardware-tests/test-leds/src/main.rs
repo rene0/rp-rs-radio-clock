@@ -1,19 +1,15 @@
 #![no_std]
 #![no_main]
 
-use bsp::hal::{
-    clocks::{init_clocks_and_plls, Clock},
-    pac,
-    sio::Sio,
-    watchdog::Watchdog,
-};
-use bsp::{entry, XOSC_CRYSTAL_FREQ};
+use cortex_m::delay::Delay;
 use defmt_rtt as _;
 use embedded_hal::digital::v2::OutputPin;
 use panic_halt as _;
-use rp_pico as bsp;
+use rp_pico::hal::{clocks, clocks::Clock, sio::Sio, watchdog::Watchdog};
+use rp_pico::pac::{CorePeripherals, Peripherals};
+use rp_pico::Pins;
 
-fn test_leds(pins: bsp::Pins, mut delay: cortex_m::delay::Delay) -> ! {
+fn test_leds(pins: Pins, mut delay: Delay) -> ! {
     // no vec! in no_std, and each pin is a different type so using an array does not work.
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
@@ -43,16 +39,16 @@ fn test_leds(pins: bsp::Pins, mut delay: cortex_m::delay::Delay) -> ! {
     }
 }
 
-#[entry]
+#[rp_pico::entry]
 fn main() -> ! {
-    let mut pac = pac::Peripherals::take().unwrap();
-    let core = pac::CorePeripherals::take().unwrap();
+    let mut pac = Peripherals::take().unwrap();
+    let core = CorePeripherals::take().unwrap();
     let mut watchdog = Watchdog::new(pac.WATCHDOG);
     let sio = Sio::new(pac.SIO);
 
     // boilerplate from the rp2040 template:
-    let clocks = init_clocks_and_plls(
-        XOSC_CRYSTAL_FREQ,
+    let clocks = clocks::init_clocks_and_plls(
+        rp_pico::XOSC_CRYSTAL_FREQ,
         pac.XOSC,
         pac.CLOCKS,
         pac.PLL_SYS,
@@ -63,9 +59,9 @@ fn main() -> ! {
     .ok()
     .unwrap();
 
-    let delay = cortex_m::delay::Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
+    let delay = Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
 
-    let pins = bsp::Pins::new(
+    let pins = Pins::new(
         pac.IO_BANK0,
         pac.PADS_BANK0,
         sio.gpio_bank0,

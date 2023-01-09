@@ -1,21 +1,23 @@
 #![no_std]
 #![no_main]
 
-use bsp::entry;
-use bsp::hal::{pac, sio::Sio};
-use bsp::pac::interrupt;
 use core::cell::RefCell;
 use core::sync::atomic::{AtomicBool, Ordering};
 use cortex_m::interrupt::Mutex;
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::digital::v2::{InputPin, OutputPin};
 use panic_halt as _;
-use rp_pico as bsp;
-use rp_pico::hal::gpio;
-use rp_pico::hal::gpio::Interrupt::{EdgeHigh, EdgeLow};
+use rp_pico::hal::{
+    gpio,
+    gpio::{bank0, Pin, PullDownInput},
+    sio::Sio,
+};
+use rp_pico::pac;
+use rp_pico::pac::{interrupt, Peripherals, NVIC};
+use rp_pico::Pins;
 
-type DCF77SignalPin = gpio::Pin<gpio::bank0::Gpio11, gpio::PullDownInput>;
-type NPLSignalPin = gpio::Pin<gpio::bank0::Gpio6, gpio::PullDownInput>;
+type DCF77SignalPin = Pin<bank0::Gpio11, PullDownInput>;
+type NPLSignalPin = Pin<bank0::Gpio6, PullDownInput>;
 
 // Needed to transfer our pins into the ISR:
 static GLOBAL_PINS_DCF77: Mutex<RefCell<Option<DCF77SignalPin>>> = Mutex::new(RefCell::new(None));
@@ -30,12 +32,12 @@ static G_LOW_EDGE_RECEIVED_NPL: AtomicBool = AtomicBool::new(false);
 ///
 /// The `#[entry]` macro ensures the Cortex-M start-up code calls this function
 /// as soon as all global variables are initialised.
-#[entry]
+#[rp_pico::entry]
 fn main() -> ! {
-    let mut pac = pac::Peripherals::take().unwrap();
+    let mut pac = Peripherals::take().unwrap();
     let sio = Sio::new(pac.SIO);
     // boilerplate from the rp2040 template:
-    let pins = bsp::Pins::new(
+    let pins = Pins::new(
         pac.IO_BANK0,
         pac.PADS_BANK0,
         sio.gpio_bank0,
@@ -45,20 +47,20 @@ fn main() -> ! {
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
     dcf77_led_bit.set_low().unwrap();
     let dcf77_signal_pin = pins.gpio11.into_mode();
-    dcf77_signal_pin.set_interrupt_enabled(EdgeHigh, true);
-    dcf77_signal_pin.set_interrupt_enabled(EdgeLow, true);
+    dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
+    dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
 
     let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
     npl_led_bit_a.set_low().unwrap();
     let npl_signal_pin = pins.gpio6.into_mode();
-    npl_signal_pin.set_interrupt_enabled(EdgeHigh, true);
-    npl_signal_pin.set_interrupt_enabled(EdgeLow, true);
+    npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
+    npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
 
     // Give our pins away to the ISR
     cortex_m::interrupt::free(|cs| GLOBAL_PINS_DCF77.borrow(cs).replace(Some(dcf77_signal_pin)));
     cortex_m::interrupt::free(|cs| GLOBAL_PINS_NPL.borrow(cs).replace(Some(npl_signal_pin)));
     unsafe {
-        pac::NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
+        NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
     }
 
     loop {
@@ -105,19 +107,19 @@ fn IO_IRQ_BANK0() {
     if let Some(dcf77_signal) = DCF77_SIGNAL_PIN {
         if dcf77_signal.is_low().unwrap() {
             G_LOW_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-            dcf77_signal.clear_interrupt(EdgeLow);
+            dcf77_signal.clear_interrupt(gpio::Interrupt::EdgeLow);
         } else {
             G_HIGH_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-            dcf77_signal.clear_interrupt(EdgeHigh);
+            dcf77_signal.clear_interrupt(gpio::Interrupt::EdgeHigh);
         }
     }
     if let Some(npl_signal) = NPL_SIGNAL_PIN {
         if npl_signal.is_low().unwrap() {
             G_LOW_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
-            npl_signal.clear_interrupt(EdgeLow);
+            npl_signal.clear_interrupt(gpio::Interrupt::EdgeLow);
         } else {
             G_HIGH_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
-            npl_signal.clear_interrupt(EdgeHigh);
+            npl_signal.clear_interrupt(gpio::Interrupt::EdgeHigh);
         }
     }
 }

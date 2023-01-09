@@ -1,18 +1,17 @@
-use crate::frontend::{dst_str, str_parity};
-use crate::FRAMES_PER_SECOND;
-use core::cmp::Ordering as spaceship;
+use crate::frontend;
+use core::cmp::Ordering;
 use core::fmt::Write;
 use embedded_hal::digital::v2::OutputPin;
 use heapless::String;
 use npl_utils::NPLUtils;
-use rp_pico::hal::gpio;
+use rp_pico::hal::gpio::{bank0, Pin, PushPullOutput};
 
 /// Put the LEDs in their initial state.
 pub fn init_leds(
-    led_time: &mut gpio::Pin<gpio::bank0::Gpio2, gpio::PushPullOutput>,
-    led_bit_a: &mut gpio::Pin<gpio::bank0::Gpio3, gpio::PushPullOutput>,
-    led_bit_b: &mut gpio::Pin<gpio::bank0::Gpio4, gpio::PushPullOutput>,
-    led_error: &mut gpio::Pin<gpio::bank0::Gpio5, gpio::PushPullOutput>,
+    led_time: &mut Pin<bank0::Gpio2, PushPullOutput>,
+    led_bit_a: &mut Pin<bank0::Gpio3, PushPullOutput>,
+    led_bit_b: &mut Pin<bank0::Gpio4, PushPullOutput>,
+    led_error: &mut Pin<bank0::Gpio5, PushPullOutput>,
 ) {
     led_time.set_high().unwrap();
     led_bit_a.set_low().unwrap();
@@ -21,15 +20,11 @@ pub fn init_leds(
 }
 
 /// Turn the time led on or off depending on whether a new second or minute arrived.
-pub fn update_time_led(
-    tick: u8,
-    npl: &NPLUtils,
-    led_time: &mut gpio::Pin<gpio::bank0::Gpio2, gpio::PushPullOutput>,
-) {
+pub fn update_time_led(tick: u8, npl: &NPLUtils, led_time: &mut Pin<bank0::Gpio2, PushPullOutput>) {
     if tick == 0 {
         led_time.set_high().unwrap();
-    } else if (!npl.get_new_minute() && tick >= FRAMES_PER_SECOND * 2 / 10)
-        || (npl.get_new_minute() && tick >= FRAMES_PER_SECOND * 8 / 10)
+    } else if (!npl.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 2 / 10)
+        || (npl.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 8 / 10)
     {
         led_time.set_low().unwrap();
     }
@@ -39,9 +34,9 @@ pub fn update_time_led(
 pub fn update_bit_leds(
     tick: u8,
     npl: &NPLUtils,
-    led_bit_a: &mut gpio::Pin<gpio::bank0::Gpio3, gpio::PushPullOutput>,
-    led_bit_b: &mut gpio::Pin<gpio::bank0::Gpio4, gpio::PushPullOutput>,
-    led_error: &mut gpio::Pin<gpio::bank0::Gpio5, gpio::PushPullOutput>,
+    led_bit_a: &mut Pin<bank0::Gpio3, PushPullOutput>,
+    led_bit_b: &mut Pin<bank0::Gpio4, PushPullOutput>,
+    led_error: &mut Pin<bank0::Gpio5, PushPullOutput>,
 ) {
     if tick == 0 {
         led_bit_a.set_low().unwrap();
@@ -79,10 +74,10 @@ pub fn str_status(npl: &NPLUtils) -> String<12> {
         str_jump_hour(npl),
         str_jump_minute(npl),
         str_jump_dst(npl),
-        str_parity(npl.get_parity_4(), true, 'd'),
-        str_parity(npl.get_parity_3(), true, 'c'),
-        str_parity(npl.get_parity_2(), true, 'b'),
-        str_parity(npl.get_parity_1(), true, 'a'),
+        frontend::str_parity(npl.get_parity_4(), true, 'd'),
+        frontend::str_parity(npl.get_parity_3(), true, 'c'),
+        frontend::str_parity(npl.get_parity_2(), true, 'b'),
+        frontend::str_parity(npl.get_parity_1(), true, 'a'),
         str_minute_length(npl),
     )
     .unwrap();
@@ -164,7 +159,7 @@ fn str_jump_dst(npl: &NPLUtils) -> char {
 /// Returns a character representation of the current DST status.
 fn str_dst(npl: &NPLUtils) -> char {
     if let Some(dst) = npl.get_radio_datetime().get_dst() {
-        dst_str(dst)
+        frontend::dst_str(dst)
     } else {
         '*'
     }
@@ -173,8 +168,8 @@ fn str_dst(npl: &NPLUtils) -> char {
 /// Return a character representation of the minute length status.
 fn str_minute_length(npl: &NPLUtils) -> char {
     match npl.get_second().cmp(&npl.get_minute_length()) {
-        spaceship::Less => '<',
-        spaceship::Equal => ' ',
-        spaceship::Greater => '>',
+        Ordering::Less => '<',
+        Ordering::Equal => ' ',
+        Ordering::Greater => '>',
     }
 }

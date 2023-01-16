@@ -133,6 +133,18 @@ fn main() -> ! {
         .unwrap();
     lcd.write_str("NPL", &mut delay).unwrap();
 
+    // Set power-down pins to LOW, i.e. receiver ON:
+    let mut dcf77_pdn = pins.gpio15.into_push_pull_output();
+    dcf77_pdn.set_low().unwrap();
+    let mut npl_pdn = pins.gpio10.into_push_pull_output();
+    npl_pdn.set_low().unwrap();
+
+    // set AGC pins to HIGH, i.e. AGC ON:
+    let mut dcf77_aon = pins.gpio26.into_push_pull_output();
+    dcf77_aon.set_high().unwrap();
+    let mut npl_aon = pins.gpio27.into_push_pull_output();
+    npl_aon.set_high().unwrap();
+
     // Set up the LEDs and signal the "looking for signal" state (time and error LEDs on):
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();

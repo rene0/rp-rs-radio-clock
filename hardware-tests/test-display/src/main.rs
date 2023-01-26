@@ -92,7 +92,7 @@ fn main() -> ! {
 
         // `write` for `heapless::String` returns an error if the buffer is full,
         // but because the buffer here is 20 bytes large, the u64 will fit.
-        let _ = write!(data, "{}", dist);
+        let _ = write!(data, "{dist}");
         lcd.set_cursor_pos(hd44780_helper::get_xy(0, 1).unwrap(), &mut delay)
             .unwrap();
         lcd.write_str(data.as_str(), &mut delay).unwrap();

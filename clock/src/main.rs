@@ -367,7 +367,7 @@ fn show_times<D: DelayUs<u16> + DelayMs<u8>>(
         .unwrap();
     let mut str_buf = String::<12>::from("");
     str_buf.clear();
-    write!(str_buf, "T {:<10}", t1).unwrap();
+    write!(str_buf, "T {t1:<10}").unwrap();
     lcd.write_str(str_buf.as_str(), delay).unwrap();
 }
 

@@ -70,3 +70,93 @@ pub fn str_parity(parity: Option<bool>, ok: bool, name: char) -> char {
         name
     }
 }
+
+/// Get a textual version of any unexpected jumps in the current date and time.
+pub fn str_jumps(rdt: RadioDateTimeUtils) -> String<7> {
+    let mut str_buf = String::<7>::from("");
+    write!(
+        str_buf,
+        "{}{}{}{}{}{}{}",
+        str_jump_year(rdt),
+        str_jump_month(rdt),
+        str_jump_day(rdt),
+        str_jump_weekday(rdt),
+        str_jump_hour(rdt),
+        str_jump_minute(rdt),
+        str_jump_dst(rdt)
+    )
+    .unwrap();
+    str_buf
+}
+
+/// Returns a character representation of the current DST status.
+pub fn str_dst(rdt: RadioDateTimeUtils) -> char {
+    if let Some(dst) = rdt.get_dst() {
+        dst_str(dst)
+    } else {
+        '*'
+    }
+}
+
+/// Return if the year has jumped unexpectedly, 'y' or ' '
+fn str_jump_year(rdt: RadioDateTimeUtils) -> char {
+    if rdt.get_jump_year() {
+        'y'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the month has jumped unexpectedly, 'm' or ' '
+fn str_jump_month(rdt: RadioDateTimeUtils) -> char {
+    if rdt.get_jump_month() {
+        'm'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the day-of-month has jumped unexpectedly, 'd' or ' '.
+fn str_jump_day(rdt: RadioDateTimeUtils) -> char {
+    if rdt.get_jump_day() {
+        'd'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the day-of-week has jumped unexpectedly, 'w' or ' '.
+fn str_jump_weekday(rdt: RadioDateTimeUtils) -> char {
+    if rdt.get_jump_weekday() {
+        'w'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the hour has jumped unexpectedly, 'h' or ' '.
+fn str_jump_hour(rdt: RadioDateTimeUtils) -> char {
+    if rdt.get_jump_hour() {
+        'h'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the minute has jumped unexpectedly, 'm' or ' '.
+fn str_jump_minute(rdt: RadioDateTimeUtils) -> char {
+    if rdt.get_jump_minute() {
+        'm'
+    } else {
+        ' '
+    }
+}
+
+/// Return if the daylight saving time status jumped unexpectedly, 't' or ' '.
+fn str_jump_dst(rdt: RadioDateTimeUtils) -> char {
+    if rdt.get_dst().is_some() && (rdt.get_dst().unwrap() & radio_datetime_utils::DST_JUMP) != 0 {
+        't'
+    } else {
+        ' '
+    }
+}

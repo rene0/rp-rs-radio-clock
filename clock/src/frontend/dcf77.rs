@@ -60,14 +60,8 @@ pub fn str_status(dcf77: &DCF77Utils) -> String<14> {
     let mut str_buf = String::<14>::from("");
     write!(
         str_buf,
-        "{}{}{}{}{}{}{}{}{}{} {}{}{}",
-        str_jump_year(dcf77),
-        str_jump_month(dcf77),
-        str_jump_day(dcf77),
-        str_jump_weekday(dcf77),
-        str_jump_hour(dcf77),
-        str_jump_minute(dcf77),
-        str_jump_dst(dcf77),
+        "{}{}{}{} {}{}{}",
+        frontend::str_jumps(dcf77.get_radio_datetime()),
         frontend::str_parity(dcf77.get_parity_3(), false, 'c'),
         frontend::str_parity(dcf77.get_parity_2(), false, 'b'),
         frontend::str_parity(dcf77.get_parity_1(), false, 'a'),
@@ -86,85 +80,11 @@ pub fn str_misc(dcf77: &DCF77Utils) -> String<3> {
         str_buf,
         "{}{}{}",
         str_call_bit(dcf77),
-        str_dst(dcf77),
+        frontend::str_dst(dcf77.get_radio_datetime()),
         str_leap_second(dcf77)
     )
     .unwrap();
     str_buf
-}
-
-/// Return if the year has jumped unexpectedly, 'y' or ' '
-fn str_jump_year(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_radio_datetime().get_jump_year() {
-        'y'
-    } else {
-        ' '
-    }
-}
-
-/// Return if the month has jumped unexpectedly, 'm' or ' '
-fn str_jump_month(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_radio_datetime().get_jump_month() {
-        'm'
-    } else {
-        ' '
-    }
-}
-
-/// Return if the day-of-month has jumped unexpectedly, 'd' or ' '.
-fn str_jump_day(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_radio_datetime().get_jump_day() {
-        'd'
-    } else {
-        ' '
-    }
-}
-
-/// Return if the day-of-week has jumped unexpectedly, 'w' or ' '.
-fn str_jump_weekday(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_radio_datetime().get_jump_weekday() {
-        'w'
-    } else {
-        ' '
-    }
-}
-
-/// Return if the hour has jumped unexpectedly, 'h' or ' '.
-fn str_jump_hour(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_radio_datetime().get_jump_hour() {
-        'h'
-    } else {
-        ' '
-    }
-}
-
-/// Return if the minute has jumped unexpectedly, 'm' or ' '.
-fn str_jump_minute(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_radio_datetime().get_jump_minute() {
-        'm'
-    } else {
-        ' '
-    }
-}
-
-/// Return if the daylight saving time status jumped unexpectedly, 't' or ' '.
-fn str_jump_dst(dcf77: &DCF77Utils) -> char {
-    if dcf77.get_radio_datetime().get_dst().is_some()
-        && (dcf77.get_radio_datetime().get_dst().unwrap() & radio_datetime_utils::DST_JUMP) != 0
-    {
-        't'
-    } else {
-        ' '
-    }
-}
-
-/// Returns a character representation of the current DST status.
-fn str_dst(dcf77: &DCF77Utils) -> char {
-    if let Some(dst) = dcf77.get_radio_datetime().get_dst() {
-        frontend::dst_str(dst)
-    } else {
-        '*'
-    }
 }
 
 /// Return a character representation of the minute length status.

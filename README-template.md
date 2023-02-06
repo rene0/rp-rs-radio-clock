@@ -42,13 +42,10 @@ If you aren't using a debugger (or want to use cargo-embed/probe-rs-debugger), c
 
 - A CMSIS-DAP probe. (J-Link and other probes will not work with probe-run)
 
-  You can use a second Pico as a CMSIS-DAP debug probe by installing either of the following firmware on it:
-
-  https://github.com/majbthrd/DapperMime/releases/download/20210225/raspberry_pi_pico-DapperMime.uf2
-
-  https://raw.githubusercontent.com/9names/binary-bits/main/rust-dap-pico-ramexec-setclock.uf2
-
-  More details on supported debug probes can be found in [debug_probes.md](debug_probes.md)
+You can use a second
+[Pico as a CMSIS-DAP debug probe](debug_probes.md#raspberry-pi-pico). Details
+on other supported debug probes can be found in
+[debug_probes.md](debug_probes.md)
 
 </details>
 
@@ -131,7 +128,7 @@ If you don't have a debug probe or if you want to do interactive debugging you c
 Some of the options for your `runner` are listed below:
 
 * **cargo embed**  
-  *Step 1* - Install [`cargo embed`](https://github.com/probe-rs/cargo-embed):
+  *Step 1* - Install [`cargo embed`](https://github.com/probe-rs/probe-rs/blob/master/cargo-embed):
 
   ```console
   $ cargo install cargo-embed
@@ -146,7 +143,7 @@ Some of the options for your `runner` are listed below:
 
   *Step 3* - Update settings in [Embed.toml](./Embed.toml)  
   - The defaults are to flash, reset, and start a defmt logging session
-  You can find all the settings and their meanings [in the cargo-embed repo](https://github.com/probe-rs/cargo-embed/blob/master/src/config/default.toml)
+  You can find all the settings and their meanings [in the cargo-embed repo](https://github.com/probe-rs/probe-rs/blob/master/cargo-embed/src/config/default.toml)
 
   *Step 4* - Use `cargo run`, which will compile the code and start the
   specified 'runner'. As the 'runner' is cargo embed, it will flash the device

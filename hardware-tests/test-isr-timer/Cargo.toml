@@ -11,4 +11,4 @@ embedded-hal = { version = "0.2.7", features = ["unproven"] }
 fugit = "0.3"
 panic-halt = "0.2"
 
-rp-pico = "0.6"
+rp-pico = "0.7"

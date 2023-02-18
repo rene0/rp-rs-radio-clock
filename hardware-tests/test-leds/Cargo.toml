@@ -10,4 +10,4 @@ defmt-rtt = "0.4"
 embedded-hal = { version = "0.2.7", features = ["unproven"] }
 panic-halt = "0.2"
 
-rp-pico = "0.6"
+rp-pico = "0.7"

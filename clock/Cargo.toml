@@ -23,4 +23,4 @@ dcf77_utils = "0.4.0"
 npl_utils = "0.2.1"
 radio_datetime_utils = "0.4.2"
 
-rp-pico = "0.6"
+rp-pico = "0.7"

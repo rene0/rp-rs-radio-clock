@@ -5,19 +5,6 @@ use radio_datetime_utils::RadioDateTimeUtils;
 pub mod dcf77;
 pub mod npl;
 
-/// Return a character representation of the given DST state.
-pub fn dst_str(dst: u8) -> char {
-    let mut res_dst = if (dst & radio_datetime_utils::DST_SUMMER) != 0 {
-        's'
-    } else {
-        'w'
-    };
-    if (dst & (radio_datetime_utils::DST_ANNOUNCED | radio_datetime_utils::DST_PROCESSED)) != 0 {
-        res_dst = res_dst.to_ascii_uppercase();
-    }
-    res_dst
-}
-
 /// Return a string version of the given value with leading 0, truncated to two digits or ** for None.
 pub fn str_02(value: Option<u8>) -> String<2> {
     let mut s = String::<2>::from("");
@@ -92,7 +79,15 @@ pub fn str_jumps(rdt: RadioDateTimeUtils) -> String<7> {
 /// Returns a character representation of the current DST status.
 pub fn str_dst(rdt: RadioDateTimeUtils) -> char {
     if let Some(dst) = rdt.get_dst() {
-        dst_str(dst)
+        let mut res_dst = if (dst & radio_datetime_utils::DST_SUMMER) != 0 {
+            's'
+        } else {
+            'w'
+        };
+        if (dst & (radio_datetime_utils::DST_ANNOUNCED | radio_datetime_utils::DST_PROCESSED)) != 0 {
+            res_dst = res_dst.to_ascii_uppercase();
+        }
+        res_dst
     } else {
         '*'
     }

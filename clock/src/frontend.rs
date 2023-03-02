@@ -84,7 +84,8 @@ pub fn str_dst(rdt: RadioDateTimeUtils) -> char {
         } else {
             'w'
         };
-        if (dst & (radio_datetime_utils::DST_ANNOUNCED | radio_datetime_utils::DST_PROCESSED)) != 0 {
+        if (dst & (radio_datetime_utils::DST_ANNOUNCED | radio_datetime_utils::DST_PROCESSED)) != 0
+        {
             res_dst = res_dst.to_ascii_uppercase();
         }
         res_dst

@@ -44,6 +44,18 @@ fn main() -> ! {
         &mut pac.RESETS,
     );
 
+    // Set power-down pins to LOW, i.e. receiver ON:
+    let mut dcf77_pdn = pins.gpio15.into_push_pull_output();
+    dcf77_pdn.set_low().unwrap();
+    let mut npl_pdn = pins.gpio10.into_push_pull_output();
+    npl_pdn.set_low().unwrap();
+
+    // set AGC pins to HIGH, i.e. AGC ON:
+    let mut dcf77_aon = pins.gpio26.into_push_pull_output();
+    dcf77_aon.set_high().unwrap();
+    let mut npl_aon = pins.gpio27.into_push_pull_output();
+    npl_aon.set_high().unwrap();
+
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
     dcf77_led_bit.set_low().unwrap();
     let dcf77_signal_pin = pins.gpio11.into_mode();

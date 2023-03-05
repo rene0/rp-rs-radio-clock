@@ -85,7 +85,7 @@ fn main() -> ! {
 }
 
 #[interrupt]
-fn IO_IRQ_BANK0() {
+unsafe fn IO_IRQ_BANK0() {
     static mut DCF77_SIGNAL_PIN: Option<DCF77SignalPin> = None;
     static mut NPL_SIGNAL_PIN: Option<NPLSignalPin> = None;
 

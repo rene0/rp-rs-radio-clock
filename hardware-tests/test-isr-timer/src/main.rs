@@ -58,7 +58,7 @@ fn main() -> ! {
 }
 
 #[interrupt]
-fn TIMER_IRQ_0() {
+unsafe fn TIMER_IRQ_0() {
     static mut ALARM: Option<Alarm0> = None;
 
     if ALARM.is_none() {

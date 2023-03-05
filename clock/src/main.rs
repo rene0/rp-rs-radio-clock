@@ -372,7 +372,7 @@ fn show_times<D: DelayUs<u16> + DelayMs<u8>>(
 }
 
 #[interrupt]
-fn IO_IRQ_BANK0() {
+unsafe fn IO_IRQ_BANK0() {
     static mut TICK_TIMER: Option<Timer> = None;
     static mut DCF77_PIN: Option<DCF77SignalPin> = None;
     static mut PREVIOUS_DCF77_LOW: bool = false;
@@ -428,7 +428,7 @@ fn IO_IRQ_BANK0() {
 }
 
 #[interrupt]
-fn TIMER_IRQ_0() {
+unsafe fn TIMER_IRQ_0() {
     static mut ALARM: Option<Alarm0> = None;
 
     if ALARM.is_none() {

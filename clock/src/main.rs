@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 
-use crate::frontend::*;
+use crate::frontend::{dcf77, npl};
 use core::{
     cell::RefCell,
     fmt::Write,
@@ -257,7 +257,7 @@ fn main() -> ! {
                 }
                 lcd.set_cursor_pos(hd44780_helper::get_xy(14, 1).unwrap(), &mut delay)
                     .unwrap();
-                lcd.write_str(str_02(Some(second)).as_str(), &mut delay)
+                lcd.write_str(frontend::str_02(Some(second)).as_str(), &mut delay)
                     .unwrap();
             }
             if dcf77_tick == 1 && dcf77.get_new_minute() {
@@ -274,7 +274,7 @@ fn main() -> ! {
                     lcd.set_cursor_pos(hd44780_helper::get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(
-                        str_datetime(dcf77.get_radio_datetime()).as_str(),
+                        frontend::str_datetime(dcf77.get_radio_datetime()).as_str(),
                         &mut delay,
                     )
                     .unwrap();
@@ -299,7 +299,7 @@ fn main() -> ! {
                 }
                 lcd.set_cursor_pos(hd44780_helper::get_xy(14, 3).unwrap(), &mut delay)
                     .unwrap();
-                lcd.write_str(str_02(Some(second)).as_str(), &mut delay)
+                lcd.write_str(frontend::str_02(Some(second)).as_str(), &mut delay)
                     .unwrap();
             }
             if npl_tick == 1 && npl.get_new_minute() {
@@ -315,8 +315,11 @@ fn main() -> ! {
                     // Decoded date and time:
                     lcd.set_cursor_pos(hd44780_helper::get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
-                    lcd.write_str(str_datetime(npl.get_radio_datetime()).as_str(), &mut delay)
-                        .unwrap();
+                    lcd.write_str(
+                        frontend::str_datetime(npl.get_radio_datetime()).as_str(),
+                        &mut delay,
+                    )
+                    .unwrap();
                     // Other things:
                     lcd.set_cursor_pos(hd44780_helper::get_xy(17, 1).unwrap(), &mut delay)
                         .unwrap();

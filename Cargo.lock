@@ -99,9 +99,9 @@ checksum = "6548a0ad5d2549e111e1f6a11a6c2e2d00ce6a3dafe22948d67c2b443f775e52"
 
 [[package]]
 name = "dcf77_utils"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e542fd73f0f5a36532ff0949a22c5b943ba4eab1057e3752279d8b8095efa54"
+checksum = "824d8617af2b569a01b5498c76efa9dca0acba748d4b339d5fbe3c7e28cb4cfb"
 dependencies = [
  "radio_datetime_utils",
 ]

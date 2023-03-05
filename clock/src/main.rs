@@ -20,6 +20,7 @@ use hd44780_driver::{bus::I2CBus, Cursor, CursorBlink, HD44780};
 use heapless::String;
 use npl_utils::NPLUtils;
 use panic_halt as _;
+use radio_datetime_utils::radio_datetime_helpers;
 use rp_pico::hal::{
     clocks,
     clocks::Clock,
@@ -351,7 +352,7 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
         str_buf,
         "{} {:<10}",
         if is_low_edge { 'L' } else { 'H' },
-        radio_datetime_utils::time_diff(t0, t1)
+        radio_datetime_helpers::time_diff(t0, t1)
     )
     .unwrap();
     lcd.write_str(str_buf.as_str(), delay).unwrap();

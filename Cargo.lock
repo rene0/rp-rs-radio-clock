@@ -258,9 +258,9 @@ checksum = "546c37ac5d9e56f55e73b677106873d9d9f5190605e41a856503623648488cae"
 
 [[package]]
 name = "npl_utils"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3310b0e14da86e0ece8548064e0186e67a90e0847fe3be940d5d3a838430e1e"
+checksum = "e668fae4b37333a2645769f91eb11e3d4f629cf839ad37138439f92d050c7889"
 dependencies = [
  "radio_datetime_utils",
 ]
@@ -352,9 +352,9 @@ dependencies = [
 
 [[package]]
 name = "radio_datetime_utils"
-version = "0.4.2"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b97b1d5411bc28bbaa1848797d912cc1de368f9baf23a6babd86e7acbc392d6"
+checksum = "95cdd3b90edcd89072979b07d58b98573e6042d7d79f9b3c43aa14ceea645d6e"
 
 [[package]]
 name = "rand_core"
@@ -586,9 +586,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.6"
+version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84a22b9f218b40614adcb3f4ff08b703773ad44fa9423e4e0d346d5db86e4ebc"
+checksum = "775c11906edafc97bc378816b94585fbd9a054eabaf86fdd0ced94af449efab7"
 
 [[package]]
 name = "usb-device"

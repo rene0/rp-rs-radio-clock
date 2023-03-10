@@ -96,6 +96,7 @@ fn main() -> ! {
     }
 }
 
+#[allow(non_snake_case)]
 #[interrupt]
 unsafe fn IO_IRQ_BANK0() {
     static mut DCF77_SIGNAL_PIN: Option<DCF77SignalPin> = None;

@@ -57,6 +57,7 @@ fn main() -> ! {
     }
 }
 
+#[allow(non_snake_case)]
 #[interrupt]
 unsafe fn TIMER_IRQ_0() {
     static mut ALARM: Option<Alarm0> = None;

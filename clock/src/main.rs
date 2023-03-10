@@ -375,6 +375,7 @@ fn show_times<D: DelayUs<u16> + DelayMs<u8>>(
     lcd.write_str(str_buf.as_str(), delay).unwrap();
 }
 
+#[allow(non_snake_case)]
 #[interrupt]
 unsafe fn IO_IRQ_BANK0() {
     static mut TICK_TIMER: Option<Timer> = None;
@@ -431,6 +432,7 @@ unsafe fn IO_IRQ_BANK0() {
     }
 }
 
+#[allow(non_snake_case)]
 #[interrupt]
 unsafe fn TIMER_IRQ_0() {
     static mut ALARM: Option<Alarm0> = None;

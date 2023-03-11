@@ -71,6 +71,9 @@ static mut GLOBAL_TIMER: Option<Timer> = None;
 // and one for the timer alarm:
 static mut GLOBAL_ALARM: Option<Alarm0> = None;
 
+static G_PREVIOUS_LOW_DCF77: AtomicBool = AtomicBool::new(false);
+static G_PREVIOUS_LOW_NPL: AtomicBool = AtomicBool::new(false);
+
 type I2CDisplay = I2C<
     I2C0,
     (
@@ -349,11 +352,13 @@ fn main() -> ! {
 }
 
 macro_rules! handle_tick {
+    // Our edge interrupts don't clear themselves.
+    // Do that at the end of the various conditions, so we don't immediately jump back to the ISR.
     ($pin:ident, $previous_low:ident, $hw:ident, $now:expr) => {
         let s_pin = $pin.as_mut().unwrap();
         let is_low = s_pin.is_low().unwrap();
-        if is_low != *$previous_low {
-            *$previous_low = is_low;
+        if is_low != $previous_low.load(Ordering::Acquire) {
+            $previous_low.store(is_low, Ordering::Release);
             $hw.timer_tick.store($now, Ordering::Release);
             $hw.edge_low.store(is_low, Ordering::Release);
             $hw.edge_received.store(true, Ordering::Release);
@@ -405,16 +410,11 @@ fn show_times<D: DelayUs<u16> + DelayMs<u8>>(
 #[allow(non_snake_case)]
 #[interrupt]
 unsafe fn IO_IRQ_BANK0() {
-    static mut PREVIOUS_DCF77_LOW: bool = false;
-    static mut PREVIOUS_NPL_LOW: bool = false;
-
-    // Our edge interrupts don't clear themselves.
-    // Do that at the end of the various conditions, so we don't immediately jump back to this interrupt handler.
     let tick = GLOBAL_TIMER.as_mut().unwrap();
     let now = tick.get_counter_low();
 
-    handle_tick!(GLOBAL_PIN_DCF77, PREVIOUS_DCF77_LOW, HW_DCF77, now);
-    handle_tick!(GLOBAL_PIN_NPL, PREVIOUS_NPL_LOW, HW_NPL, now);
+    handle_tick!(GLOBAL_PIN_DCF77, G_PREVIOUS_LOW_DCF77, HW_DCF77, now);
+    handle_tick!(GLOBAL_PIN_NPL, G_PREVIOUS_LOW_NPL, HW_NPL, now);
 }
 
 #[allow(non_snake_case)]

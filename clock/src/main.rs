@@ -68,7 +68,7 @@ type NPLSignalPin = Pin<bank0::Gpio6, PullDownInput>;
 static GLOBAL_PIN_DCF77: Mutex<RefCell<Option<DCF77SignalPin>>> = Mutex::new(RefCell::new(None));
 static GLOBAL_PIN_NPL: Mutex<RefCell<Option<NPLSignalPin>>> = Mutex::new(RefCell::new(None));
 // timer to get the timestamp of the edges:
-static GLOBAL_TIMER: Mutex<RefCell<Option<Timer>>> = Mutex::new(RefCell::new(None));
+static mut GLOBAL_TIMER: Option<Timer> = None;
 // and one for the timer alarm:
 static mut GLOBAL_ALARM: Option<Alarm0> = None;
 
@@ -194,7 +194,6 @@ fn main() -> ! {
     // Give the signal pins and timer away to the ISR
     cortex_m::interrupt::free(|cs| GLOBAL_PIN_DCF77.borrow(cs).replace(Some(dcf77_signal_pin)));
     cortex_m::interrupt::free(|cs| GLOBAL_PIN_NPL.borrow(cs).replace(Some(npl_signal_pin)));
-    cortex_m::interrupt::free(|cs| GLOBAL_TIMER.borrow(cs).replace(Some(timer)));
     alarm0
         .schedule(MicrosDurationU32::micros(
             1_000_000 / FRAMES_PER_SECOND as u32,
@@ -203,6 +202,7 @@ fn main() -> ! {
     alarm0.enable_interrupt();
     // Ready, set, go!
     unsafe {
+        GLOBAL_TIMER = Some(timer);
         GLOBAL_ALARM = Some(alarm0);
         NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
         NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
@@ -408,16 +408,12 @@ fn show_times<D: DelayUs<u16> + DelayMs<u8>>(
 #[allow(non_snake_case)]
 #[interrupt]
 unsafe fn IO_IRQ_BANK0() {
-    static mut TICK_TIMER: Option<Timer> = None;
     static mut DCF77_PIN: Option<DCF77SignalPin> = None;
     static mut PREVIOUS_DCF77_LOW: bool = false;
     static mut NPL_PIN: Option<NPLSignalPin> = None;
     static mut PREVIOUS_NPL_LOW: bool = false;
 
     // This is one-time lazy initialisation. We steal the variables given to us via `GLOBAL_*`.
-    if TICK_TIMER.is_none() {
-        cortex_m::interrupt::free(|cs| *TICK_TIMER = GLOBAL_TIMER.borrow(cs).take());
-    }
     if DCF77_PIN.is_none() {
         cortex_m::interrupt::free(|cs| *DCF77_PIN = GLOBAL_PIN_DCF77.borrow(cs).take());
     }
@@ -427,12 +423,11 @@ unsafe fn IO_IRQ_BANK0() {
 
     // Our edge interrupts don't clear themselves.
     // Do that at the end of the various conditions, so we don't immediately jump back to this interrupt handler.
-    if let Some(tick) = TICK_TIMER {
-        let now = tick.get_counter_low();
+    let tick = GLOBAL_TIMER.as_mut().unwrap();
+    let now = tick.get_counter_low();
 
-        handle_tick!(DCF77_PIN, PREVIOUS_DCF77_LOW, HW_DCF77, now);
-        handle_tick!(NPL_PIN, PREVIOUS_NPL_LOW, HW_NPL, now);
-    }
+    handle_tick!(DCF77_PIN, PREVIOUS_DCF77_LOW, HW_DCF77, now);
+    handle_tick!(NPL_PIN, PREVIOUS_NPL_LOW, HW_NPL, now);
 }
 
 #[allow(non_snake_case)]

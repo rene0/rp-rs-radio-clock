@@ -15,7 +15,7 @@ use rp_pico::hal::{
 use rp_pico::pac::{interrupt, Interrupt, Peripherals, NVIC};
 use rp_pico::Pins;
 
-static GLOBAL_PINS: Mutex<RefCell<Option<Alarm0>>> = Mutex::new(RefCell::new(None));
+static GLOBAL_ALARM: Mutex<RefCell<Option<Alarm0>>> = Mutex::new(RefCell::new(None));
 static G_TOGGLE_LED: AtomicBool = AtomicBool::new(false);
 
 /// Entry point to our bare-metal application.
@@ -39,7 +39,7 @@ fn main() -> ! {
     let mut alarm0 = timer.alarm_0().unwrap();
     alarm0.enable_interrupt();
     alarm0.schedule(MicrosDurationU32::micros(250_000)).unwrap();
-    cortex_m::interrupt::free(|cs| GLOBAL_PINS.borrow(cs).replace(Some(alarm0)));
+    cortex_m::interrupt::free(|cs| GLOBAL_ALARM.borrow(cs).replace(Some(alarm0)));
     unsafe {
         NVIC::unmask(Interrupt::TIMER_IRQ_0);
     }
@@ -65,7 +65,7 @@ unsafe fn TIMER_IRQ_0() {
     if ALARM.is_none() {
         // one-time lazy init
         cortex_m::interrupt::free(|cs| {
-            *ALARM = GLOBAL_PINS.borrow(cs).take();
+            *ALARM = GLOBAL_ALARM.borrow(cs).take();
         });
     }
     if let Some(alarm) = ALARM {

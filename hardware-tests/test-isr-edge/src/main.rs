@@ -1,9 +1,7 @@
 #![no_std]
 #![no_main]
 
-use core::cell::RefCell;
 use core::sync::atomic::{AtomicBool, Ordering};
-use cortex_m::interrupt::Mutex;
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::digital::v2::{InputPin, OutputPin};
 use panic_halt as _;
@@ -20,13 +18,25 @@ type DCF77SignalPin = Pin<bank0::Gpio11, PullDownInput>;
 type NPLSignalPin = Pin<bank0::Gpio6, PullDownInput>;
 
 // Needed to transfer our pins into the ISR:
-static GLOBAL_PINS_DCF77: Mutex<RefCell<Option<DCF77SignalPin>>> = Mutex::new(RefCell::new(None));
-static GLOBAL_PINS_NPL: Mutex<RefCell<Option<NPLSignalPin>>> = Mutex::new(RefCell::new(None));
+static mut GLOBAL_PIN_DCF77: Option<DCF77SignalPin> = None;
+static mut GLOBAL_PIN_NPL: Option<NPLSignalPin> = None;
 
-static G_HIGH_EDGE_RECEIVED_DCF77: AtomicBool = AtomicBool::new(false);
-static G_LOW_EDGE_RECEIVED_DCF77: AtomicBool = AtomicBool::new(false);
-static G_HIGH_EDGE_RECEIVED_NPL: AtomicBool = AtomicBool::new(false);
-static G_LOW_EDGE_RECEIVED_NPL: AtomicBool = AtomicBool::new(false);
+struct ClockHardware {
+    high_edge_received: AtomicBool,
+    low_edge_received: AtomicBool,
+}
+
+impl ClockHardware {
+    pub const fn new() -> Self {
+        Self {
+            high_edge_received: AtomicBool::new(false),
+            low_edge_received: AtomicBool::new(false),
+        }
+    }
+}
+
+static HW_DCF77: ClockHardware = ClockHardware::new();
+static HW_NPL: ClockHardware = ClockHardware::new();
 
 /// Entry point to our bare-metal application.
 ///
@@ -68,71 +78,52 @@ fn main() -> ! {
     npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
     npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
 
-    // Give our pins away to the ISR
-    cortex_m::interrupt::free(|cs| GLOBAL_PINS_DCF77.borrow(cs).replace(Some(dcf77_signal_pin)));
-    cortex_m::interrupt::free(|cs| GLOBAL_PINS_NPL.borrow(cs).replace(Some(npl_signal_pin)));
+    // Give our pins away to the ISR and enable the ISR
     unsafe {
+        GLOBAL_PIN_DCF77 = Some(dcf77_signal_pin);
+        GLOBAL_PIN_NPL = Some(npl_signal_pin);
         NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
     }
 
     loop {
-        if G_LOW_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
+        if HW_DCF77.low_edge_received.load(Ordering::Acquire) {
             dcf77_led_bit.set_low().unwrap();
-            G_LOW_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
+            HW_DCF77.low_edge_received.store(false, Ordering::Release);
         }
-        if G_HIGH_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
+        if HW_DCF77.high_edge_received.load(Ordering::Acquire) {
             dcf77_led_bit.set_high().unwrap();
-            G_HIGH_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
+            HW_DCF77.high_edge_received.store(false, Ordering::Release);
         }
 
-        if G_LOW_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
+        if HW_NPL.low_edge_received.load(Ordering::Acquire) {
             npl_led_bit_a.set_low().unwrap();
-            G_LOW_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
+            HW_NPL.low_edge_received.store(false, Ordering::Release);
         }
-        if G_HIGH_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
+        if HW_NPL.high_edge_received.load(Ordering::Acquire) {
             npl_led_bit_a.set_high().unwrap();
-            G_HIGH_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
+            HW_NPL.high_edge_received.store(false, Ordering::Release);
         }
     }
+}
+
+macro_rules! handle_tick {
+    // Our interrupts don't clear themselves.
+    // Do that at the end of each condition, so we don't immediately jump back to this interrupt handler.
+    ($pin:ident, $hw:ident) => {
+        let s_pin = $pin.as_mut().unwrap();
+        if s_pin.is_low().unwrap() {
+            $hw.low_edge_received.store(true, Ordering::Release);
+            s_pin.clear_interrupt(gpio::Interrupt::EdgeLow);
+        } else {
+            $hw.high_edge_received.store(true, Ordering::Release);
+            s_pin.clear_interrupt(gpio::Interrupt::EdgeHigh);
+        }
+    };
 }
 
 #[allow(non_snake_case)]
 #[interrupt]
 unsafe fn IO_IRQ_BANK0() {
-    static mut DCF77_SIGNAL_PIN: Option<DCF77SignalPin> = None;
-    static mut NPL_SIGNAL_PIN: Option<NPLSignalPin> = None;
-
-    // This is one-time lazy initialisation. We steal the variables given to us via `GLOBAL_PINS`.
-    if DCF77_SIGNAL_PIN.is_none() {
-        cortex_m::interrupt::free(|cs| {
-            *DCF77_SIGNAL_PIN = GLOBAL_PINS_DCF77.borrow(cs).take();
-        });
-    }
-    if NPL_SIGNAL_PIN.is_none() {
-        cortex_m::interrupt::free(|cs| {
-            *NPL_SIGNAL_PIN = GLOBAL_PINS_NPL.borrow(cs).take();
-        });
-    }
-
-    // Our interrupts don't clear themselves.
-    // Do that here at the end of each condition so we don't immediately jump back to this interrupt handler.
-
-    if let Some(dcf77_signal) = DCF77_SIGNAL_PIN {
-        if dcf77_signal.is_low().unwrap() {
-            G_LOW_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-            dcf77_signal.clear_interrupt(gpio::Interrupt::EdgeLow);
-        } else {
-            G_HIGH_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-            dcf77_signal.clear_interrupt(gpio::Interrupt::EdgeHigh);
-        }
-    }
-    if let Some(npl_signal) = NPL_SIGNAL_PIN {
-        if npl_signal.is_low().unwrap() {
-            G_LOW_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
-            npl_signal.clear_interrupt(gpio::Interrupt::EdgeLow);
-        } else {
-            G_HIGH_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
-            npl_signal.clear_interrupt(gpio::Interrupt::EdgeHigh);
-        }
-    }
+    handle_tick!(GLOBAL_PIN_DCF77, HW_DCF77);
+    handle_tick!(GLOBAL_PIN_NPL, HW_NPL);
 }

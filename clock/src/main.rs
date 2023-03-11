@@ -67,9 +67,10 @@ type NPLSignalPin = Pin<bank0::Gpio6, PullDownInput>;
 // needed to transfer our pin(s) into the ISR:
 static GLOBAL_PIN_DCF77: Mutex<RefCell<Option<DCF77SignalPin>>> = Mutex::new(RefCell::new(None));
 static GLOBAL_PIN_NPL: Mutex<RefCell<Option<NPLSignalPin>>> = Mutex::new(RefCell::new(None));
+// timer to get the timestamp of the edges:
 static GLOBAL_TIMER: Mutex<RefCell<Option<Timer>>> = Mutex::new(RefCell::new(None));
 // and one for the timer alarm:
-static GLOBAL_ALARM: Mutex<RefCell<Option<Alarm0>>> = Mutex::new(RefCell::new(None));
+static mut GLOBAL_ALARM: Option<Alarm0> = None;
 
 type I2CDisplay = I2C<
     I2C0,
@@ -194,15 +195,15 @@ fn main() -> ! {
     cortex_m::interrupt::free(|cs| GLOBAL_PIN_DCF77.borrow(cs).replace(Some(dcf77_signal_pin)));
     cortex_m::interrupt::free(|cs| GLOBAL_PIN_NPL.borrow(cs).replace(Some(npl_signal_pin)));
     cortex_m::interrupt::free(|cs| GLOBAL_TIMER.borrow(cs).replace(Some(timer)));
-    alarm0.enable_interrupt();
     alarm0
         .schedule(MicrosDurationU32::micros(
             1_000_000 / FRAMES_PER_SECOND as u32,
         ))
         .unwrap();
-    cortex_m::interrupt::free(|cs| GLOBAL_ALARM.borrow(cs).replace(Some(alarm0)));
+    alarm0.enable_interrupt();
     // Ready, set, go!
     unsafe {
+        GLOBAL_ALARM = Some(alarm0);
         NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
         NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
     }
@@ -437,20 +438,14 @@ unsafe fn IO_IRQ_BANK0() {
 #[allow(non_snake_case)]
 #[interrupt]
 unsafe fn TIMER_IRQ_0() {
-    static mut ALARM: Option<Alarm0> = None;
+    G_TIMER_TICK.store(true, Ordering::Release);
 
-    if ALARM.is_none() {
-        // one-time lazy initialization
-        cortex_m::interrupt::free(|cs| *ALARM = GLOBAL_ALARM.borrow(cs).take());
-    }
-    if let Some(alarm) = ALARM {
-        G_TIMER_TICK.store(true, Ordering::Release);
-        alarm.clear_interrupt();
-        // alarm is oneshot, so re-arm it here:
-        alarm
-            .schedule(MicrosDurationU32::micros(
-                1_000_000 / FRAMES_PER_SECOND as u32,
-            ))
-            .unwrap();
-    }
+    let alarm = GLOBAL_ALARM.as_mut().unwrap();
+    alarm.clear_interrupt();
+    // alarm is oneshot, so re-arm it here:
+    alarm
+        .schedule(MicrosDurationU32::micros(
+            1_000_000 / FRAMES_PER_SECOND as u32,
+        ))
+        .unwrap();
 }

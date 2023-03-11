@@ -4,11 +4,10 @@
 
 use crate::frontend::{dcf77, npl};
 use core::{
-    cell::RefCell,
     fmt::Write,
     sync::atomic::{AtomicBool, AtomicU32, Ordering},
 };
-use cortex_m::{delay::Delay, interrupt::Mutex};
+use cortex_m::delay::Delay;
 use dcf77_utils::DCF77Utils;
 use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::{
@@ -65,8 +64,8 @@ static G_TIMER_TICK: AtomicBool = AtomicBool::new(false); // tick-tock
 type DCF77SignalPin = Pin<bank0::Gpio11, PullDownInput>;
 type NPLSignalPin = Pin<bank0::Gpio6, PullDownInput>;
 // needed to transfer our pin(s) into the ISR:
-static GLOBAL_PIN_DCF77: Mutex<RefCell<Option<DCF77SignalPin>>> = Mutex::new(RefCell::new(None));
-static GLOBAL_PIN_NPL: Mutex<RefCell<Option<NPLSignalPin>>> = Mutex::new(RefCell::new(None));
+static mut GLOBAL_PIN_DCF77: Option<DCF77SignalPin> = None;
+static mut GLOBAL_PIN_NPL: Option<NPLSignalPin> = None;
 // timer to get the timestamp of the edges:
 static mut GLOBAL_TIMER: Option<Timer> = None;
 // and one for the timer alarm:
@@ -191,9 +190,6 @@ fn main() -> ! {
     let mut timer = Timer::new(pac.TIMER, &mut pac.RESETS);
     let mut alarm0 = timer.alarm_0().unwrap();
 
-    // Give the signal pins and timer away to the ISR
-    cortex_m::interrupt::free(|cs| GLOBAL_PIN_DCF77.borrow(cs).replace(Some(dcf77_signal_pin)));
-    cortex_m::interrupt::free(|cs| GLOBAL_PIN_NPL.borrow(cs).replace(Some(npl_signal_pin)));
     alarm0
         .schedule(MicrosDurationU32::micros(
             1_000_000 / FRAMES_PER_SECOND as u32,
@@ -202,6 +198,8 @@ fn main() -> ! {
     alarm0.enable_interrupt();
     // Ready, set, go!
     unsafe {
+        GLOBAL_PIN_DCF77 = Some(dcf77_signal_pin);
+        GLOBAL_PIN_NPL = Some(npl_signal_pin);
         GLOBAL_TIMER = Some(timer);
         GLOBAL_ALARM = Some(alarm0);
         NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
@@ -352,20 +350,19 @@ fn main() -> ! {
 
 macro_rules! handle_tick {
     ($pin:ident, $previous_low:ident, $hw:ident, $now:expr) => {
-        if let Some(s_pin) = $pin {
-            let is_low = s_pin.is_low().unwrap();
-            if is_low != *$previous_low {
-                *$previous_low = is_low;
-                $hw.timer_tick.store($now, Ordering::Release);
-                $hw.edge_low.store(is_low, Ordering::Release);
-                $hw.edge_received.store(true, Ordering::Release);
-            }
-            s_pin.clear_interrupt(if is_low {
-                gpio::Interrupt::EdgeLow
-            } else {
-                gpio::Interrupt::EdgeHigh
-            });
+        let s_pin = $pin.as_mut().unwrap();
+        let is_low = s_pin.is_low().unwrap();
+        if is_low != *$previous_low {
+            *$previous_low = is_low;
+            $hw.timer_tick.store($now, Ordering::Release);
+            $hw.edge_low.store(is_low, Ordering::Release);
+            $hw.edge_received.store(true, Ordering::Release);
         }
+        s_pin.clear_interrupt(if is_low {
+            gpio::Interrupt::EdgeLow
+        } else {
+            gpio::Interrupt::EdgeHigh
+        });
     };
 }
 
@@ -408,26 +405,16 @@ fn show_times<D: DelayUs<u16> + DelayMs<u8>>(
 #[allow(non_snake_case)]
 #[interrupt]
 unsafe fn IO_IRQ_BANK0() {
-    static mut DCF77_PIN: Option<DCF77SignalPin> = None;
     static mut PREVIOUS_DCF77_LOW: bool = false;
-    static mut NPL_PIN: Option<NPLSignalPin> = None;
     static mut PREVIOUS_NPL_LOW: bool = false;
-
-    // This is one-time lazy initialisation. We steal the variables given to us via `GLOBAL_*`.
-    if DCF77_PIN.is_none() {
-        cortex_m::interrupt::free(|cs| *DCF77_PIN = GLOBAL_PIN_DCF77.borrow(cs).take());
-    }
-    if NPL_PIN.is_none() {
-        cortex_m::interrupt::free(|cs| *NPL_PIN = GLOBAL_PIN_NPL.borrow(cs).take());
-    }
 
     // Our edge interrupts don't clear themselves.
     // Do that at the end of the various conditions, so we don't immediately jump back to this interrupt handler.
     let tick = GLOBAL_TIMER.as_mut().unwrap();
     let now = tick.get_counter_low();
 
-    handle_tick!(DCF77_PIN, PREVIOUS_DCF77_LOW, HW_DCF77, now);
-    handle_tick!(NPL_PIN, PREVIOUS_NPL_LOW, HW_NPL, now);
+    handle_tick!(GLOBAL_PIN_DCF77, PREVIOUS_DCF77_LOW, HW_DCF77, now);
+    handle_tick!(GLOBAL_PIN_NPL, PREVIOUS_NPL_LOW, HW_NPL, now);
 }
 
 #[allow(non_snake_case)]

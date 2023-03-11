@@ -38,16 +38,26 @@ use rp_pico::Pins;
 mod frontend;
 mod hd44780_helper;
 
+struct ClockHardware {
+    edge_received: AtomicBool,
+    edge_low: AtomicBool,
+    timer_tick: AtomicU32,
+}
+
+impl ClockHardware {
+    pub const fn new() -> Self {
+        Self {
+            edge_received: AtomicBool::new(false),
+            edge_low: AtomicBool::new(false),
+            timer_tick: AtomicU32::new(0),
+        }
+    }
+}
+
 /// I²C address of the PCF8574 adapter, change as needed
 const I2C_ADDRESS: u8 = 0x27;
-static G_EDGE_RECEIVED_DCF77: AtomicBool = AtomicBool::new(false);
-static G_EDGE_LOW_DCF77: AtomicBool = AtomicBool::new(false);
-static G_EDGE_RECEIVED_NPL: AtomicBool = AtomicBool::new(false);
-static G_EDGE_LOW_NPL: AtomicBool = AtomicBool::new(false);
-// Just use the lower 32 bits of the timer values, we will deal with the 1h11m35s wrap ourselves.
-// This saves hardware access to registers, atomic operations, and logic inside get_counter() which are all more expensive.
-static G_TIMER_TICK_DCF77: AtomicU32 = AtomicU32::new(0);
-static G_TIMER_TICK_NPL: AtomicU32 = AtomicU32::new(0);
+static HW_DCF77: ClockHardware = ClockHardware::new();
+static HW_NPL: ClockHardware = ClockHardware::new();
 /// Ticks (frames) in each second, to control LEDs and display
 const FRAMES_PER_SECOND: u8 = 10;
 static G_TIMER_TICK: AtomicBool = AtomicBool::new(false); // tick-tock
@@ -204,9 +214,9 @@ fn main() -> ! {
     let mut dcf77 = DCF77Utils::default();
     let mut npl = NPLUtils::default();
     loop {
-        if G_EDGE_RECEIVED_DCF77.load(Ordering::Acquire) {
-            let t1_dcf77 = G_TIMER_TICK_DCF77.load(Ordering::Acquire);
-            let is_low_edge = G_EDGE_LOW_DCF77.load(Ordering::Acquire);
+        if HW_DCF77.edge_received.load(Ordering::Acquire) {
+            let t1_dcf77 = HW_DCF77.timer_tick.load(Ordering::Acquire);
+            let is_low_edge = HW_DCF77.edge_low.load(Ordering::Acquire);
             if matches!(display_mode, DisplayMode::Pulses) {
                 show_pulses(&mut lcd, &mut delay, 0, is_low_edge, t0_dcf77, t1_dcf77);
             } else if matches!(display_mode, DisplayMode::Times) {
@@ -218,11 +228,11 @@ fn main() -> ! {
             }
             dcf77::update_bit_leds(dcf77_tick, &dcf77, &mut dcf77_led_bit, &mut dcf77_led_error);
             t0_dcf77 = t1_dcf77;
-            G_EDGE_RECEIVED_DCF77.store(false, Ordering::Release);
+            HW_DCF77.edge_received.store(false, Ordering::Release);
         }
-        if G_EDGE_RECEIVED_NPL.load(Ordering::Acquire) {
-            let t1_npl = G_TIMER_TICK_NPL.load(Ordering::Acquire);
-            let is_low_edge = G_EDGE_LOW_NPL.load(Ordering::Acquire);
+        if HW_NPL.edge_received.load(Ordering::Acquire) {
+            let t1_npl = HW_NPL.timer_tick.load(Ordering::Acquire);
+            let is_low_edge = HW_NPL.edge_low.load(Ordering::Acquire);
             if matches!(display_mode, DisplayMode::Pulses) {
                 show_pulses(&mut lcd, &mut delay, 2, is_low_edge, t0_npl, t1_npl);
             } else if matches!(display_mode, DisplayMode::Times) {
@@ -240,7 +250,7 @@ fn main() -> ! {
                 &mut npl_led_error,
             );
             t0_npl = t1_npl;
-            G_EDGE_RECEIVED_NPL.store(false, Ordering::Release);
+            HW_NPL.edge_received.store(false, Ordering::Release);
         }
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
@@ -339,6 +349,25 @@ fn main() -> ! {
     }
 }
 
+macro_rules! handle_tick {
+    ($pin:ident, $previous_low:ident, $hw:ident, $now:expr) => {
+        if let Some(s_pin) = $pin {
+            let is_low = s_pin.is_low().unwrap();
+            if is_low != *$previous_low {
+                *$previous_low = is_low;
+                $hw.timer_tick.store($now, Ordering::Release);
+                $hw.edge_low.store(is_low, Ordering::Release);
+                $hw.edge_received.store(true, Ordering::Release);
+            }
+            s_pin.clear_interrupt(if is_low {
+                gpio::Interrupt::EdgeLow
+            } else {
+                gpio::Interrupt::EdgeHigh
+            });
+        }
+    };
+}
+
 fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     lcd: &mut HD44780<I2CBus<I2CDisplay>>,
     delay: &mut D,
@@ -400,35 +429,8 @@ unsafe fn IO_IRQ_BANK0() {
     if let Some(tick) = TICK_TIMER {
         let now = tick.get_counter_low();
 
-        if let Some(dcf77_signal) = DCF77_PIN {
-            let is_low = dcf77_signal.is_low().unwrap();
-            if is_low != *PREVIOUS_DCF77_LOW {
-                *PREVIOUS_DCF77_LOW = is_low;
-                G_TIMER_TICK_DCF77.store(now, Ordering::Release);
-                G_EDGE_LOW_DCF77.store(is_low, Ordering::Release);
-                G_EDGE_RECEIVED_DCF77.store(true, Ordering::Release);
-            }
-            dcf77_signal.clear_interrupt(if is_low {
-                gpio::Interrupt::EdgeLow
-            } else {
-                gpio::Interrupt::EdgeHigh
-            });
-        }
-
-        if let Some(npl_signal) = NPL_PIN {
-            let is_low = npl_signal.is_low().unwrap();
-            if is_low != *PREVIOUS_NPL_LOW {
-                *PREVIOUS_NPL_LOW = is_low;
-                G_TIMER_TICK_NPL.store(now, Ordering::Release);
-                G_EDGE_LOW_NPL.store(is_low, Ordering::Release);
-                G_EDGE_RECEIVED_NPL.store(true, Ordering::Release);
-            }
-            npl_signal.clear_interrupt(if is_low {
-                gpio::Interrupt::EdgeLow
-            } else {
-                gpio::Interrupt::EdgeHigh
-            });
-        }
+        handle_tick!(DCF77_PIN, PREVIOUS_DCF77_LOW, HW_DCF77, now);
+        handle_tick!(NPL_PIN, PREVIOUS_NPL_LOW, HW_NPL, now);
     }
 }
 

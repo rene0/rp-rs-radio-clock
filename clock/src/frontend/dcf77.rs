@@ -65,9 +65,9 @@ pub fn str_status(dcf77: &DCF77Utils) -> String<14> {
         frontend::str_parity(dcf77.get_parity_3(), false, 'c'),
         frontend::str_parity(dcf77.get_parity_2(), false, 'b'),
         frontend::str_parity(dcf77.get_parity_1(), false, 'a'),
+        str_minute_length(dcf77),
         str_bit_0(dcf77),
         str_bit_20(dcf77),
-        str_minute_length(dcf77),
     )
     .unwrap();
     str_buf

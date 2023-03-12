@@ -83,10 +83,28 @@ pub fn str_status(npl: &NPLUtils) -> String<14> {
     str_buf
 }
 
+/// Return a string version of the given value, truncated to one digit with optional minus sign,
+/// or ** for None.
+fn str_i2(value: Option<i8>) -> String<2> {
+    let mut s = String::<2>::from("");
+    if value.is_some() {
+        write!(s, "{:>-2}", value.unwrap()).unwrap();
+    } else {
+        write!(s, "**").unwrap();
+    }
+    s
+}
+
 /// Return a compact string with miscellaneous information
-pub fn str_misc(npl: &NPLUtils) -> String<1> {
-    let mut str_buf = String::<1>::from("");
-    write!(str_buf, "{}", frontend::str_dst(npl.get_radio_datetime())).unwrap();
+pub fn str_misc(npl: &NPLUtils) -> String<3> {
+    let mut str_buf = String::<3>::from("");
+    write!(
+        str_buf,
+        "{}{}",
+        frontend::str_dst(npl.get_radio_datetime()),
+        str_i2(npl.get_dut1())
+    )
+    .unwrap();
     str_buf
 }
 

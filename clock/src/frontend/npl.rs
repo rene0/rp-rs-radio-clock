@@ -62,17 +62,22 @@ pub fn update_bit_leds(
 }
 
 /// Return the status overview as a compact string
-pub fn str_status(npl: &NPLUtils) -> String<12> {
-    let mut str_buf = String::<12>::from("");
+pub fn str_status(npl: &NPLUtils) -> String<14> {
+    let mut str_buf = String::<14>::from("");
     write!(
         str_buf,
-        "{}{}{}{}{}{}",
+        "{}{}{}{}{} {}{}",
         frontend::str_jumps(npl.get_radio_datetime()),
         frontend::str_parity(npl.get_parity_4(), true, 'd'),
         frontend::str_parity(npl.get_parity_3(), true, 'c'),
         frontend::str_parity(npl.get_parity_2(), true, 'b'),
         frontend::str_parity(npl.get_parity_1(), true, 'a'),
         str_minute_length(npl),
+        if npl.end_of_minute_marker_present(false) {
+            ' '
+        } else {
+            '!'
+        },
     )
     .unwrap();
     str_buf

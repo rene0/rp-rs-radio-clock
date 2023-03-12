@@ -225,7 +225,7 @@ fn main() -> ! {
     let mut dcf77 = DCF77Utils::default();
     let mut npl = NPLUtils::default();
     let mut str_dcf77_status = String::<14>::from("              "); // 14 spaces
-    let mut str_npl_status = String::<12>::from("            "); // 12 spaces
+    let mut str_npl_status = String::<14>::from("              "); // 14 spaces
 
     loop {
         if HW_KY040_SW.edge_received.load(Ordering::Acquire) {

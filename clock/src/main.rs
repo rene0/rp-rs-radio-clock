@@ -24,7 +24,7 @@ use rp_pico::hal::{
     clocks,
     clocks::Clock,
     gpio,
-    gpio::{bank0, FunctionI2C, Pin, PullDownInput},
+    gpio::{bank0, FunctionI2C, Pin, PullDownInput, PullUpInput},
     sio::Sio,
     timer::{Alarm, Alarm0},
     watchdog::Watchdog,
@@ -57,12 +57,16 @@ impl ClockHardware {
 const I2C_ADDRESS: u8 = 0x27;
 static HW_DCF77: ClockHardware = ClockHardware::new();
 static HW_NPL: ClockHardware = ClockHardware::new();
+static HW_KY040_SW: ClockHardware = ClockHardware::new();
+
 /// Ticks (frames) in each second, to control LEDs and display
 const FRAMES_PER_SECOND: u8 = 10;
 static G_TIMER_TICK: AtomicBool = AtomicBool::new(false); // tick-tock
 
 type DCF77SignalPin = Pin<bank0::Gpio11, PullDownInput>;
 type NPLSignalPin = Pin<bank0::Gpio6, PullDownInput>;
+type Ky040SwPin = Pin<bank0::Gpio7, PullUpInput>;
+
 // needed to transfer our pin(s) into the ISR:
 static mut GLOBAL_PIN_DCF77: Option<DCF77SignalPin> = None;
 static mut GLOBAL_PIN_NPL: Option<NPLSignalPin> = None;
@@ -70,9 +74,12 @@ static mut GLOBAL_PIN_NPL: Option<NPLSignalPin> = None;
 static mut GLOBAL_TIMER: Option<Timer> = None;
 // and one for the timer alarm:
 static mut GLOBAL_ALARM: Option<Alarm0> = None;
+// click button of the Ky040:
+static mut GLOBAL_PIN_KY040_SW: Option<Ky040SwPin> = None;
 
 static G_PREVIOUS_LOW_DCF77: AtomicBool = AtomicBool::new(false);
 static G_PREVIOUS_LOW_NPL: AtomicBool = AtomicBool::new(false);
+static G_PREVIOUS_LOW_KY040_SW: AtomicBool = AtomicBool::new(false);
 
 type I2CDisplay = I2C<
     I2C0,
@@ -190,6 +197,9 @@ fn main() -> ! {
     let npl_signal_pin = pins.gpio6.into_mode();
     npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
     npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
+    let ky040_sw_pin = pins.gpio7.into_mode();
+    ky040_sw_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
+    ky040_sw_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
     let mut timer = Timer::new(pac.TIMER, &mut pac.RESETS);
     let mut alarm0 = timer.alarm_0().unwrap();
 
@@ -203,6 +213,7 @@ fn main() -> ! {
     unsafe {
         GLOBAL_PIN_DCF77 = Some(dcf77_signal_pin);
         GLOBAL_PIN_NPL = Some(npl_signal_pin);
+        GLOBAL_PIN_KY040_SW = Some(ky040_sw_pin);
         GLOBAL_TIMER = Some(timer);
         GLOBAL_ALARM = Some(alarm0);
         NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
@@ -415,6 +426,12 @@ unsafe fn IO_IRQ_BANK0() {
 
     handle_tick!(GLOBAL_PIN_DCF77, G_PREVIOUS_LOW_DCF77, HW_DCF77, now);
     handle_tick!(GLOBAL_PIN_NPL, G_PREVIOUS_LOW_NPL, HW_NPL, now);
+    handle_tick!(
+        GLOBAL_PIN_KY040_SW,
+        G_PREVIOUS_LOW_KY040_SW,
+        HW_KY040_SW,
+        now
+    );
 }
 
 #[allow(non_snake_case)]

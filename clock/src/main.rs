@@ -433,13 +433,13 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     if is_low_edge != show_low {
         return;
     }
-    lcd.set_cursor_pos(hd44780_helper::get_xy(7, base_row).unwrap(), delay)
+    lcd.set_cursor_pos(hd44780_helper::get_xy(6, base_row).unwrap(), delay)
         .unwrap();
     let mut str_buf = String::<14>::from("");
     str_buf.clear();
     write!(
         str_buf,
-        "{} {:<10}  ",
+        " {} {:<10} ",
         if is_low_edge { 'L' } else { 'H' },
         radio_datetime_helpers::time_diff(t0, t1)
     )

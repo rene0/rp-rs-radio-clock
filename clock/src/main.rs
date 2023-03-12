@@ -90,10 +90,8 @@ type I2CDisplay = I2C<
 >;
 enum DisplayMode {
     Time,
-    #[allow(dead_code)]
-    Pulses,
-    #[allow(dead_code)]
-    Times,
+    PulsesHigh,
+    PulsesLow,
 }
 
 /// Entry point to our bare-metal application.
@@ -223,17 +221,57 @@ fn main() -> ! {
     let mut dcf77_tick = 0;
     let mut t0_npl = 0;
     let mut npl_tick = 0;
-    let display_mode = DisplayMode::Time; // This should become something to loop through with the KY-040
+    let mut display_mode = DisplayMode::Time;
     let mut dcf77 = DCF77Utils::default();
     let mut npl = NPLUtils::default();
+    let mut str_dcf77_status = String::<14>::from("              "); // 14 spaces
+    let mut str_npl_status = String::<12>::from("            "); // 12 spaces
+
     loop {
+        if HW_KY040_SW.edge_received.load(Ordering::Acquire) {
+            if !HW_KY040_SW.edge_low.load(Ordering::Acquire) {
+                // negative logic for the SW pin, pin released
+                if matches!(display_mode, DisplayMode::Time) {
+                    display_mode = DisplayMode::PulsesHigh;
+                } else if matches!(display_mode, DisplayMode::PulsesHigh) {
+                    display_mode = DisplayMode::PulsesLow;
+                } else {
+                    display_mode = DisplayMode::Time;
+                    // clear out pulse info, restore any status info
+                    lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
+                        .unwrap();
+                    lcd.write_str(str_dcf77_status.as_str(), &mut delay)
+                        .unwrap();
+                    lcd.set_cursor_pos(hd44780_helper::get_xy(6, 2).unwrap(), &mut delay)
+                        .unwrap();
+                    lcd.write_str(str_npl_status.as_str(), &mut delay).unwrap();
+                }
+            }
+            HW_KY040_SW.edge_received.store(false, Ordering::Release);
+        }
         if HW_DCF77.edge_received.load(Ordering::Acquire) {
             let t1_dcf77 = HW_DCF77.timer_tick.load(Ordering::Acquire);
             let is_low_edge = HW_DCF77.edge_low.load(Ordering::Acquire);
-            if matches!(display_mode, DisplayMode::Pulses) {
-                show_pulses(&mut lcd, &mut delay, 0, is_low_edge, t0_dcf77, t1_dcf77);
-            } else if matches!(display_mode, DisplayMode::Times) {
-                show_times(&mut lcd, &mut delay, 0, t1_dcf77);
+            if matches!(display_mode, DisplayMode::PulsesHigh) {
+                show_pulses(
+                    &mut lcd,
+                    &mut delay,
+                    0,
+                    false,
+                    is_low_edge,
+                    t0_dcf77,
+                    t1_dcf77,
+                );
+            } else if matches!(display_mode, DisplayMode::PulsesLow) {
+                show_pulses(
+                    &mut lcd,
+                    &mut delay,
+                    0,
+                    true,
+                    is_low_edge,
+                    t0_dcf77,
+                    t1_dcf77,
+                );
             }
             dcf77.handle_new_edge(is_low_edge, t1_dcf77);
             if dcf77.get_new_second() {
@@ -246,10 +284,10 @@ fn main() -> ! {
         if HW_NPL.edge_received.load(Ordering::Acquire) {
             let t1_npl = HW_NPL.timer_tick.load(Ordering::Acquire);
             let is_low_edge = HW_NPL.edge_low.load(Ordering::Acquire);
-            if matches!(display_mode, DisplayMode::Pulses) {
-                show_pulses(&mut lcd, &mut delay, 2, is_low_edge, t0_npl, t1_npl);
-            } else if matches!(display_mode, DisplayMode::Times) {
-                show_times(&mut lcd, &mut delay, 0, t1_npl);
+            if matches!(display_mode, DisplayMode::PulsesHigh) {
+                show_pulses(&mut lcd, &mut delay, 2, false, is_low_edge, t0_npl, t1_npl);
+            } else if matches!(display_mode, DisplayMode::PulsesLow) {
+                show_pulses(&mut lcd, &mut delay, 2, true, is_low_edge, t0_npl, t1_npl);
             }
             npl.handle_new_edge(is_low_edge, t1_npl);
             if npl.get_new_second() {
@@ -288,9 +326,10 @@ fn main() -> ! {
                 dcf77.decode_time();
                 if !dcf77.get_first_minute() {
                     if matches!(display_mode, DisplayMode::Time) {
+                        str_dcf77_status = dcf77::str_status(&dcf77);
                         lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
                             .unwrap();
-                        lcd.write_str(dcf77::str_status(&dcf77).as_str(), &mut delay)
+                        lcd.write_str(str_dcf77_status.as_str(), &mut delay)
                             .unwrap();
                     }
                     // Decoded date and time:
@@ -330,13 +369,13 @@ fn main() -> ! {
                 npl.decode_time();
                 if !npl.get_first_minute() {
                     if matches!(display_mode, DisplayMode::Time) {
-                        lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
+                        str_npl_status = npl::str_status(&npl);
+                        lcd.set_cursor_pos(hd44780_helper::get_xy(6, 2).unwrap(), &mut delay)
                             .unwrap();
-                        lcd.write_str(npl::str_status(&npl).as_str(), &mut delay)
-                            .unwrap();
+                        lcd.write_str(str_npl_status.as_str(), &mut delay).unwrap();
                     }
                     // Decoded date and time:
-                    lcd.set_cursor_pos(hd44780_helper::get_xy(0, 1).unwrap(), &mut delay)
+                    lcd.set_cursor_pos(hd44780_helper::get_xy(0, 3).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(
                         frontend::str_datetime(npl.get_radio_datetime()).as_str(),
@@ -344,7 +383,7 @@ fn main() -> ! {
                     )
                     .unwrap();
                     // Other things:
-                    lcd.set_cursor_pos(hd44780_helper::get_xy(17, 1).unwrap(), &mut delay)
+                    lcd.set_cursor_pos(hd44780_helper::get_xy(17, 3).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(npl::str_misc(&npl).as_str(), &mut delay)
                         .unwrap();
@@ -386,10 +425,14 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     lcd: &mut HD44780<I2CBus<I2CDisplay>>,
     delay: &mut D,
     base_row: u8,
+    show_low: bool,
     is_low_edge: bool,
     t0: u32,
     t1: u32,
 ) {
+    if is_low_edge != show_low {
+        return;
+    }
     lcd.set_cursor_pos(hd44780_helper::get_xy(7, base_row).unwrap(), delay)
         .unwrap();
     let mut str_buf = String::<12>::from("");
@@ -401,20 +444,6 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
         radio_datetime_helpers::time_diff(t0, t1)
     )
     .unwrap();
-    lcd.write_str(str_buf.as_str(), delay).unwrap();
-}
-
-fn show_times<D: DelayUs<u16> + DelayMs<u8>>(
-    lcd: &mut HD44780<I2CBus<I2CDisplay>>,
-    delay: &mut D,
-    base_row: u8,
-    t1: u32,
-) {
-    lcd.set_cursor_pos(hd44780_helper::get_xy(7, base_row).unwrap(), delay)
-        .unwrap();
-    let mut str_buf = String::<12>::from("");
-    str_buf.clear();
-    write!(str_buf, "T {t1:<10}").unwrap();
     lcd.write_str(str_buf.as_str(), delay).unwrap();
 }
 

@@ -89,7 +89,7 @@ type I2CDisplay = I2C<
     ),
 >;
 enum DisplayMode {
-    Time,
+    Status,
     PulsesHigh,
     PulsesLow,
 }
@@ -221,7 +221,7 @@ fn main() -> ! {
     let mut dcf77_tick = 0;
     let mut t0_npl = 0;
     let mut npl_tick = 0;
-    let mut display_mode = DisplayMode::Time;
+    let mut display_mode = DisplayMode::Status;
     let mut dcf77 = DCF77Utils::default();
     let mut npl = NPLUtils::default();
     let mut str_dcf77_status = String::<14>::from("              "); // 14 spaces
@@ -231,12 +231,12 @@ fn main() -> ! {
         if HW_KY040_SW.edge_received.load(Ordering::Acquire) {
             if !HW_KY040_SW.edge_low.load(Ordering::Acquire) {
                 // negative logic for the SW pin, pin released
-                if matches!(display_mode, DisplayMode::Time) {
+                if matches!(display_mode, DisplayMode::Status) {
                     display_mode = DisplayMode::PulsesHigh;
                 } else if matches!(display_mode, DisplayMode::PulsesHigh) {
                     display_mode = DisplayMode::PulsesLow;
                 } else {
-                    display_mode = DisplayMode::Time;
+                    display_mode = DisplayMode::Status;
                     // clear out pulse info, restore any status info
                     lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
                         .unwrap();
@@ -325,7 +325,7 @@ fn main() -> ! {
                 // print date/time/status
                 dcf77.decode_time();
                 if !dcf77.get_first_minute() {
-                    if matches!(display_mode, DisplayMode::Time) {
+                    if matches!(display_mode, DisplayMode::Status) {
                         str_dcf77_status = dcf77::str_status(&dcf77);
                         lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
                             .unwrap();
@@ -368,7 +368,7 @@ fn main() -> ! {
                 // print date/time/status
                 npl.decode_time();
                 if !npl.get_first_minute() {
-                    if matches!(display_mode, DisplayMode::Time) {
+                    if matches!(display_mode, DisplayMode::Status) {
                         str_npl_status = npl::str_status(&npl);
                         lcd.set_cursor_pos(hd44780_helper::get_xy(6, 2).unwrap(), &mut delay)
                             .unwrap();

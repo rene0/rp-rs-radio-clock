@@ -46,13 +46,13 @@ fn main() -> ! {
     let mut led_active = false;
     loop {
         if G_TOGGLE_LED.load(Ordering::Acquire) {
-            G_TOGGLE_LED.store(false, Ordering::Release);
             if led_active {
                 led_pin.set_high().unwrap();
             } else {
                 led_pin.set_low().unwrap();
             }
             led_active = !led_active;
+            G_TOGGLE_LED.store(false, Ordering::Release);
         }
     }
 }

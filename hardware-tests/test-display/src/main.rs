@@ -49,11 +49,11 @@ fn main() -> ! {
     // Create the I²C drive, using the two pre-configured pins. This will fail
     // at compile time if the pins are in the wrong mode, or if this I²C
     // peripheral isn't available on these pins!
-    let sda_pin = pins.gpio0.into_mode::<FunctionI2C>();
-    let scl_pin = pins.gpio1.into_mode::<FunctionI2C>();
+    let sda_pin = pins.gpio26.into_mode::<FunctionI2C>();
+    let scl_pin = pins.gpio27.into_mode::<FunctionI2C>();
 
-    let i2c = I2C::i2c0(
-        pac.I2C0,
+    let i2c = I2C::i2c1(
+        pac.I2C1,
         sda_pin,
         scl_pin,
         400.kHz(),

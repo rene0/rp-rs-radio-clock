@@ -31,7 +31,7 @@ use rp_pico::hal::{
     Timer, I2C,
 };
 use rp_pico::pac;
-use rp_pico::pac::{interrupt, CorePeripherals, Peripherals, I2C0, NVIC};
+use rp_pico::pac::{interrupt, CorePeripherals, Peripherals, I2C1, NVIC};
 use rp_pico::Pins;
 
 mod frontend;
@@ -82,10 +82,10 @@ static G_PREVIOUS_LOW_NPL: AtomicBool = AtomicBool::new(false);
 static G_PREVIOUS_LOW_KY040_SW: AtomicBool = AtomicBool::new(false);
 
 type I2CDisplay = I2C<
-    I2C0,
+    I2C1,
     (
-        Pin<bank0::Gpio0, FunctionI2C>,
-        Pin<bank0::Gpio1, FunctionI2C>,
+        Pin<bank0::Gpio26, FunctionI2C>,
+        Pin<bank0::Gpio27, FunctionI2C>,
     ),
 >;
 enum DisplayMode {
@@ -126,14 +126,14 @@ fn main() -> ! {
     );
 
     // Configure two pins as being I²C, not GPIO
-    let sda_pin = pins.gpio0.into_mode::<FunctionI2C>();
-    let scl_pin = pins.gpio1.into_mode::<FunctionI2C>();
+    let sda_pin = pins.gpio26.into_mode::<FunctionI2C>();
+    let scl_pin = pins.gpio27.into_mode::<FunctionI2C>();
 
     // Create the I²C drive, using the two pre-configured pins. This will fail
     // at compile time if the pins are in the wrong mode, or if this I²C
     // peripheral isn't available on these pins!
-    let i2c = I2C::i2c0(
-        pac.I2C0,
+    let i2c = I2C::i2c1(
+        pac.I2C1,
         sda_pin,
         scl_pin,
         400.kHz(),
@@ -159,9 +159,9 @@ fn main() -> ! {
     npl_pdn.set_low().unwrap();
 
     // set AGC pins to HIGH, i.e. AGC ON:
-    let mut dcf77_aon = pins.gpio26.into_push_pull_output();
+    let mut dcf77_aon = pins.gpio22.into_push_pull_output();
     dcf77_aon.set_high().unwrap();
-    let mut npl_aon = pins.gpio27.into_push_pull_output();
+    let mut npl_aon = pins.gpio28.into_push_pull_output();
     npl_aon.set_high().unwrap();
 
     // Set up the LEDs and signal the "looking for signal" state (time and error LEDs on):

@@ -1,1 +1,1 @@
-# DCF77/NPL receiver #
+# DCF77/MSF receiver #

@@ -14,27 +14,27 @@ fn test_leds(pins: Pins, mut delay: Delay) -> ! {
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
     let mut dcf77_led_error = pins.gpio14.into_push_pull_output();
-    let mut npl_led_time = pins.gpio2.into_push_pull_output();
-    let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
-    let mut npl_led_bit_b = pins.gpio4.into_push_pull_output();
-    let mut npl_led_error = pins.gpio5.into_push_pull_output();
+    let mut msf_led_time = pins.gpio2.into_push_pull_output();
+    let mut msf_led_bit_a = pins.gpio3.into_push_pull_output();
+    let mut msf_led_bit_b = pins.gpio4.into_push_pull_output();
+    let mut msf_led_error = pins.gpio5.into_push_pull_output();
     // test "write to I/O-port" --> OK
     loop {
         dcf77_led_time.set_low().unwrap();
         dcf77_led_bit.set_low().unwrap();
         dcf77_led_error.set_low().unwrap();
-        npl_led_time.set_high().unwrap();
-        npl_led_bit_a.set_high().unwrap();
-        npl_led_bit_b.set_high().unwrap();
-        npl_led_error.set_high().unwrap();
+        msf_led_time.set_high().unwrap();
+        msf_led_bit_a.set_high().unwrap();
+        msf_led_bit_b.set_high().unwrap();
+        msf_led_error.set_high().unwrap();
         delay.delay_ms(300);
         dcf77_led_time.set_high().unwrap();
         dcf77_led_bit.set_high().unwrap();
         dcf77_led_error.set_high().unwrap();
-        npl_led_time.set_low().unwrap();
-        npl_led_bit_a.set_low().unwrap();
-        npl_led_bit_b.set_low().unwrap();
-        npl_led_error.set_low().unwrap();
+        msf_led_time.set_low().unwrap();
+        msf_led_bit_a.set_low().unwrap();
+        msf_led_bit_b.set_low().unwrap();
+        msf_led_error.set_low().unwrap();
         delay.delay_ms(300);
     }
 }

@@ -3,7 +3,7 @@ use heapless::String;
 use radio_datetime_utils::RadioDateTimeUtils;
 
 pub mod dcf77;
-pub mod npl;
+pub mod msf;
 
 /// Return a string version of the given value with leading 0, truncated to two digits or ** for None.
 pub fn str_02(value: Option<u8>) -> String<2> {

@@ -1,8 +1,8 @@
-//! DCF77/NPL radio clock on a Pico board
+//! DCF77/MSF radio clock on a Pico board
 #![no_std]
 #![no_main]
 
-use crate::frontend::{dcf77, npl};
+use crate::frontend::{dcf77, msf};
 use core::{
     fmt::Write,
     sync::atomic::{AtomicBool, AtomicU32, Ordering},
@@ -17,7 +17,7 @@ use embedded_hal::{
 use fugit::{MicrosDurationU32, RateExtU32};
 use hd44780_driver::{bus::I2CBus, Cursor, CursorBlink, HD44780};
 use heapless::String;
-use npl_utils::NPLUtils;
+use msf60_utils::MSFUtils;
 use panic_halt as _;
 use radio_datetime_utils::radio_datetime_helpers;
 use rp_pico::hal::{
@@ -56,7 +56,7 @@ impl ClockHardware {
 /// I²C address of the PCF8574 adapter, change as needed
 const I2C_ADDRESS: u8 = 0x27;
 static HW_DCF77: ClockHardware = ClockHardware::new();
-static HW_NPL: ClockHardware = ClockHardware::new();
+static HW_MSF: ClockHardware = ClockHardware::new();
 static HW_KY040_SW: ClockHardware = ClockHardware::new();
 
 /// Ticks (frames) in each second, to control LEDs and display
@@ -64,12 +64,12 @@ const FRAMES_PER_SECOND: u8 = 10;
 static G_TIMER_TICK: AtomicBool = AtomicBool::new(false); // tick-tock
 
 type DCF77SignalPin = Pin<bank0::Gpio11, PullDownInput>;
-type NPLSignalPin = Pin<bank0::Gpio6, PullDownInput>;
+type MSFSignalPin = Pin<bank0::Gpio6, PullDownInput>;
 type Ky040SwPin = Pin<bank0::Gpio7, PullUpInput>;
 
 // needed to transfer our pin(s) into the ISR:
 static mut GLOBAL_PIN_DCF77: Option<DCF77SignalPin> = None;
-static mut GLOBAL_PIN_NPL: Option<NPLSignalPin> = None;
+static mut GLOBAL_PIN_MSF: Option<MSFSignalPin> = None;
 // timer to get the timestamp of the edges:
 static mut GLOBAL_TIMER: Option<Timer> = None;
 // and one for the timer alarm:
@@ -78,7 +78,7 @@ static mut GLOBAL_ALARM: Option<Alarm0> = None;
 static mut GLOBAL_PIN_KY040_SW: Option<Ky040SwPin> = None;
 
 static G_PREVIOUS_LOW_DCF77: AtomicBool = AtomicBool::new(false);
-static G_PREVIOUS_LOW_NPL: AtomicBool = AtomicBool::new(false);
+static G_PREVIOUS_LOW_MSF: AtomicBool = AtomicBool::new(false);
 static G_PREVIOUS_LOW_KY040_SW: AtomicBool = AtomicBool::new(false);
 
 type I2CDisplay = I2C<
@@ -150,19 +150,19 @@ fn main() -> ! {
     lcd.write_str("DCF77", &mut delay).unwrap();
     lcd.set_cursor_pos(hd44780_helper::get_xy(0, 2).unwrap(), &mut delay)
         .unwrap();
-    lcd.write_str("NPL", &mut delay).unwrap();
+    lcd.write_str("MSF", &mut delay).unwrap();
 
     // Set power-down pins to LOW, i.e. receiver ON:
     let mut dcf77_pdn = pins.gpio15.into_push_pull_output();
     dcf77_pdn.set_low().unwrap();
-    let mut npl_pdn = pins.gpio10.into_push_pull_output();
-    npl_pdn.set_low().unwrap();
+    let mut msf_pdn = pins.gpio10.into_push_pull_output();
+    msf_pdn.set_low().unwrap();
 
     // set AGC pins to HIGH, i.e. AGC ON:
     let mut dcf77_aon = pins.gpio22.into_push_pull_output();
     dcf77_aon.set_high().unwrap();
-    let mut npl_aon = pins.gpio28.into_push_pull_output();
-    npl_aon.set_high().unwrap();
+    let mut msf_aon = pins.gpio28.into_push_pull_output();
+    msf_aon.set_high().unwrap();
 
     // Set up the LEDs and signal the "looking for signal" state (time and error LEDs on):
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();
@@ -174,15 +174,15 @@ fn main() -> ! {
         &mut dcf77_led_error,
     );
 
-    let mut npl_led_time = pins.gpio2.into_push_pull_output();
-    let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
-    let mut npl_led_bit_b = pins.gpio4.into_push_pull_output();
-    let mut npl_led_error = pins.gpio5.into_push_pull_output();
-    npl::init_leds(
-        &mut npl_led_time,
-        &mut npl_led_bit_a,
-        &mut npl_led_bit_b,
-        &mut npl_led_error,
+    let mut msf_led_time = pins.gpio2.into_push_pull_output();
+    let mut msf_led_bit_a = pins.gpio3.into_push_pull_output();
+    let mut msf_led_bit_b = pins.gpio4.into_push_pull_output();
+    let mut msf_led_error = pins.gpio5.into_push_pull_output();
+    msf::init_leds(
+        &mut msf_led_time,
+        &mut msf_led_bit_a,
+        &mut msf_led_bit_b,
+        &mut msf_led_error,
     );
 
     // Set up the on-board heartbeat LED:
@@ -192,9 +192,9 @@ fn main() -> ! {
     let dcf77_signal_pin = pins.gpio11.into_mode();
     dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
     dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
-    let npl_signal_pin = pins.gpio6.into_mode();
-    npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
-    npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
+    let msf_signal_pin = pins.gpio6.into_mode();
+    msf_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
+    msf_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
     let ky040_sw_pin = pins.gpio7.into_mode();
     ky040_sw_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
     ky040_sw_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
@@ -210,7 +210,7 @@ fn main() -> ! {
     // Ready, set, go!
     unsafe {
         GLOBAL_PIN_DCF77 = Some(dcf77_signal_pin);
-        GLOBAL_PIN_NPL = Some(npl_signal_pin);
+        GLOBAL_PIN_MSF = Some(msf_signal_pin);
         GLOBAL_PIN_KY040_SW = Some(ky040_sw_pin);
         GLOBAL_TIMER = Some(timer);
         GLOBAL_ALARM = Some(alarm0);
@@ -219,13 +219,13 @@ fn main() -> ! {
     }
     let mut t0_dcf77 = 0;
     let mut dcf77_tick = 0;
-    let mut t0_npl = 0;
-    let mut npl_tick = 0;
+    let mut t0_msf = 0;
+    let mut msf_tick = 0;
     let mut display_mode = DisplayMode::Status;
     let mut dcf77 = DCF77Utils::default();
-    let mut npl = NPLUtils::default();
+    let mut msf = MSFUtils::default();
     let mut str_dcf77_status = String::<14>::from("              "); // 14 spaces
-    let mut str_npl_status = String::<14>::from("              "); // 14 spaces
+    let mut str_msf_status = String::<14>::from("              "); // 14 spaces
 
     loop {
         if HW_KY040_SW.edge_received.load(Ordering::Acquire) {
@@ -244,7 +244,7 @@ fn main() -> ! {
                         .unwrap();
                     lcd.set_cursor_pos(hd44780_helper::get_xy(6, 2).unwrap(), &mut delay)
                         .unwrap();
-                    lcd.write_str(str_npl_status.as_str(), &mut delay).unwrap();
+                    lcd.write_str(str_msf_status.as_str(), &mut delay).unwrap();
                 }
             }
             HW_KY040_SW.edge_received.store(false, Ordering::Release);
@@ -281,35 +281,35 @@ fn main() -> ! {
             t0_dcf77 = t1_dcf77;
             HW_DCF77.edge_received.store(false, Ordering::Release);
         }
-        if HW_NPL.edge_received.load(Ordering::Acquire) {
-            let t1_npl = HW_NPL.timer_tick.load(Ordering::Acquire);
-            let is_low_edge = HW_NPL.edge_low.load(Ordering::Acquire);
+        if HW_MSF.edge_received.load(Ordering::Acquire) {
+            let t1_msf = HW_MSF.timer_tick.load(Ordering::Acquire);
+            let is_low_edge = HW_MSF.edge_low.load(Ordering::Acquire);
             if matches!(display_mode, DisplayMode::PulsesHigh) {
-                show_pulses(&mut lcd, &mut delay, 2, false, is_low_edge, t0_npl, t1_npl);
+                show_pulses(&mut lcd, &mut delay, 2, false, is_low_edge, t0_msf, t1_msf);
             } else if matches!(display_mode, DisplayMode::PulsesLow) {
-                show_pulses(&mut lcd, &mut delay, 2, true, is_low_edge, t0_npl, t1_npl);
+                show_pulses(&mut lcd, &mut delay, 2, true, is_low_edge, t0_msf, t1_msf);
             }
-            npl.handle_new_edge(is_low_edge, t1_npl);
-            if npl.get_new_second() {
-                npl_tick = 0;
+            msf.handle_new_edge(is_low_edge, t1_msf);
+            if msf.get_new_second() {
+                msf_tick = 0;
             }
-            npl::update_bit_leds(
-                npl_tick,
-                &npl,
-                &mut npl_led_bit_a,
-                &mut npl_led_bit_b,
-                &mut npl_led_error,
+            msf::update_bit_leds(
+                msf_tick,
+                &msf,
+                &mut msf_led_bit_a,
+                &mut msf_led_bit_b,
+                &mut msf_led_error,
             );
-            t0_npl = t1_npl;
-            HW_NPL.edge_received.store(false, Ordering::Release);
+            t0_msf = t1_msf;
+            HW_MSF.edge_received.store(false, Ordering::Release);
         }
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
             if t0_dcf77 != 0 {
                 dcf77::update_time_led(dcf77_tick, &dcf77, &mut dcf77_led_time);
             }
-            if t0_npl != 0 {
-                npl::update_time_led(npl_tick, &npl, &mut npl_led_time);
+            if t0_msf != 0 {
+                msf::update_time_led(msf_tick, &msf, &mut msf_led_time);
             }
             if dcf77_tick == 0 {
                 let mut second = dcf77.get_second() + 1;
@@ -354,9 +354,9 @@ fn main() -> ! {
             if dcf77_tick == FRAMES_PER_SECOND {
                 dcf77_tick = 0;
             }
-            if npl_tick == 0 {
-                let mut second = npl.get_second() + 1;
-                if second == npl.get_minute_length() {
+            if msf_tick == 0 {
+                let mut second = msf.get_second() + 1;
+                if second == msf.get_minute_length() {
                     second = 0;
                 }
                 lcd.set_cursor_pos(hd44780_helper::get_xy(14, 3).unwrap(), &mut delay)
@@ -364,37 +364,37 @@ fn main() -> ! {
                 lcd.write_str(frontend::str_02(Some(second)).as_str(), &mut delay)
                     .unwrap();
             }
-            if npl_tick == 1 && npl.get_new_minute() {
+            if msf_tick == 1 && msf.get_new_minute() {
                 // print date/time/status
-                npl.decode_time();
-                if !npl.get_first_minute() {
+                msf.decode_time();
+                if !msf.get_first_minute() {
                     if matches!(display_mode, DisplayMode::Status) {
-                        str_npl_status = npl::str_status(&npl);
+                        str_msf_status = msf::str_status(&msf);
                         lcd.set_cursor_pos(hd44780_helper::get_xy(6, 2).unwrap(), &mut delay)
                             .unwrap();
-                        lcd.write_str(str_npl_status.as_str(), &mut delay).unwrap();
+                        lcd.write_str(str_msf_status.as_str(), &mut delay).unwrap();
                     }
                     // Decoded date and time:
                     lcd.set_cursor_pos(hd44780_helper::get_xy(0, 3).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(
-                        frontend::str_datetime(npl.get_radio_datetime()).as_str(),
+                        frontend::str_datetime(msf.get_radio_datetime()).as_str(),
                         &mut delay,
                     )
                     .unwrap();
                     // Other things:
                     lcd.set_cursor_pos(hd44780_helper::get_xy(17, 3).unwrap(), &mut delay)
                         .unwrap();
-                    lcd.write_str(npl::str_misc(&npl).as_str(), &mut delay)
+                    lcd.write_str(msf::str_misc(&msf).as_str(), &mut delay)
                         .unwrap();
                 }
             }
-            if npl_tick == 7 {
-                npl.increase_second();
+            if msf_tick == 7 {
+                msf.increase_second();
             }
-            npl_tick += 1;
-            if npl_tick == FRAMES_PER_SECOND {
-                npl_tick = 0;
+            msf_tick += 1;
+            if msf_tick == FRAMES_PER_SECOND {
+                msf_tick = 0;
             }
             G_TIMER_TICK.store(false, Ordering::Release);
         }
@@ -454,7 +454,7 @@ unsafe fn IO_IRQ_BANK0() {
     let now = tick.get_counter_low();
 
     handle_tick!(GLOBAL_PIN_DCF77, G_PREVIOUS_LOW_DCF77, HW_DCF77, now);
-    handle_tick!(GLOBAL_PIN_NPL, G_PREVIOUS_LOW_NPL, HW_NPL, now);
+    handle_tick!(GLOBAL_PIN_MSF, G_PREVIOUS_LOW_MSF, HW_MSF, now);
     handle_tick!(
         GLOBAL_PIN_KY040_SW,
         G_PREVIOUS_LOW_KY040_SW,

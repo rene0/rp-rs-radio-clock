@@ -3,7 +3,7 @@ use core::cmp::Ordering;
 use core::fmt::Write;
 use embedded_hal::digital::v2::OutputPin;
 use heapless::String;
-use npl_utils::NPLUtils;
+use msf60_utils::MSFUtils;
 use rp_pico::hal::gpio::{bank0, Pin, PushPullOutput};
 
 /// Put the LEDs in their initial state.
@@ -20,11 +20,11 @@ pub fn init_leds(
 }
 
 /// Turn the time led on or off depending on whether a new second or minute arrived.
-pub fn update_time_led(tick: u8, npl: &NPLUtils, led_time: &mut Pin<bank0::Gpio2, PushPullOutput>) {
+pub fn update_time_led(tick: u8, msf: &MSFUtils, led_time: &mut Pin<bank0::Gpio2, PushPullOutput>) {
     if tick == 0 {
         led_time.set_high().unwrap();
-    } else if (!npl.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 2 / 10)
-        || (npl.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 8 / 10)
+    } else if (!msf.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 2 / 10)
+        || (msf.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 8 / 10)
     {
         led_time.set_low().unwrap();
     }
@@ -33,7 +33,7 @@ pub fn update_time_led(tick: u8, npl: &NPLUtils, led_time: &mut Pin<bank0::Gpio2
 /// Turn the bit LEDs (is-one and error) on or off.
 pub fn update_bit_leds(
     tick: u8,
-    npl: &NPLUtils,
+    msf: &MSFUtils,
     led_bit_a: &mut Pin<bank0::Gpio3, PushPullOutput>,
     led_bit_b: &mut Pin<bank0::Gpio4, PushPullOutput>,
     led_error: &mut Pin<bank0::Gpio5, PushPullOutput>,
@@ -42,17 +42,17 @@ pub fn update_bit_leds(
         led_bit_a.set_low().unwrap();
         led_bit_b.set_low().unwrap();
         led_error.set_low().unwrap();
-    } else if npl.get_current_bit_a().is_none() || npl.get_current_bit_b().is_none() {
+    } else if msf.get_current_bit_a().is_none() || msf.get_current_bit_b().is_none() {
         led_bit_a.set_low().unwrap();
         led_bit_b.set_low().unwrap();
         led_error.set_high().unwrap();
     } else {
-        if npl.get_current_bit_a() == Some(true) {
+        if msf.get_current_bit_a() == Some(true) {
             led_bit_a.set_high().unwrap();
         } else {
             led_bit_a.set_low().unwrap();
         }
-        if npl.get_current_bit_b() == Some(true) {
+        if msf.get_current_bit_b() == Some(true) {
             led_bit_b.set_high().unwrap();
         } else {
             led_bit_b.set_low().unwrap();
@@ -62,18 +62,18 @@ pub fn update_bit_leds(
 }
 
 /// Return the status overview as a compact string
-pub fn str_status(npl: &NPLUtils) -> String<14> {
+pub fn str_status(msf: &MSFUtils) -> String<14> {
     let mut str_buf = String::<14>::from("");
     write!(
         str_buf,
         "{}{}{}{}{} {}{}",
-        frontend::str_jumps(npl.get_radio_datetime()),
-        frontend::str_parity(npl.get_parity_4(), true, 'd'),
-        frontend::str_parity(npl.get_parity_3(), true, 'c'),
-        frontend::str_parity(npl.get_parity_2(), true, 'b'),
-        frontend::str_parity(npl.get_parity_1(), true, 'a'),
-        str_minute_length(npl),
-        if npl.end_of_minute_marker_present(false) {
+        frontend::str_jumps(msf.get_radio_datetime()),
+        frontend::str_parity(msf.get_parity_4(), true, 'd'),
+        frontend::str_parity(msf.get_parity_3(), true, 'c'),
+        frontend::str_parity(msf.get_parity_2(), true, 'b'),
+        frontend::str_parity(msf.get_parity_1(), true, 'a'),
+        str_minute_length(msf),
+        if msf.end_of_minute_marker_present(false) {
             ' '
         } else {
             '!'
@@ -96,21 +96,21 @@ fn str_i2(value: Option<i8>) -> String<2> {
 }
 
 /// Return a compact string with miscellaneous information
-pub fn str_misc(npl: &NPLUtils) -> String<3> {
+pub fn str_misc(msf: &MSFUtils) -> String<3> {
     let mut str_buf = String::<3>::from("");
     write!(
         str_buf,
         "{}{}",
-        frontend::str_dst(npl.get_radio_datetime()),
-        str_i2(npl.get_dut1())
+        frontend::str_dst(msf.get_radio_datetime()),
+        str_i2(msf.get_dut1())
     )
     .unwrap();
     str_buf
 }
 
 /// Return a character representation of the minute length status.
-fn str_minute_length(npl: &NPLUtils) -> char {
-    match npl.get_second().cmp(&npl.get_minute_length()) {
+fn str_minute_length(msf: &MSFUtils) -> char {
+    match msf.get_second().cmp(&msf.get_minute_length()) {
         Ordering::Less => '<',
         Ordering::Equal => ' ',
         Ordering::Greater => '>',

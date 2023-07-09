@@ -15,11 +15,11 @@ use rp_pico::pac::{interrupt, Peripherals, NVIC};
 use rp_pico::Pins;
 
 type DCF77SignalPin = Pin<bank0::Gpio11, PullDownInput>;
-type NPLSignalPin = Pin<bank0::Gpio6, PullDownInput>;
+type MSFSignalPin = Pin<bank0::Gpio6, PullDownInput>;
 
 // Needed to transfer our pins into the ISR:
 static mut GLOBAL_PIN_DCF77: Option<DCF77SignalPin> = None;
-static mut GLOBAL_PIN_NPL: Option<NPLSignalPin> = None;
+static mut GLOBAL_PIN_MSF: Option<MSFSignalPin> = None;
 
 struct ClockHardware {
     high_edge_received: AtomicBool,
@@ -36,7 +36,7 @@ impl ClockHardware {
 }
 
 static HW_DCF77: ClockHardware = ClockHardware::new();
-static HW_NPL: ClockHardware = ClockHardware::new();
+static HW_MSF: ClockHardware = ClockHardware::new();
 
 /// Entry point to our bare-metal application.
 ///
@@ -57,14 +57,14 @@ fn main() -> ! {
     // Set power-down pins to LOW, i.e. receiver ON:
     let mut dcf77_pdn = pins.gpio15.into_push_pull_output();
     dcf77_pdn.set_low().unwrap();
-    let mut npl_pdn = pins.gpio10.into_push_pull_output();
-    npl_pdn.set_low().unwrap();
+    let mut msf_pdn = pins.gpio10.into_push_pull_output();
+    msf_pdn.set_low().unwrap();
 
     // set AGC pins to HIGH, i.e. AGC ON:
     let mut dcf77_aon = pins.gpio22.into_push_pull_output();
     dcf77_aon.set_high().unwrap();
-    let mut npl_aon = pins.gpio28.into_push_pull_output();
-    npl_aon.set_high().unwrap();
+    let mut msf_aon = pins.gpio28.into_push_pull_output();
+    msf_aon.set_high().unwrap();
 
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
     dcf77_led_bit.set_low().unwrap();
@@ -72,16 +72,16 @@ fn main() -> ! {
     dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
     dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
 
-    let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
-    npl_led_bit_a.set_low().unwrap();
-    let npl_signal_pin = pins.gpio6.into_mode();
-    npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
-    npl_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
+    let mut msf_led_bit_a = pins.gpio3.into_push_pull_output();
+    msf_led_bit_a.set_low().unwrap();
+    let msf_signal_pin = pins.gpio6.into_mode();
+    msf_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
+    msf_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
 
     // Give our pins away to the ISR and enable the ISR
     unsafe {
         GLOBAL_PIN_DCF77 = Some(dcf77_signal_pin);
-        GLOBAL_PIN_NPL = Some(npl_signal_pin);
+        GLOBAL_PIN_MSF = Some(msf_signal_pin);
         NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
     }
 
@@ -95,13 +95,13 @@ fn main() -> ! {
             HW_DCF77.high_edge_received.store(false, Ordering::Release);
         }
 
-        if HW_NPL.low_edge_received.load(Ordering::Acquire) {
-            npl_led_bit_a.set_low().unwrap();
-            HW_NPL.low_edge_received.store(false, Ordering::Release);
+        if HW_MSF.low_edge_received.load(Ordering::Acquire) {
+            msf_led_bit_a.set_low().unwrap();
+            HW_MSF.low_edge_received.store(false, Ordering::Release);
         }
-        if HW_NPL.high_edge_received.load(Ordering::Acquire) {
-            npl_led_bit_a.set_high().unwrap();
-            HW_NPL.high_edge_received.store(false, Ordering::Release);
+        if HW_MSF.high_edge_received.load(Ordering::Acquire) {
+            msf_led_bit_a.set_high().unwrap();
+            HW_MSF.high_edge_received.store(false, Ordering::Release);
         }
     }
 }
@@ -125,5 +125,5 @@ macro_rules! handle_tick {
 #[interrupt]
 unsafe fn IO_IRQ_BANK0() {
     handle_tick!(GLOBAL_PIN_DCF77, HW_DCF77);
-    handle_tick!(GLOBAL_PIN_NPL, HW_NPL);
+    handle_tick!(GLOBAL_PIN_MSF, HW_MSF);
 }

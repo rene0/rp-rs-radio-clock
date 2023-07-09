@@ -245,6 +245,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "msf60_utils"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52d9c72eedf515f2d0629a9385f30f3ba7dd12b2f8025cd70edadb32ff45ea6f"
+dependencies = [
+ "radio_datetime_utils",
+]
+
+[[package]]
 name = "nb"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -258,15 +267,6 @@ name = "nb"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d5439c4ad607c3c23abf66de8c8bf57ba8adcd1f129e699851a6e43935d339d"
-
-[[package]]
-name = "npl_utils"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c49980de1083fc36216a2965dbd0a87801a1ddc56addeb4014f8e154d22209d"
-dependencies = [
- "radio_datetime_utils",
-]
 
 [[package]]
 name = "num_enum"
@@ -391,7 +391,7 @@ dependencies = [
  "fugit",
  "hd44780-driver",
  "heapless",
- "npl_utils",
+ "msf60_utils",
  "panic-halt",
  "radio_datetime_utils",
  "rp-pico",

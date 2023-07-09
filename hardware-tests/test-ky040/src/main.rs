@@ -19,8 +19,8 @@ fn test_ky040(pins: Pins) -> ! {
     let dt_pin = pins.gpio8.into_floating_input();
     let clk_pin = pins.gpio9.into_floating_input();
     let mut led_pin = pins.led.into_push_pull_output();
-    let mut npl_led_bit_a = pins.gpio3.into_push_pull_output();
-    let mut npl_led_bit_b = pins.gpio4.into_push_pull_output();
+    let mut msf_led_bit_a = pins.gpio3.into_push_pull_output();
+    let mut msf_led_bit_b = pins.gpio4.into_push_pull_output();
     let mut rotation_start = clk_pin.is_high().unwrap();
     let mut rotation_now;
     // test "write to I/O-port" and pushing a button --> OK
@@ -38,12 +38,12 @@ fn test_ky040(pins: Pins) -> ! {
             // least with two indicator LEDs this code seems fine.
             if dt_pin.is_high().unwrap() != rotation_now {
                 // clockwise
-                npl_led_bit_a.set_low().unwrap();
-                npl_led_bit_b.set_high().unwrap();
+                msf_led_bit_a.set_low().unwrap();
+                msf_led_bit_b.set_high().unwrap();
             } else {
                 // counterclockwise
-                npl_led_bit_a.set_high().unwrap();
-                npl_led_bit_b.set_low().unwrap();
+                msf_led_bit_a.set_high().unwrap();
+                msf_led_bit_b.set_low().unwrap();
             }
         }
         rotation_start = rotation_now;

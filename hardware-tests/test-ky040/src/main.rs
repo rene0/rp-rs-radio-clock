@@ -7,7 +7,7 @@ use rp_pico::hal::sio::Sio;
 use rp_pico::pac::Peripherals;
 use rp_pico::Pins;
 
-// see also some examples from the internet:
+// see also some examples from the Internet:
 // https://www.brainy-bits.com/post/best-code-to-use-with-a-ky-040-rotary-encoder-let-s-find-out
 // https://gist.github.com/mumrah/ccd82aa13e784e77b788810dbaa8f4a3 for software SW debounce
 // https://michiel.vanderwulp.be/domotica/Modules/KY040-Rotary-Encoder/KY-040-Science.pdf

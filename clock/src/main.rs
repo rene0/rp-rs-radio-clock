@@ -9,7 +9,6 @@ use core::{
 };
 use cortex_m::delay::Delay;
 use dcf77_utils::DCF77Utils;
-use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::{
     blocking::delay::{DelayMs, DelayUs},
     digital::v2::{InputPin, OutputPin, ToggleableOutputPin},
@@ -18,7 +17,7 @@ use fugit::{MicrosDurationU32, RateExtU32};
 use hd44780_driver::{bus::I2CBus, Cursor, CursorBlink, HD44780};
 use heapless::String;
 use msf60_utils::MSFUtils;
-use panic_halt as _;
+extern crate panic_halt; // provides a #[panic_handler] function
 use radio_datetime_utils::radio_datetime_helpers;
 use rp_pico::hal::{
     clocks,

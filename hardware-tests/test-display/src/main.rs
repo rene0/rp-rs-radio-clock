@@ -3,11 +3,10 @@
 
 use core::fmt::Write;
 use cortex_m::delay::Delay;
-use defmt_rtt as _;
 use fugit::RateExtU32;
 use hd44780_driver::{Cursor, CursorBlink, HD44780};
 use heapless::String;
-use panic_halt as _;
+extern crate panic_halt;
 use rp_pico::hal::{
     clocks, clocks::Clock, gpio::FunctionI2C, sio::Sio, watchdog::Watchdog, Timer, I2C,
 };

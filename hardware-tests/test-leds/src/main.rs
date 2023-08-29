@@ -2,9 +2,8 @@
 #![no_main]
 
 use cortex_m::delay::Delay;
-use defmt_rtt as _;
 use embedded_hal::digital::v2::OutputPin;
-use panic_halt as _;
+extern crate panic_halt;
 use rp_pico::hal::{clocks, clocks::Clock, sio::Sio, watchdog::Watchdog};
 use rp_pico::pac::{CorePeripherals, Peripherals};
 use rp_pico::Pins;

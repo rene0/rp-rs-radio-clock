@@ -2,9 +2,8 @@
 #![no_main]
 
 use core::sync::atomic::{AtomicBool, Ordering};
-use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::digital::v2::{InputPin, OutputPin};
-use panic_halt as _;
+extern crate panic_halt;
 use rp_pico::hal::{
     gpio,
     gpio::{bank0, Pin, PullDownInput},

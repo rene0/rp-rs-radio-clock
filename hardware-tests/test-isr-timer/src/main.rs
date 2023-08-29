@@ -2,10 +2,9 @@
 #![no_main]
 
 use core::sync::atomic::{AtomicBool, Ordering};
-use defmt_rtt as _; // otherwise "linking with `flip-link`" fails
 use embedded_hal::digital::v2::OutputPin;
 use fugit::MicrosDurationU32;
-use panic_halt as _;
+extern crate panic_halt;
 use rp_pico::hal::{
     sio::Sio,
     timer::{Alarm, Alarm0, Timer},

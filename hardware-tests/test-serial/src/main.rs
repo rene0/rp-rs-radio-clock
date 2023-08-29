@@ -17,7 +17,7 @@ use rp_pico::entry;
 
 // Ensure we halt the program on panic (if we don't mention this crate it won't
 // be linked)
-use panic_halt as _;
+extern crate panic_halt;
 
 // A shorter alias for the Peripheral Access Crate, which provides low-level
 // register access

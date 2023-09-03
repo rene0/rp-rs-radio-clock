@@ -12,4 +12,4 @@ panic-halt = "0.2"
 usbd-serial = "0.1"
 usb-device = "0.2"
 
-rp-pico = "0.7"
+rp-pico = "0.8"

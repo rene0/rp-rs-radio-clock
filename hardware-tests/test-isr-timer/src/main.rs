@@ -6,8 +6,10 @@ use embedded_hal::digital::v2::OutputPin;
 use fugit::MicrosDurationU32;
 extern crate panic_halt;
 use rp_pico::hal::{
+    clocks,
     sio::Sio,
     timer::{Alarm, Alarm0, Timer},
+    Watchdog,
 };
 use rp_pico::pac::{interrupt, Interrupt, Peripherals, NVIC};
 use rp_pico::Pins;
@@ -34,7 +36,19 @@ fn main() -> ! {
     let mut led_pin = pins.led.into_push_pull_output();
     led_pin.set_low().unwrap();
 
-    let mut timer = Timer::new(pac.TIMER, &mut pac.RESETS);
+    let mut watchdog = Watchdog::new(pac.WATCHDOG);
+    let clocks = clocks::init_clocks_and_plls(
+        rp_pico::XOSC_CRYSTAL_FREQ,
+        pac.XOSC,
+        pac.CLOCKS,
+        pac.PLL_SYS,
+        pac.PLL_USB,
+        &mut pac.RESETS,
+        &mut watchdog,
+    )
+    .ok()
+    .unwrap();
+    let mut timer = Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
     let mut alarm0 = timer.alarm_0().unwrap();
     alarm0.schedule(MicrosDurationU32::micros(250_000)).unwrap();
     alarm0.enable_interrupt();

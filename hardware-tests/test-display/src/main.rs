@@ -48,8 +48,8 @@ fn main() -> ! {
     // Create the I²C drive, using the two pre-configured pins. This will fail
     // at compile time if the pins are in the wrong mode, or if this I²C
     // peripheral isn't available on these pins!
-    let sda_pin = pins.gpio26.into_mode::<FunctionI2C>();
-    let scl_pin = pins.gpio27.into_mode::<FunctionI2C>();
+    let sda_pin = pins.gpio26.into_function::<FunctionI2C>();
+    let scl_pin = pins.gpio27.into_function::<FunctionI2C>();
 
     let i2c = I2C::i2c1(
         pac.I2C1,
@@ -81,7 +81,7 @@ fn main() -> ! {
         .unwrap();
     lcd.write_str("at (11,3)", &mut delay).unwrap();
 
-    let timer = Timer::new(pac.TIMER, &mut pac.RESETS);
+    let timer = Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
     let mut old_value = timer.get_counter();
     loop {
         delay.delay_ms(960);

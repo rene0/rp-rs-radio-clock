@@ -4,14 +4,14 @@ use core::fmt::Write;
 use embedded_hal::digital::v2::OutputPin;
 use heapless::String;
 use msf60_utils::MSFUtils;
-use rp_pico::hal::gpio::{bank0, Pin, PushPullOutput};
+use rp_pico::hal::gpio::{bank0, FunctionSioOutput, Pin, PullDown};
 
 /// Put the LEDs in their initial state.
 pub fn init_leds(
-    led_time: &mut Pin<bank0::Gpio2, PushPullOutput>,
-    led_bit_a: &mut Pin<bank0::Gpio3, PushPullOutput>,
-    led_bit_b: &mut Pin<bank0::Gpio4, PushPullOutput>,
-    led_error: &mut Pin<bank0::Gpio5, PushPullOutput>,
+    led_time: &mut Pin<bank0::Gpio2, FunctionSioOutput, PullDown>,
+    led_bit_a: &mut Pin<bank0::Gpio3, FunctionSioOutput, PullDown>,
+    led_bit_b: &mut Pin<bank0::Gpio4, FunctionSioOutput, PullDown>,
+    led_error: &mut Pin<bank0::Gpio5, FunctionSioOutput, PullDown>,
 ) {
     led_time.set_high().unwrap();
     led_bit_a.set_low().unwrap();
@@ -20,7 +20,11 @@ pub fn init_leds(
 }
 
 /// Turn the time led on or off depending on whether a new second or minute arrived.
-pub fn update_time_led(tick: u8, msf: &MSFUtils, led_time: &mut Pin<bank0::Gpio2, PushPullOutput>) {
+pub fn update_time_led(
+    tick: u8,
+    msf: &MSFUtils,
+    led_time: &mut Pin<bank0::Gpio2, FunctionSioOutput, PullDown>,
+) {
     if tick == 0 {
         led_time.set_high().unwrap();
     } else if (!msf.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 2 / 10)
@@ -34,9 +38,9 @@ pub fn update_time_led(tick: u8, msf: &MSFUtils, led_time: &mut Pin<bank0::Gpio2
 pub fn update_bit_leds(
     tick: u8,
     msf: &MSFUtils,
-    led_bit_a: &mut Pin<bank0::Gpio3, PushPullOutput>,
-    led_bit_b: &mut Pin<bank0::Gpio4, PushPullOutput>,
-    led_error: &mut Pin<bank0::Gpio5, PushPullOutput>,
+    led_bit_a: &mut Pin<bank0::Gpio3, FunctionSioOutput, PullDown>,
+    led_bit_b: &mut Pin<bank0::Gpio4, FunctionSioOutput, PullDown>,
+    led_error: &mut Pin<bank0::Gpio5, FunctionSioOutput, PullDown>,
 ) {
     if tick == 0 {
         led_bit_a.set_low().unwrap();

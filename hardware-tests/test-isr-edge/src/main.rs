@@ -6,15 +6,15 @@ use embedded_hal::digital::v2::{InputPin, OutputPin};
 extern crate panic_halt;
 use rp_pico::hal::{
     gpio,
-    gpio::{bank0, Pin, PullDownInput},
+    gpio::{bank0, FunctionSioInput, Pin, PullDown},
     sio::Sio,
 };
 use rp_pico::pac;
 use rp_pico::pac::{interrupt, Peripherals, NVIC};
 use rp_pico::Pins;
 
-type DCF77SignalPin = Pin<bank0::Gpio11, PullDownInput>;
-type MSFSignalPin = Pin<bank0::Gpio6, PullDownInput>;
+type DCF77SignalPin = Pin<bank0::Gpio11, FunctionSioInput, PullDown>;
+type MSFSignalPin = Pin<bank0::Gpio6, FunctionSioInput, PullDown>;
 
 // Needed to transfer our pins into the ISR:
 static mut GLOBAL_PIN_DCF77: Option<DCF77SignalPin> = None;
@@ -67,13 +67,13 @@ fn main() -> ! {
 
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
     dcf77_led_bit.set_low().unwrap();
-    let dcf77_signal_pin = pins.gpio11.into_mode();
+    let dcf77_signal_pin = pins.gpio11.into_pull_down_input();
     dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
     dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
 
     let mut msf_led_bit_a = pins.gpio3.into_push_pull_output();
     msf_led_bit_a.set_low().unwrap();
-    let msf_signal_pin = pins.gpio6.into_mode();
+    let msf_signal_pin = pins.gpio6.into_pull_down_input();
     msf_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
     msf_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
 

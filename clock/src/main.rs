@@ -23,7 +23,7 @@ use rp_pico::hal::{
     clocks,
     clocks::Clock,
     gpio,
-    gpio::{bank0, FunctionI2C, Pin, PullDownInput, PullUpInput},
+    gpio::{bank0, FunctionI2C, FunctionSioInput, Pin, PullDown, PullUp},
     sio::Sio,
     timer::{Alarm, Alarm0},
     watchdog::Watchdog,
@@ -62,9 +62,9 @@ static HW_KY040_SW: ClockHardware = ClockHardware::new();
 const FRAMES_PER_SECOND: u8 = 10;
 static G_TIMER_TICK: AtomicBool = AtomicBool::new(false); // tick-tock
 
-type DCF77SignalPin = Pin<bank0::Gpio11, PullDownInput>;
-type MSFSignalPin = Pin<bank0::Gpio6, PullDownInput>;
-type Ky040SwPin = Pin<bank0::Gpio7, PullUpInput>;
+type DCF77SignalPin = Pin<bank0::Gpio11, FunctionSioInput, PullDown>;
+type MSFSignalPin = Pin<bank0::Gpio6, FunctionSioInput, PullDown>;
+type Ky040SwPin = Pin<bank0::Gpio7, FunctionSioInput, PullUp>;
 
 // needed to transfer our pin(s) into the ISR:
 static mut GLOBAL_PIN_DCF77: Option<DCF77SignalPin> = None;
@@ -80,12 +80,14 @@ static G_PREVIOUS_LOW_DCF77: AtomicBool = AtomicBool::new(false);
 static G_PREVIOUS_LOW_MSF: AtomicBool = AtomicBool::new(false);
 static G_PREVIOUS_LOW_KY040_SW: AtomicBool = AtomicBool::new(false);
 
-type I2CDisplay = I2C<
-    I2C1,
-    (
-        Pin<bank0::Gpio26, FunctionI2C>,
-        Pin<bank0::Gpio27, FunctionI2C>,
-    ),
+type I2CDisplay = I2CBus<
+    I2C<
+        I2C1,
+        (
+            Pin<bank0::Gpio26, FunctionI2C, PullDown>,
+            Pin<bank0::Gpio27, FunctionI2C, PullDown>,
+        ),
+    >,
 >;
 enum DisplayMode {
     Status,
@@ -125,8 +127,8 @@ fn main() -> ! {
     );
 
     // Configure two pins as being I²C, not GPIO
-    let sda_pin = pins.gpio26.into_mode::<FunctionI2C>();
-    let scl_pin = pins.gpio27.into_mode::<FunctionI2C>();
+    let sda_pin = pins.gpio26.into_function::<FunctionI2C>();
+    let scl_pin = pins.gpio27.into_function::<FunctionI2C>();
 
     // Create the I²C drive, using the two pre-configured pins. This will fail
     // at compile time if the pins are in the wrong mode, or if this I²C
@@ -188,16 +190,16 @@ fn main() -> ! {
     let mut led_pin = pins.led.into_push_pull_output();
     led_pin.set_low().unwrap();
 
-    let dcf77_signal_pin = pins.gpio11.into_mode();
+    let dcf77_signal_pin = pins.gpio11.into_pull_down_input();
     dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
     dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
-    let msf_signal_pin = pins.gpio6.into_mode();
+    let msf_signal_pin = pins.gpio6.into_pull_down_input();
     msf_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
     msf_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
-    let ky040_sw_pin = pins.gpio7.into_mode();
+    let ky040_sw_pin = pins.gpio7.into_pull_up_input();
     ky040_sw_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
     ky040_sw_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
-    let mut timer = Timer::new(pac.TIMER, &mut pac.RESETS);
+    let mut timer = Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
     let mut alarm0 = timer.alarm_0().unwrap();
 
     alarm0
@@ -421,7 +423,7 @@ macro_rules! handle_tick {
 }
 
 fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
-    lcd: &mut HD44780<I2CBus<I2CDisplay>>,
+    lcd: &mut HD44780<I2CDisplay>,
     delay: &mut D,
     base_row: u8,
     show_low: bool,

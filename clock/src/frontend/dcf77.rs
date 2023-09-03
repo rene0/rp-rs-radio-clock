@@ -4,13 +4,13 @@ use core::fmt::Write;
 use dcf77_utils::DCF77Utils;
 use embedded_hal::digital::v2::OutputPin;
 use heapless::String;
-use rp_pico::hal::gpio::{bank0, Pin, PushPullOutput};
+use rp_pico::hal::gpio::{bank0, FunctionSioOutput, Pin, PullDown};
 
 /// Put the LEDs in their initial state.
 pub fn init_leds(
-    led_time: &mut Pin<bank0::Gpio12, PushPullOutput>,
-    led_bit: &mut Pin<bank0::Gpio13, PushPullOutput>,
-    led_error: &mut Pin<bank0::Gpio14, PushPullOutput>,
+    led_time: &mut Pin<bank0::Gpio12, FunctionSioOutput, PullDown>,
+    led_bit: &mut Pin<bank0::Gpio13, FunctionSioOutput, PullDown>,
+    led_error: &mut Pin<bank0::Gpio14, FunctionSioOutput, PullDown>,
 ) {
     led_time.set_high().unwrap();
     led_bit.set_low().unwrap();
@@ -21,7 +21,7 @@ pub fn init_leds(
 pub fn update_time_led(
     tick: u8,
     dcf77: &DCF77Utils,
-    led_time: &mut Pin<bank0::Gpio12, PushPullOutput>,
+    led_time: &mut Pin<bank0::Gpio12, FunctionSioOutput, PullDown>,
 ) {
     if tick == 0 {
         led_time.set_high().unwrap();
@@ -36,8 +36,8 @@ pub fn update_time_led(
 pub fn update_bit_leds(
     tick: u8,
     dcf77: &DCF77Utils,
-    led_bit: &mut Pin<bank0::Gpio13, PushPullOutput>,
-    led_error: &mut Pin<bank0::Gpio14, PushPullOutput>,
+    led_bit: &mut Pin<bank0::Gpio13, FunctionSioOutput, PullDown>,
+    led_error: &mut Pin<bank0::Gpio14, FunctionSioOutput, PullDown>,
 ) {
     if tick == 0 {
         led_bit.set_low().unwrap();

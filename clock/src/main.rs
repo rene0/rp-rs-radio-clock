@@ -89,6 +89,7 @@ type I2CDisplay = I2CBus<
         ),
     >,
 >;
+
 enum DisplayMode {
     Status,
     PulsesHigh,

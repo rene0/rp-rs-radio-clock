@@ -5,6 +5,19 @@ use radio_datetime_utils::RadioDateTimeUtils;
 pub mod dcf77;
 pub mod msf;
 
+#[macro_export]
+macro_rules! set_time_led {
+    ($tick:expr, $station:expr, $led:expr) => {
+        if $tick == 0 {
+            $led.set_high().unwrap();
+        } else if (!$station.get_new_minute() && $tick >= $crate::FRAMES_PER_SECOND * 2 / 10)
+            || ($station.get_new_minute() && $tick >= $crate::FRAMES_PER_SECOND * 8 / 10)
+        {
+            $led.set_low().unwrap();
+        }
+    };
+}
+
 /// Return a string version of the given value with leading 0, truncated to two digits or ** for None.
 pub fn str_02(value: Option<u8>) -> String<2> {
     let mut s = String::<2>::from("");

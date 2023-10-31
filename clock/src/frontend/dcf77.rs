@@ -1,4 +1,4 @@
-use crate::frontend;
+use crate::{frontend, set_time_led};
 use core::cmp::Ordering;
 use core::fmt::Write;
 use dcf77_utils::DCF77Utils;
@@ -23,13 +23,7 @@ pub fn update_time_led(
     dcf77: &DCF77Utils,
     led_time: &mut Pin<bank0::Gpio12, FunctionSioOutput, PullDown>,
 ) {
-    if tick == 0 {
-        led_time.set_high().unwrap();
-    } else if (!dcf77.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 2 / 10)
-        || (dcf77.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 8 / 10)
-    {
-        led_time.set_low().unwrap();
-    }
+    set_time_led!(tick, dcf77, led_time);
 }
 
 /// Turn the bit LEDs (is-one and error) on or off.

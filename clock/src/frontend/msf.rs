@@ -1,4 +1,4 @@
-use crate::frontend;
+use crate::{frontend, set_time_led};
 use core::cmp::Ordering;
 use core::fmt::Write;
 use embedded_hal::digital::v2::OutputPin;
@@ -25,13 +25,7 @@ pub fn update_time_led(
     msf: &MSFUtils,
     led_time: &mut Pin<bank0::Gpio2, FunctionSioOutput, PullDown>,
 ) {
-    if tick == 0 {
-        led_time.set_high().unwrap();
-    } else if (!msf.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 2 / 10)
-        || (msf.get_new_minute() && tick >= crate::FRAMES_PER_SECOND * 8 / 10)
-    {
-        led_time.set_low().unwrap();
-    }
+    set_time_led!(tick, msf, led_time);
 }
 
 /// Turn the bit LEDs (is-one and error) on or off.

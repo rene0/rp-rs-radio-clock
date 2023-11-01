@@ -453,8 +453,7 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
 #[allow(non_snake_case)]
 #[interrupt]
 unsafe fn IO_IRQ_BANK0() {
-    let tick = GLOBAL_TIMER.as_mut().unwrap();
-    let now = tick.get_counter_low();
+    let now = GLOBAL_TIMER.as_mut().unwrap().get_counter_low();
 
     handle_tick!(GLOBAL_PIN_DCF77, G_PREVIOUS_LOW_DCF77, HW_DCF77, now);
     handle_tick!(GLOBAL_PIN_MSF, G_PREVIOUS_LOW_MSF, HW_MSF, now);

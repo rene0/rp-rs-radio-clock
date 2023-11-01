@@ -3,7 +3,6 @@
 
 use core::sync::atomic::{AtomicBool, Ordering};
 use embedded_hal::digital::v2::{InputPin, OutputPin};
-extern crate panic_halt;
 use rp_pico::hal::{
     gpio,
     gpio::{bank0, FunctionSioInput, Pin, PullDown},
@@ -12,6 +11,8 @@ use rp_pico::hal::{
 use rp_pico::pac;
 use rp_pico::pac::{interrupt, Peripherals, NVIC};
 use rp_pico::Pins;
+
+extern crate panic_halt;
 
 type DCF77SignalPin = Pin<bank0::Gpio11, FunctionSioInput, PullDown>;
 type MSFSignalPin = Pin<bank0::Gpio6, FunctionSioInput, PullDown>;

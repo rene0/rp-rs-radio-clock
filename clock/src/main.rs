@@ -17,7 +17,6 @@ use fugit::{MicrosDurationU32, RateExtU32};
 use hd44780_driver::{bus::I2CBus, Cursor, CursorBlink, HD44780};
 use heapless::String;
 use msf60_utils::MSFUtils;
-extern crate panic_halt; // provides a #[panic_handler] function
 use radio_datetime_utils::radio_datetime_helpers;
 use rp_pico::hal::{
     clocks,
@@ -32,6 +31,8 @@ use rp_pico::hal::{
 use rp_pico::pac;
 use rp_pico::pac::{interrupt, CorePeripherals, Peripherals, I2C1, NVIC};
 use rp_pico::Pins;
+
+extern crate panic_halt; // provides a #[panic_handler] function
 
 mod frontend;
 mod hd44780_helper;

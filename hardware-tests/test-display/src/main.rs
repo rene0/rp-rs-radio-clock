@@ -6,13 +6,13 @@ use cortex_m::delay::Delay;
 use fugit::RateExtU32;
 use hd44780_driver::{Cursor, CursorBlink, HD44780};
 use heapless::String;
-extern crate panic_halt;
 use rp_pico::hal::{
     clocks, clocks::Clock, gpio::FunctionI2C, sio::Sio, watchdog::Watchdog, Timer, I2C,
 };
 use rp_pico::pac::{CorePeripherals, Peripherals};
 use rp_pico::Pins;
 
+extern crate panic_halt;
 mod hd44780_helper;
 
 /// I²C address of the PCF8574 adapter, change as needed

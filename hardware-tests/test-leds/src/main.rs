@@ -3,10 +3,11 @@
 
 use cortex_m::delay::Delay;
 use embedded_hal::digital::v2::OutputPin;
-extern crate panic_halt;
 use rp_pico::hal::{clocks, clocks::Clock, sio::Sio, watchdog::Watchdog};
 use rp_pico::pac::{CorePeripherals, Peripherals};
 use rp_pico::Pins;
+
+extern crate panic_halt;
 
 fn test_leds(pins: Pins, mut delay: Delay) -> ! {
     // no vec! in no_std, and each pin is a different type so using an array does not work.

@@ -4,7 +4,6 @@
 use core::sync::atomic::{AtomicBool, Ordering};
 use embedded_hal::digital::v2::OutputPin;
 use fugit::MicrosDurationU32;
-extern crate panic_halt;
 use rp_pico::hal::{
     clocks,
     sio::Sio,
@@ -13,6 +12,8 @@ use rp_pico::hal::{
 };
 use rp_pico::pac::{interrupt, Interrupt, Peripherals, NVIC};
 use rp_pico::Pins;
+
+extern crate panic_halt;
 
 static mut GLOBAL_ALARM: Option<Alarm0> = None;
 static G_TOGGLE_LED: AtomicBool = AtomicBool::new(false);

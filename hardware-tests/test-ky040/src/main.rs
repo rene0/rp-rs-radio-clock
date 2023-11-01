@@ -2,10 +2,11 @@
 #![no_main]
 
 use embedded_hal::digital::v2::{InputPin, OutputPin};
-extern crate panic_halt;
 use rp_pico::hal::sio::Sio;
 use rp_pico::pac::Peripherals;
 use rp_pico::Pins;
+
+extern crate panic_halt;
 
 // see also some examples from the Internet:
 // https://www.brainy-bits.com/post/best-code-to-use-with-a-ky-040-rotary-encoder-let-s-find-out

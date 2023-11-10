@@ -20,7 +20,7 @@ macro_rules! set_time_led {
 
 /// Return a string version of the given value with leading 0, truncated to two digits or ** for None.
 pub fn str_02(value: Option<u8>) -> String<2> {
-    let mut s = String::<2>::from("");
+    let mut s: String<2> = String::new();
     if value.is_some() {
         write!(s, "{:>02}", value.unwrap()).unwrap();
     } else {
@@ -31,21 +31,28 @@ pub fn str_02(value: Option<u8>) -> String<2> {
 
 /// Return a textual representation of the weekday, Mo-Su or ** for None.
 pub fn str_weekday(weekday: Option<u8>) -> String<2> {
-    String::<2>::from(match weekday {
-        Some(0) | Some(7) => "Su",
-        Some(1) => "Mo",
-        Some(2) => "Tu",
-        Some(3) => "We",
-        Some(4) => "Th",
-        Some(5) => "Fr",
-        Some(6) => "Sa",
-        _ => "**",
-    })
+    let mut s: String<2> = String::new();
+    write!(
+        s,
+        "{}",
+        match weekday {
+            Some(0) | Some(7) => "Su",
+            Some(1) => "Mo",
+            Some(2) => "Tu",
+            Some(3) => "We",
+            Some(4) => "Th",
+            Some(5) => "Fr",
+            Some(6) => "Sa",
+            _ => "**",
+        }
+    )
+    .unwrap();
+    s
 }
 
 /// Return the given date and time as a string
 pub fn str_datetime(rdt: RadioDateTimeUtils) -> String<14> {
-    let mut str_buf = String::<14>::from("");
+    let mut str_buf: String<14> = String::new();
     write!(
         str_buf,
         "{}{}{} {} {}{}",
@@ -73,7 +80,7 @@ pub fn str_parity(parity: Option<bool>, ok: bool, name: char) -> char {
 
 /// Get a textual version of any unexpected jumps in the current date and time.
 pub fn str_jumps(rdt: RadioDateTimeUtils) -> String<7> {
-    let mut str_buf = String::<7>::from("");
+    let mut str_buf: String<7> = String::new();
     write!(
         str_buf,
         "{}{}{}{}{}{}{}",

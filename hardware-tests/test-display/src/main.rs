@@ -87,7 +87,7 @@ fn main() -> ! {
         delay.delay_ms(960);
         let new_value = timer.get_counter();
         let dist = new_value - old_value;
-        let mut data = String::<20>::from("");
+        let mut data: String<20> = String::new();
 
         // `write` for `heapless::String` returns an error if the buffer is full,
         // but because the buffer here is 20 bytes large, the u64 will fit.

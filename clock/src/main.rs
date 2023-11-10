@@ -227,8 +227,10 @@ fn main() -> ! {
     let mut display_mode = DisplayMode::Status;
     let mut dcf77 = DCF77Utils::default();
     let mut msf = MSFUtils::default();
-    let mut str_dcf77_status = String::<14>::from("              "); // 14 spaces
-    let mut str_msf_status = String::<14>::from("              "); // 14 spaces
+    let mut str_dcf77_status: String<14> = String::new();
+    write!(str_dcf77_status, "              ").unwrap(); // 14 spaces
+    let mut str_msf_status: String<14> = String::new();
+    write!(str_msf_status, "              ").unwrap(); // 14 spaces
 
     loop {
         if HW_KY040_SW.edge_received.load(Ordering::Acquire) {
@@ -438,7 +440,7 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     }
     lcd.set_cursor_pos(hd44780_helper::get_xy(6, base_row).unwrap(), delay)
         .unwrap();
-    let mut str_buf = String::<14>::from("");
+    let mut str_buf: String<14> = String::new();
     str_buf.clear();
     write!(
         str_buf,

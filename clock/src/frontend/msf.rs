@@ -61,7 +61,7 @@ pub fn update_bit_leds(
 
 /// Return the status overview as a compact string
 pub fn str_status(msf: &MSFUtils) -> String<14> {
-    let mut str_buf = String::<14>::from("");
+    let mut str_buf: String<14> = String::new();
     write!(
         str_buf,
         "{}{}{}{}{} {}{}",
@@ -84,7 +84,7 @@ pub fn str_status(msf: &MSFUtils) -> String<14> {
 /// Return a string version of the given value, truncated to one digit with optional minus sign,
 /// or ** for None.
 fn str_i2(value: Option<i8>) -> String<2> {
-    let mut s = String::<2>::from("");
+    let mut s: String<2> = String::new();
     if value.is_some() {
         write!(s, "{:>-2}", value.unwrap()).unwrap();
     } else {
@@ -95,7 +95,7 @@ fn str_i2(value: Option<i8>) -> String<2> {
 
 /// Return a compact string with miscellaneous information
 pub fn str_misc(msf: &MSFUtils) -> String<3> {
-    let mut str_buf = String::<3>::from("");
+    let mut str_buf: String<3> = String::new();
     write!(
         str_buf,
         "{}{}",

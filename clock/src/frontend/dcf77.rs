@@ -51,7 +51,7 @@ pub fn update_bit_leds(
 
 /// Return the status overview as a compact string
 pub fn str_status(dcf77: &DCF77Utils) -> String<14> {
-    let mut str_buf = String::<14>::from("");
+    let mut str_buf: String<14> = String::new();
     write!(
         str_buf,
         "{}{}{}{} {}{}{}",
@@ -69,7 +69,7 @@ pub fn str_status(dcf77: &DCF77Utils) -> String<14> {
 
 /// Return a compact string with miscellaneous information
 pub fn str_misc(dcf77: &DCF77Utils) -> String<3> {
-    let mut str_buf = String::<3>::from("");
+    let mut str_buf: String<3> = String::new();
     write!(
         str_buf,
         "{}{}{}",

@@ -96,7 +96,7 @@ fn main() -> ! {
     };
 
     // each pin is a different type so using an array (or a vec!, not in no_std) does not work.
-    // passing pins to set_leds() instead of the indidivual pins does not work:
+    // passing pins to set_leds() instead of the individual pins does not work:
     // - cannot `let mut` a Pin<...> twice because pins.gpioXY is moved if we declare pins:&Pins
     // - declaring pins without borrow gives move-after-use in main()
     loop {

@@ -341,7 +341,7 @@ fn main() -> ! {
                     lcd.set_cursor_pos(hd44780_helper::get_xy(0, 1).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(
-                        frontend::str_datetime(dcf77.get_radio_datetime()).as_str(),
+                        frontend::str_datetime(dcf77.get_radio_datetime(), 7).as_str(),
                         &mut delay,
                     )
                     .unwrap();
@@ -383,7 +383,7 @@ fn main() -> ! {
                     lcd.set_cursor_pos(hd44780_helper::get_xy(0, 3).unwrap(), &mut delay)
                         .unwrap();
                     lcd.write_str(
-                        frontend::str_datetime(msf.get_radio_datetime()).as_str(),
+                        frontend::str_datetime(msf.get_radio_datetime(), 0).as_str(),
                         &mut delay,
                     )
                     .unwrap();

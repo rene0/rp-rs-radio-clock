@@ -30,13 +30,13 @@ pub fn str_02(value: Option<u8>) -> String<2> {
 }
 
 /// Return a textual representation of the weekday, Mo-Su or ** for None.
-pub fn str_weekday(weekday: Option<u8>) -> String<2> {
+pub fn str_weekday(weekday: Option<u8>, sunday: u8) -> String<2> {
     let mut s: String<2> = String::new();
     write!(
         s,
         "{}",
         match weekday {
-            Some(0) | Some(7) => "Su",
+            Some(0) | Some(7) if weekday == Some(sunday) => "Su",
             Some(1) => "Mo",
             Some(2) => "Tu",
             Some(3) => "We",
@@ -51,7 +51,7 @@ pub fn str_weekday(weekday: Option<u8>) -> String<2> {
 }
 
 /// Return the given date and time as a string
-pub fn str_datetime(rdt: RadioDateTimeUtils) -> String<14> {
+pub fn str_datetime(rdt: RadioDateTimeUtils, sunday: u8) -> String<14> {
     let mut str_buf: String<14> = String::new();
     write!(
         str_buf,
@@ -59,7 +59,7 @@ pub fn str_datetime(rdt: RadioDateTimeUtils) -> String<14> {
         str_02(rdt.get_year()),
         str_02(rdt.get_month()),
         str_02(rdt.get_day()),
-        str_weekday(rdt.get_weekday()),
+        str_weekday(rdt.get_weekday(), sunday),
         str_02(rdt.get_hour()),
         str_02(rdt.get_minute()),
     )

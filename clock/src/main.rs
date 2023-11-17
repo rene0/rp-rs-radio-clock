@@ -2,10 +2,11 @@
 #![no_std]
 #![no_main]
 
+use crate::clock_hardware::{HardwareEdge, I2CDisplay};
 use crate::frontend::{dcf77, msf};
 use core::{
     fmt::Write,
-    sync::atomic::{AtomicBool, AtomicU32, Ordering},
+    sync::atomic::{AtomicBool, Ordering},
 };
 use cortex_m::delay::Delay;
 use dcf77_utils::DCF77Utils;
@@ -14,7 +15,7 @@ use embedded_hal::{
     digital::v2::{InputPin, OutputPin, ToggleableOutputPin},
 };
 use fugit::{MicrosDurationU32, RateExtU32};
-use hd44780_driver::{bus::I2CBus, Cursor, CursorBlink, HD44780};
+use hd44780_driver::{Cursor, CursorBlink, HD44780};
 use heapless::String;
 use msf60_utils::MSFUtils;
 use radio_datetime_utils::radio_datetime_helpers;
@@ -29,67 +30,34 @@ use rp_pico::hal::{
     Timer, I2C,
 };
 use rp_pico::pac;
-use rp_pico::pac::{interrupt, CorePeripherals, Peripherals, I2C1, NVIC};
+use rp_pico::pac::{interrupt, CorePeripherals, Peripherals, NVIC};
 use rp_pico::Pins;
 
 extern crate panic_halt; // provides a #[panic_handler] function
 
+mod clock_hardware;
 mod frontend;
 mod hd44780_helper;
 
-struct ClockHardware {
-    edge_received: AtomicBool,
-    edge_low: AtomicBool,
-    timer_tick: AtomicU32,
-}
-
-impl ClockHardware {
-    pub const fn new() -> Self {
-        Self {
-            edge_received: AtomicBool::new(false),
-            edge_low: AtomicBool::new(false),
-            timer_tick: AtomicU32::new(0),
-        }
-    }
-}
-
 /// I²C address of the PCF8574 adapter, change as needed
 const I2C_ADDRESS: u8 = 0x27;
-static HW_DCF77: ClockHardware = ClockHardware::new();
-static HW_MSF: ClockHardware = ClockHardware::new();
-static HW_KY040_SW: ClockHardware = ClockHardware::new();
+static HW_DCF77: HardwareEdge = HardwareEdge::new();
+static HW_MSF: HardwareEdge = HardwareEdge::new();
+static HW_KY040_SW: HardwareEdge = HardwareEdge::new();
 
 /// Ticks (frames) in each second, to control LEDs and display
 const FRAMES_PER_SECOND: u8 = 10;
 static G_TIMER_TICK: AtomicBool = AtomicBool::new(false); // tick-tock
 
-type DCF77SignalPin = Pin<bank0::Gpio11, FunctionSioInput, PullDown>;
-type MSFSignalPin = Pin<bank0::Gpio6, FunctionSioInput, PullDown>;
-type Ky040SwPin = Pin<bank0::Gpio7, FunctionSioInput, PullUp>;
-
 // needed to transfer our pin(s) into the ISR:
-static mut GLOBAL_PIN_DCF77: Option<DCF77SignalPin> = None;
-static mut GLOBAL_PIN_MSF: Option<MSFSignalPin> = None;
+static mut GLOBAL_PIN_DCF77: Option<Pin<bank0::Gpio11, FunctionSioInput, PullDown>> = None;
+static mut GLOBAL_PIN_MSF: Option<Pin<bank0::Gpio6, FunctionSioInput, PullDown>> = None;
 // timer to get the timestamp of the edges:
 static mut GLOBAL_TIMER: Option<Timer> = None;
 // and one for the timer alarm:
 static mut GLOBAL_ALARM: Option<Alarm0> = None;
 // click button of the Ky040:
-static mut GLOBAL_PIN_KY040_SW: Option<Ky040SwPin> = None;
-
-static G_PREVIOUS_LOW_DCF77: AtomicBool = AtomicBool::new(false);
-static G_PREVIOUS_LOW_MSF: AtomicBool = AtomicBool::new(false);
-static G_PREVIOUS_LOW_KY040_SW: AtomicBool = AtomicBool::new(false);
-
-type I2CDisplay = I2CBus<
-    I2C<
-        I2C1,
-        (
-            Pin<bank0::Gpio26, FunctionI2C, PullDown>,
-            Pin<bank0::Gpio27, FunctionI2C, PullDown>,
-        ),
-    >,
->;
+static mut GLOBAL_PIN_KY040_SW: Option<Pin<bank0::Gpio7, FunctionSioInput, PullUp>> = None;
 
 enum DisplayMode {
     Status,
@@ -192,15 +160,10 @@ fn main() -> ! {
     let mut led_pin = pins.led.into_push_pull_output();
     led_pin.set_low().unwrap();
 
-    let dcf77_signal_pin = pins.gpio11.into_pull_down_input();
-    dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
-    dcf77_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
-    let msf_signal_pin = pins.gpio6.into_pull_down_input();
-    msf_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
-    msf_signal_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
-    let ky040_sw_pin = pins.gpio7.into_pull_up_input();
-    ky040_sw_pin.set_interrupt_enabled(gpio::Interrupt::EdgeHigh, true);
-    ky040_sw_pin.set_interrupt_enabled(gpio::Interrupt::EdgeLow, true);
+    init_pin!(pins.gpio11.into_pull_down_input(), GLOBAL_PIN_DCF77);
+    init_pin!(pins.gpio6.into_pull_down_input(), GLOBAL_PIN_MSF);
+    init_pin!(pins.gpio7.into_pull_up_input(), GLOBAL_PIN_KY040_SW);
+
     let mut timer = Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
     let mut alarm0 = timer.alarm_0().unwrap();
 
@@ -212,9 +175,6 @@ fn main() -> ! {
     alarm0.enable_interrupt();
     // Ready, set, go!
     unsafe {
-        GLOBAL_PIN_DCF77 = Some(dcf77_signal_pin);
-        GLOBAL_PIN_MSF = Some(msf_signal_pin);
-        GLOBAL_PIN_KY040_SW = Some(ky040_sw_pin);
         GLOBAL_TIMER = Some(timer);
         GLOBAL_ALARM = Some(alarm0);
         NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
@@ -233,8 +193,8 @@ fn main() -> ! {
     write!(str_msf_status, "              ").unwrap(); // 14 spaces
 
     loop {
-        if HW_KY040_SW.edge_received.load(Ordering::Acquire) {
-            if !HW_KY040_SW.edge_low.load(Ordering::Acquire) {
+        if HW_KY040_SW.is_new.load(Ordering::Acquire) {
+            if !HW_KY040_SW.is_low.load(Ordering::Acquire) {
                 // negative logic for the SW pin, pin released
                 if matches!(display_mode, DisplayMode::Status) {
                     display_mode = DisplayMode::PulsesHigh;
@@ -252,11 +212,11 @@ fn main() -> ! {
                     lcd.write_str(str_msf_status.as_str(), &mut delay).unwrap();
                 }
             }
-            HW_KY040_SW.edge_received.store(false, Ordering::Release);
+            HW_KY040_SW.is_new.store(false, Ordering::Release);
         }
-        if HW_DCF77.edge_received.load(Ordering::Acquire) {
-            let t1_dcf77 = HW_DCF77.timer_tick.load(Ordering::Acquire);
-            let is_low_edge = HW_DCF77.edge_low.load(Ordering::Acquire);
+        if HW_DCF77.is_new.load(Ordering::Acquire) {
+            let t1_dcf77 = HW_DCF77.when.load(Ordering::Acquire);
+            let is_low_edge = HW_DCF77.is_low.load(Ordering::Acquire);
             if matches!(display_mode, DisplayMode::PulsesHigh) {
                 show_pulses(
                     &mut lcd,
@@ -284,11 +244,11 @@ fn main() -> ! {
             }
             dcf77::update_bit_leds(dcf77_tick, &dcf77, &mut dcf77_led_bit, &mut dcf77_led_error);
             t0_dcf77 = t1_dcf77;
-            HW_DCF77.edge_received.store(false, Ordering::Release);
+            HW_DCF77.is_new.store(false, Ordering::Release);
         }
-        if HW_MSF.edge_received.load(Ordering::Acquire) {
-            let t1_msf = HW_MSF.timer_tick.load(Ordering::Acquire);
-            let is_low_edge = HW_MSF.edge_low.load(Ordering::Acquire);
+        if HW_MSF.is_new.load(Ordering::Acquire) {
+            let t1_msf = HW_MSF.when.load(Ordering::Acquire);
+            let is_low_edge = HW_MSF.is_low.load(Ordering::Acquire);
             if matches!(display_mode, DisplayMode::PulsesHigh) {
                 show_pulses(&mut lcd, &mut delay, 2, false, is_low_edge, t0_msf, t1_msf);
             } else if matches!(display_mode, DisplayMode::PulsesLow) {
@@ -306,7 +266,7 @@ fn main() -> ! {
                 &mut msf_led_error,
             );
             t0_msf = t1_msf;
-            HW_MSF.edge_received.store(false, Ordering::Release);
+            HW_MSF.is_new.store(false, Ordering::Release);
         }
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
@@ -406,17 +366,17 @@ fn main() -> ! {
     }
 }
 
-macro_rules! handle_tick {
+macro_rules! handle_edge {
     // Our edge interrupts don't clear themselves.
     // Do that at the end of the various conditions, so we don't immediately jump back to the ISR.
-    ($pin:ident, $previous_low:ident, $hw:ident, $now:expr) => {
+    ($pin:ident, $hw:ident, $now:expr) => {
         let s_pin = $pin.as_mut().unwrap();
         let is_low = s_pin.is_low().unwrap();
-        if is_low != $previous_low.load(Ordering::Acquire) {
-            $previous_low.store(is_low, Ordering::Release);
-            $hw.timer_tick.store($now, Ordering::Release);
-            $hw.edge_low.store(is_low, Ordering::Release);
-            $hw.edge_received.store(true, Ordering::Release);
+        if is_low != $hw.was_low.load(Ordering::Acquire) {
+            $hw.was_low.store(is_low, Ordering::Release);
+            $hw.when.store($now, Ordering::Release);
+            $hw.is_low.store(is_low, Ordering::Release);
+            $hw.is_new.store(true, Ordering::Release);
         }
         s_pin.clear_interrupt(if is_low {
             gpio::Interrupt::EdgeLow
@@ -457,14 +417,9 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
 unsafe fn IO_IRQ_BANK0() {
     let now = GLOBAL_TIMER.as_mut().unwrap().get_counter_low();
 
-    handle_tick!(GLOBAL_PIN_DCF77, G_PREVIOUS_LOW_DCF77, HW_DCF77, now);
-    handle_tick!(GLOBAL_PIN_MSF, G_PREVIOUS_LOW_MSF, HW_MSF, now);
-    handle_tick!(
-        GLOBAL_PIN_KY040_SW,
-        G_PREVIOUS_LOW_KY040_SW,
-        HW_KY040_SW,
-        now
-    );
+    handle_edge!(GLOBAL_PIN_DCF77, HW_DCF77, now);
+    handle_edge!(GLOBAL_PIN_MSF, HW_MSF, now);
+    handle_edge!(GLOBAL_PIN_KY040_SW, HW_KY040_SW, now);
 }
 
 #[allow(non_snake_case)]

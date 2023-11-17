@@ -166,7 +166,6 @@ fn main() -> ! {
 
     let mut timer = Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
     let mut alarm0 = timer.alarm_0().unwrap();
-
     alarm0
         .schedule(MicrosDurationU32::micros(
             1_000_000 / FRAMES_PER_SECOND as u32,

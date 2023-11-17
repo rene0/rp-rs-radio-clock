@@ -7,7 +7,7 @@ pub mod msf;
 
 #[macro_export]
 macro_rules! set_time_led {
-    ($tick:expr, $station:expr, $led:expr) => {
+    ($tick:expr, $station:ident, $led:ident) => {
         if $tick == 0 {
             $led.set_high().unwrap();
         } else if (!$station.get_new_minute() && $tick >= $crate::FRAMES_PER_SECOND * 2 / 10)

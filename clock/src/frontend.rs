@@ -30,7 +30,7 @@ pub fn str_02(value: Option<u8>) -> String<2> {
 }
 
 /// Return a textual representation of the weekday, Mo-Su or ** for None.
-pub fn str_weekday(weekday: Option<u8>, sunday: u8) -> String<2> {
+fn str_weekday(weekday: Option<u8>, sunday: u8) -> String<2> {
     let mut s: String<2> = String::new();
     write!(
         s,
@@ -68,7 +68,7 @@ pub fn str_datetime(rdt: RadioDateTimeUtils, sunday: u8) -> String<14> {
 }
 
 /// Get a textual version of a parity bit, ' ' for OK, 'X' for error, or 'x' for unknown for some 'x'.
-pub fn str_parity(parity: Option<bool>, ok: bool, name: char) -> char {
+fn str_parity(parity: Option<bool>, ok: bool, name: char) -> char {
     if parity == Some(ok) {
         ' '
     } else if parity == Some(!ok) {
@@ -79,7 +79,7 @@ pub fn str_parity(parity: Option<bool>, ok: bool, name: char) -> char {
 }
 
 /// Get a textual version of any unexpected jumps in the current date and time.
-pub fn str_jumps(rdt: RadioDateTimeUtils) -> String<7> {
+fn str_jumps(rdt: RadioDateTimeUtils) -> String<7> {
     let mut str_buf: String<7> = String::new();
     write!(
         str_buf,
@@ -97,7 +97,7 @@ pub fn str_jumps(rdt: RadioDateTimeUtils) -> String<7> {
 }
 
 /// Returns a character representation of the current DST status.
-pub fn str_dst(rdt: RadioDateTimeUtils) -> char {
+fn str_dst(rdt: RadioDateTimeUtils) -> char {
     if let Some(dst) = rdt.get_dst() {
         let mut res_dst = if (dst & radio_datetime_utils::DST_SUMMER) != 0 {
             's'

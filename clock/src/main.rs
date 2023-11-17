@@ -195,47 +195,34 @@ fn main() -> ! {
         if HW_KY040_SW.is_new.load(Ordering::Acquire) {
             if !HW_KY040_SW.is_low.load(Ordering::Acquire) {
                 // negative logic for the SW pin, pin released
-                if matches!(display_mode, DisplayMode::Status) {
-                    display_mode = DisplayMode::PulsesHigh;
-                } else if matches!(display_mode, DisplayMode::PulsesHigh) {
-                    display_mode = DisplayMode::PulsesLow;
-                } else {
-                    display_mode = DisplayMode::Status;
-                    // clear out pulse info, restore any status info
-                    lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
-                        .unwrap();
-                    lcd.write_str(str_dcf77_status.as_str(), &mut delay)
-                        .unwrap();
-                    lcd.set_cursor_pos(hd44780_helper::get_xy(6, 2).unwrap(), &mut delay)
-                        .unwrap();
-                    lcd.write_str(str_msf_status.as_str(), &mut delay).unwrap();
+                match display_mode {
+                    DisplayMode::Status => display_mode = DisplayMode::PulsesHigh,
+                    DisplayMode::PulsesHigh => display_mode = DisplayMode::PulsesLow,
+                    DisplayMode::PulsesLow => {
+                        display_mode = DisplayMode::Status;
+                        // clear out pulse info, restore any status info
+                        lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
+                            .unwrap();
+                        lcd.write_str(str_dcf77_status.as_str(), &mut delay)
+                            .unwrap();
+                        lcd.set_cursor_pos(hd44780_helper::get_xy(6, 2).unwrap(), &mut delay)
+                            .unwrap();
+                        lcd.write_str(str_msf_status.as_str(), &mut delay).unwrap();
+                    }
                 }
             }
             HW_KY040_SW.is_new.store(false, Ordering::Release);
         }
+        let show_low = match display_mode {
+            DisplayMode::PulsesHigh => Some(false),
+            DisplayMode::PulsesLow => Some(true),
+            _ => None,
+        };
         if HW_DCF77.is_new.load(Ordering::Acquire) {
             let t1_dcf77 = HW_DCF77.when.load(Ordering::Acquire);
             let is_low_edge = HW_DCF77.is_low.load(Ordering::Acquire);
-            if matches!(display_mode, DisplayMode::PulsesHigh) {
-                show_pulses(
-                    &mut lcd,
-                    &mut delay,
-                    0,
-                    false,
-                    is_low_edge,
-                    t0_dcf77,
-                    t1_dcf77,
-                );
-            } else if matches!(display_mode, DisplayMode::PulsesLow) {
-                show_pulses(
-                    &mut lcd,
-                    &mut delay,
-                    0,
-                    true,
-                    is_low_edge,
-                    t0_dcf77,
-                    t1_dcf77,
-                );
+            if let Some(sl) = show_low {
+                show_pulses(&mut lcd, &mut delay, 0, sl, is_low_edge, t0_dcf77, t1_dcf77);
             }
             dcf77.handle_new_edge(is_low_edge, t1_dcf77);
             if dcf77.get_new_second() {
@@ -248,10 +235,8 @@ fn main() -> ! {
         if HW_MSF.is_new.load(Ordering::Acquire) {
             let t1_msf = HW_MSF.when.load(Ordering::Acquire);
             let is_low_edge = HW_MSF.is_low.load(Ordering::Acquire);
-            if matches!(display_mode, DisplayMode::PulsesHigh) {
-                show_pulses(&mut lcd, &mut delay, 2, false, is_low_edge, t0_msf, t1_msf);
-            } else if matches!(display_mode, DisplayMode::PulsesLow) {
-                show_pulses(&mut lcd, &mut delay, 2, true, is_low_edge, t0_msf, t1_msf);
+            if let Some(sl) = show_low {
+                show_pulses(&mut lcd, &mut delay, 2, sl, is_low_edge, t0_msf, t1_msf);
             }
             msf.handle_new_edge(is_low_edge, t1_msf);
             if msf.get_new_second() {

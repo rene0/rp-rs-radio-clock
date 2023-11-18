@@ -73,7 +73,7 @@ fn main() -> ! {
 
     let mut state: [bool; 7] = [false, false, false, false, true, true, true];
 
-    let mut set_leds_msf = |s: &[bool;7]| {
+    let mut set_leds_msf = |s: &[bool; 7]| {
         if s[0] {
             msf_led_time.set_high().unwrap();
         } else {

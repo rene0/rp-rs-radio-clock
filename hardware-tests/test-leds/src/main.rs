@@ -11,6 +11,7 @@ use rp_pico::Pins;
 
 extern crate panic_halt;
 
+// This can also be written as a closure which then just needs to borrow `state`
 fn set_leds_dcf77(
     l12: &mut Pin<bank0::Gpio12, FunctionSioOutput, PullDown>,
     l13: &mut Pin<Gpio13, FunctionSio<SioOutput>, PullDown>,
@@ -100,7 +101,7 @@ fn main() -> ! {
     // - cannot `let mut` a Pin<...> twice because pins.gpioXY is moved if we declare pins:&Pins
     // - declaring pins without borrow gives move-after-use in main()
     loop {
-        set_leds_msf(&state); // must borrow state here because implicit borrow is immutable which confuses the for loop below
+        set_leds_msf(&state); // must borrow `state` here because implicit borrow is immutable which confuses the for-loop below
         set_leds_dcf77(
             &mut dcf77_led_time,
             &mut dcf77_led_bit,

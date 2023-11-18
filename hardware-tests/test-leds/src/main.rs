@@ -70,7 +70,7 @@ fn main() -> ! {
     let mut msf_led_bit_b = pins.gpio4.into_push_pull_output();
     let mut msf_led_error = pins.gpio5.into_push_pull_output();
 
-    let mut state: [bool; 7] = [false, false, false, true, true, true, true];
+    let mut state: [bool; 7] = [false, false, false, false, true, true, true];
 
     let mut set_leds_msf = |s: &[bool;7]| {
         if s[0] {

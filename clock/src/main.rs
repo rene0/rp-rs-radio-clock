@@ -376,26 +376,6 @@ fn main() -> ! {
     }
 }
 
-macro_rules! handle_edge {
-    // Our edge interrupts don't clear themselves.
-    // Do that at the end of the various conditions, so we don't immediately jump back to the ISR.
-    ($pin:ident, $hw:ident, $now:expr) => {
-        let s_pin = $pin.as_mut().unwrap();
-        let is_low = s_pin.is_low().unwrap();
-        if is_low != $hw.was_low.load(Ordering::Acquire) {
-            $hw.was_low.store(is_low, Ordering::Release);
-            $hw.when.store($now, Ordering::Release);
-            $hw.is_low.store(is_low, Ordering::Release);
-            $hw.is_new.store(true, Ordering::Release);
-        }
-        s_pin.clear_interrupt(if is_low {
-            gpio::Interrupt::EdgeLow
-        } else {
-            gpio::Interrupt::EdgeHigh
-        });
-    };
-}
-
 fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     lcd: &mut HD44780<I2CDisplay>,
     delay: &mut D,
@@ -420,6 +400,26 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
     )
     .unwrap();
     lcd.write_str(str_buf.as_str(), delay).unwrap();
+}
+
+macro_rules! handle_edge {
+    // Our edge interrupts don't clear themselves.
+    // Do that at the end of the various conditions, so we don't immediately jump back to the ISR.
+    ($pin:ident, $hw:ident, $now:expr) => {
+        let s_pin = $pin.as_mut().unwrap();
+        let is_low = s_pin.is_low().unwrap();
+        if is_low != $hw.was_low.load(Ordering::Acquire) {
+            $hw.was_low.store(is_low, Ordering::Release);
+            $hw.when.store($now, Ordering::Release);
+            $hw.is_low.store(is_low, Ordering::Release);
+            $hw.is_new.store(true, Ordering::Release);
+        }
+        s_pin.clear_interrupt(if is_low {
+            gpio::Interrupt::EdgeLow
+        } else {
+            gpio::Interrupt::EdgeHigh
+        });
+    };
 }
 
 #[allow(non_snake_case)]

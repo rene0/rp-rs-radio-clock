@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 
-use crate::clock_hardware::{HardwareEdge, I2CDisplay};
+use crate::clock_hardware::{set_leds_dcf77, set_leds_msf, HardwareEdge, I2CDisplay};
 use crate::frontend::{dcf77, msf};
 use core::{
     fmt::Write,
@@ -139,21 +139,25 @@ fn main() -> ! {
     let mut dcf77_led_time = pins.gpio12.into_push_pull_output();
     let mut dcf77_led_bit = pins.gpio13.into_push_pull_output();
     let mut dcf77_led_error = pins.gpio14.into_push_pull_output();
-    dcf77::init_leds(
+    let mut dcf77_leds = dcf77::init_leds();
+    set_leds_dcf77(
         &mut dcf77_led_time,
         &mut dcf77_led_bit,
         &mut dcf77_led_error,
+        dcf77_leds,
     );
 
     let mut msf_led_time = pins.gpio2.into_push_pull_output();
     let mut msf_led_bit_a = pins.gpio3.into_push_pull_output();
     let mut msf_led_bit_b = pins.gpio4.into_push_pull_output();
     let mut msf_led_error = pins.gpio5.into_push_pull_output();
-    msf::init_leds(
+    let mut msf_leds = msf::init_leds();
+    set_leds_msf(
         &mut msf_led_time,
         &mut msf_led_bit_a,
         &mut msf_led_bit_b,
         &mut msf_led_error,
+        msf_leds,
     );
 
     // Set up the on-board heartbeat LED:
@@ -228,7 +232,13 @@ fn main() -> ! {
             if dcf77.get_new_second() {
                 dcf77_tick = 0;
             }
-            dcf77::update_bit_leds(dcf77_tick, &dcf77, &mut dcf77_led_bit, &mut dcf77_led_error);
+            dcf77_leds = dcf77::update_bit_leds(dcf77_leds, dcf77_tick, &dcf77);
+            set_leds_dcf77(
+                &mut dcf77_led_time,
+                &mut dcf77_led_bit,
+                &mut dcf77_led_error,
+                dcf77_leds,
+            );
             t0_dcf77 = t1_dcf77;
             HW_DCF77.is_new.store(false, Ordering::Release);
         }
@@ -242,12 +252,13 @@ fn main() -> ! {
             if msf.get_new_second() {
                 msf_tick = 0;
             }
-            msf::update_bit_leds(
-                msf_tick,
-                &msf,
+            msf_leds = msf::update_bit_leds(msf_leds, msf_tick, &msf);
+            set_leds_msf(
+                &mut msf_led_time,
                 &mut msf_led_bit_a,
                 &mut msf_led_bit_b,
                 &mut msf_led_error,
+                msf_leds,
             );
             t0_msf = t1_msf;
             HW_MSF.is_new.store(false, Ordering::Release);
@@ -255,10 +266,25 @@ fn main() -> ! {
         if G_TIMER_TICK.load(Ordering::Acquire) {
             led_pin.toggle().unwrap();
             if t0_dcf77 != 0 {
-                dcf77::update_time_led(dcf77_tick, &dcf77, &mut dcf77_led_time);
+                // first DCF77 pulse arrived
+                dcf77_leds = dcf77::update_time_led(dcf77_leds, dcf77_tick, &dcf77);
+                set_leds_dcf77(
+                    &mut dcf77_led_time,
+                    &mut dcf77_led_bit,
+                    &mut dcf77_led_error,
+                    dcf77_leds,
+                );
             }
             if t0_msf != 0 {
-                msf::update_time_led(msf_tick, &msf, &mut msf_led_time);
+                // first MSF pulse arrived
+                msf_leds = msf::update_time_led(msf_leds, msf_tick, &msf);
+                set_leds_msf(
+                    &mut msf_led_time,
+                    &mut msf_led_bit_a,
+                    &mut msf_led_bit_b,
+                    &mut msf_led_error,
+                    msf_leds,
+                );
             }
             if dcf77_tick == 0 {
                 let mut second = dcf77.get_second() + 1;

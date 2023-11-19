@@ -1,61 +1,32 @@
 use crate::{frontend, set_time_led};
 use core::cmp::Ordering;
 use core::fmt::Write;
-use embedded_hal::digital::v2::OutputPin;
 use heapless::String;
 use msf60_utils::MSFUtils;
-use rp_pico::hal::gpio::{bank0, FunctionSioOutput, Pin, PullDown};
 
 /// Put the LEDs in their initial state.
-pub fn init_leds(
-    led_time: &mut Pin<bank0::Gpio2, FunctionSioOutput, PullDown>,
-    led_bit_a: &mut Pin<bank0::Gpio3, FunctionSioOutput, PullDown>,
-    led_bit_b: &mut Pin<bank0::Gpio4, FunctionSioOutput, PullDown>,
-    led_error: &mut Pin<bank0::Gpio5, FunctionSioOutput, PullDown>,
-) {
-    led_time.set_high().unwrap();
-    led_bit_a.set_low().unwrap();
-    led_bit_b.set_low().unwrap();
-    led_error.set_high().unwrap();
+pub fn init_leds() -> [bool; 4] {
+    [true, false, false, true]
 }
 
-/// Turn the time led on or off depending on whether a new second or minute arrived.
-pub fn update_time_led(
-    tick: u8,
-    msf: &MSFUtils,
-    led_time: &mut Pin<bank0::Gpio2, FunctionSioOutput, PullDown>,
-) {
-    set_time_led!(tick, msf, led_time);
+/// Calculate the state of the time LED.
+pub fn update_time_led(old: [bool; 4], tick: u8, msf: &MSFUtils) -> [bool; 4] {
+    [set_time_led!(tick, msf), old[1], old[2], old[3]]
 }
 
-/// Turn the bit LEDs (is-one and error) on or off.
-pub fn update_bit_leds(
-    tick: u8,
-    msf: &MSFUtils,
-    led_bit_a: &mut Pin<bank0::Gpio3, FunctionSioOutput, PullDown>,
-    led_bit_b: &mut Pin<bank0::Gpio4, FunctionSioOutput, PullDown>,
-    led_error: &mut Pin<bank0::Gpio5, FunctionSioOutput, PullDown>,
-) {
+/// Calculate the state of the bit LEDs (is-one and error).
+pub fn update_bit_leds(old: [bool; 4], tick: u8, msf: &MSFUtils) -> [bool; 4] {
     if tick == 0 {
-        led_bit_a.set_low().unwrap();
-        led_bit_b.set_low().unwrap();
-        led_error.set_low().unwrap();
+        [old[0], false, false, false]
     } else if msf.get_current_bit_a().is_none() || msf.get_current_bit_b().is_none() {
-        led_bit_a.set_low().unwrap();
-        led_bit_b.set_low().unwrap();
-        led_error.set_high().unwrap();
+        [old[0], false, false, true]
     } else {
-        if msf.get_current_bit_a() == Some(true) {
-            led_bit_a.set_high().unwrap();
-        } else {
-            led_bit_a.set_low().unwrap();
-        }
-        if msf.get_current_bit_b() == Some(true) {
-            led_bit_b.set_high().unwrap();
-        } else {
-            led_bit_b.set_low().unwrap();
-        }
-        led_error.set_low().unwrap();
+        [
+            old[0],
+            msf.get_current_bit_a().unwrap(),
+            msf.get_current_bit_b().unwrap(),
+            false,
+        ]
     }
 }
 

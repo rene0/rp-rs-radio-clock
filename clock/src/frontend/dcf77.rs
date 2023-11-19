@@ -2,50 +2,26 @@ use crate::{frontend, set_time_led};
 use core::cmp::Ordering;
 use core::fmt::Write;
 use dcf77_utils::DCF77Utils;
-use embedded_hal::digital::v2::OutputPin;
 use heapless::String;
-use rp_pico::hal::gpio::{bank0, FunctionSioOutput, Pin, PullDown};
 
 /// Put the LEDs in their initial state.
-pub fn init_leds(
-    led_time: &mut Pin<bank0::Gpio12, FunctionSioOutput, PullDown>,
-    led_bit: &mut Pin<bank0::Gpio13, FunctionSioOutput, PullDown>,
-    led_error: &mut Pin<bank0::Gpio14, FunctionSioOutput, PullDown>,
-) {
-    led_time.set_high().unwrap();
-    led_bit.set_low().unwrap();
-    led_error.set_high().unwrap();
+pub fn init_leds() -> [bool; 3] {
+    [true, false, true]
 }
 
-/// Turn the time LED on or off depending on whether a new second or minute arrived.
-pub fn update_time_led(
-    tick: u8,
-    dcf77: &DCF77Utils,
-    led_time: &mut Pin<bank0::Gpio12, FunctionSioOutput, PullDown>,
-) {
-    set_time_led!(tick, dcf77, led_time);
+/// Calculate the state of the time LED.
+pub fn update_time_led(old: [bool; 3], tick: u8, dcf77: &DCF77Utils) -> [bool; 3] {
+    [set_time_led!(tick, dcf77), old[1], old[2]]
 }
 
-/// Turn the bit LEDs (is-one and error) on or off.
-pub fn update_bit_leds(
-    tick: u8,
-    dcf77: &DCF77Utils,
-    led_bit: &mut Pin<bank0::Gpio13, FunctionSioOutput, PullDown>,
-    led_error: &mut Pin<bank0::Gpio14, FunctionSioOutput, PullDown>,
-) {
+/// Calculate the state of the bit LEDs (is-one and error).
+pub fn update_bit_leds(old: [bool; 3], tick: u8, dcf77: &DCF77Utils) -> [bool; 3] {
     if tick == 0 {
-        led_bit.set_low().unwrap();
-        led_error.set_low().unwrap();
+        [old[0], false, false]
     } else if dcf77.get_current_bit().is_none() {
-        led_bit.set_low().unwrap();
-        led_error.set_high().unwrap();
+        [old[0], false, true]
     } else {
-        if dcf77.get_current_bit() == Some(true) {
-            led_bit.set_high().unwrap();
-        } else {
-            led_bit.set_low().unwrap();
-        }
-        led_error.set_low().unwrap();
+        [old[0], dcf77.get_current_bit().unwrap(), false]
     }
 }
 

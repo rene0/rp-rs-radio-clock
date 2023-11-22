@@ -72,16 +72,10 @@ fn main() -> ! {
     // Write to the top line
     lcd.write_str("rp-hal on", &mut delay).unwrap();
 
-    // Move the cursor
-    lcd.set_cursor_pos(hd44780_helper::get_xy(8, 2).unwrap(), &mut delay)
-        .unwrap();
+    // Move the cursor and write
+    hd44780_helper::write_at((8, 2), "HD44780!", &mut lcd, &mut delay);
 
-    // Write more more text
-    lcd.write_str("HD44780!", &mut delay).unwrap();
-
-    lcd.set_cursor_pos(hd44780_helper::get_xy(11, 3).unwrap(), &mut delay)
-        .unwrap();
-    lcd.write_str("at (11,3)", &mut delay).unwrap();
+    hd44780_helper::write_at((11, 3), "at (11,3)", &mut lcd, &mut delay);
 
     let timer = Timer::new(pac.TIMER, &mut pac.RESETS, &clocks);
     let mut old_value = timer.get_counter();
@@ -94,9 +88,7 @@ fn main() -> ! {
         // `write` for `heapless::String` returns an error if the buffer is full,
         // but because the buffer here is 20 bytes large, the u64 will fit.
         let _ = write!(data, "{dist}");
-        lcd.set_cursor_pos(hd44780_helper::get_xy(0, 1).unwrap(), &mut delay)
-            .unwrap();
-        lcd.write_str(data.as_str(), &mut delay).unwrap();
+        hd44780_helper::write_at((0, 1), data.as_str(), &mut lcd, &mut delay);
         old_value = new_value;
     }
 }

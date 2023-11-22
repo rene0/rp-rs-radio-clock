@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 
-use crate::clock_hardware::{set_leds_dcf77, set_leds_msf, HardwareEdge, I2CDisplay};
+use crate::clock_hardware::{set_leds_dcf77, set_leds_msf, HardwareEdge};
 use crate::frontend::{dcf77, msf};
 use core::{
     fmt::Write,
@@ -10,10 +10,7 @@ use core::{
 };
 use cortex_m::delay::Delay;
 use dcf77_utils::DCF77Utils;
-use embedded_hal::{
-    blocking::delay::{DelayMs, DelayUs},
-    digital::v2::{InputPin, OutputPin, ToggleableOutputPin},
-};
+use embedded_hal::digital::v2::{InputPin, OutputPin, ToggleableOutputPin};
 use fugit::{MicrosDurationU32, RateExtU32};
 use hd44780_driver::{Cursor, CursorBlink, HD44780};
 use heapless::String;
@@ -118,10 +115,9 @@ fn main() -> ! {
     lcd.set_cursor_blink(CursorBlink::Off, &mut delay).unwrap(); // small static cursor
     lcd.set_cursor_visibility(Cursor::Invisible, &mut delay)
         .unwrap(); // turn off completely
-    lcd.write_str("DCF77", &mut delay).unwrap();
-    lcd.set_cursor_pos(hd44780_helper::get_xy(0, 2).unwrap(), &mut delay)
-        .unwrap();
-    lcd.write_str("MSF", &mut delay).unwrap();
+
+    hd44780_helper::write_at((0, 0), "DCF77", &mut lcd, &mut delay);
+    hd44780_helper::write_at((0, 2), "MSF", &mut lcd, &mut delay);
 
     // Set power-down pins to LOW, i.e. receiver ON:
     let mut dcf77_pdn = pins.gpio15.into_push_pull_output();
@@ -205,13 +201,18 @@ fn main() -> ! {
                     DisplayMode::PulsesLow => {
                         display_mode = DisplayMode::Status;
                         // clear out pulse info, restore any status info
-                        lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
-                            .unwrap();
-                        lcd.write_str(str_dcf77_status.as_str(), &mut delay)
-                            .unwrap();
-                        lcd.set_cursor_pos(hd44780_helper::get_xy(6, 2).unwrap(), &mut delay)
-                            .unwrap();
-                        lcd.write_str(str_msf_status.as_str(), &mut delay).unwrap();
+                        hd44780_helper::write_at(
+                            (6, 0),
+                            str_dcf77_status.as_str(),
+                            &mut lcd,
+                            &mut delay,
+                        );
+                        hd44780_helper::write_at(
+                            (6, 2),
+                            str_msf_status.as_str(),
+                            &mut lcd,
+                            &mut delay,
+                        );
                     }
                 }
             }
@@ -225,8 +226,13 @@ fn main() -> ! {
         if HW_DCF77.is_new.load(Ordering::Acquire) {
             let t1_dcf77 = HW_DCF77.when.load(Ordering::Acquire);
             let is_low_edge = HW_DCF77.is_low.load(Ordering::Acquire);
-            if let Some(sl) = show_low {
-                show_pulses(&mut lcd, &mut delay, 0, sl, is_low_edge, t0_dcf77, t1_dcf77);
+            if Some(is_low_edge) == show_low {
+                hd44780_helper::write_at(
+                    (6, 0),
+                    str_pulses(is_low_edge, t0_dcf77, t1_dcf77).as_str(),
+                    &mut lcd,
+                    &mut delay,
+                );
             }
             dcf77.handle_new_edge(is_low_edge, t1_dcf77);
             if dcf77.get_new_second() {
@@ -245,8 +251,13 @@ fn main() -> ! {
         if HW_MSF.is_new.load(Ordering::Acquire) {
             let t1_msf = HW_MSF.when.load(Ordering::Acquire);
             let is_low_edge = HW_MSF.is_low.load(Ordering::Acquire);
-            if let Some(sl) = show_low {
-                show_pulses(&mut lcd, &mut delay, 2, sl, is_low_edge, t0_msf, t1_msf);
+            if Some(is_low_edge) == show_low {
+                hd44780_helper::write_at(
+                    (6, 2),
+                    str_pulses(is_low_edge, t0_msf, t1_msf).as_str(),
+                    &mut lcd,
+                    &mut delay,
+                );
             }
             msf.handle_new_edge(is_low_edge, t1_msf);
             if msf.get_new_second() {
@@ -291,10 +302,12 @@ fn main() -> ! {
                 if second == dcf77.get_next_minute_length() {
                     second = 0;
                 }
-                lcd.set_cursor_pos(hd44780_helper::get_xy(14, 1).unwrap(), &mut delay)
-                    .unwrap();
-                lcd.write_str(frontend::str_02(Some(second)).as_str(), &mut delay)
-                    .unwrap();
+                hd44780_helper::write_at(
+                    (14, 1),
+                    frontend::str_02(Some(second)).as_str(),
+                    &mut lcd,
+                    &mut delay,
+                );
             }
             if dcf77_tick == 1 && dcf77.get_new_minute() {
                 // print date/time/status
@@ -302,24 +315,27 @@ fn main() -> ! {
                 if !dcf77.get_first_minute() {
                     if matches!(display_mode, DisplayMode::Status) {
                         str_dcf77_status = dcf77::str_status(&dcf77);
-                        lcd.set_cursor_pos(hd44780_helper::get_xy(6, 0).unwrap(), &mut delay)
-                            .unwrap();
-                        lcd.write_str(str_dcf77_status.as_str(), &mut delay)
-                            .unwrap();
+                        hd44780_helper::write_at(
+                            (6, 0),
+                            str_dcf77_status.as_str(),
+                            &mut lcd,
+                            &mut delay,
+                        );
                     }
                     // Decoded date and time:
-                    lcd.set_cursor_pos(hd44780_helper::get_xy(0, 1).unwrap(), &mut delay)
-                        .unwrap();
-                    lcd.write_str(
+                    hd44780_helper::write_at(
+                        (0, 1),
                         frontend::str_datetime(dcf77.get_radio_datetime(), 7).as_str(),
+                        &mut lcd,
                         &mut delay,
-                    )
-                    .unwrap();
+                    );
                     // Other things:
-                    lcd.set_cursor_pos(hd44780_helper::get_xy(17, 1).unwrap(), &mut delay)
-                        .unwrap();
-                    lcd.write_str(dcf77::str_misc(&dcf77).as_str(), &mut delay)
-                        .unwrap();
+                    hd44780_helper::write_at(
+                        (17, 1),
+                        dcf77::str_misc(&dcf77).as_str(),
+                        &mut lcd,
+                        &mut delay,
+                    );
                 }
             }
             if dcf77_tick == 7 {
@@ -334,10 +350,12 @@ fn main() -> ! {
                 if second == msf.get_minute_length() {
                     second = 0;
                 }
-                lcd.set_cursor_pos(hd44780_helper::get_xy(14, 3).unwrap(), &mut delay)
-                    .unwrap();
-                lcd.write_str(frontend::str_02(Some(second)).as_str(), &mut delay)
-                    .unwrap();
+                hd44780_helper::write_at(
+                    (14, 3),
+                    frontend::str_02(Some(second)).as_str(),
+                    &mut lcd,
+                    &mut delay,
+                );
             }
             if msf_tick == 1 && msf.get_new_minute() {
                 // print date/time/status
@@ -345,23 +363,27 @@ fn main() -> ! {
                 if !msf.get_first_minute() {
                     if matches!(display_mode, DisplayMode::Status) {
                         str_msf_status = msf::str_status(&msf);
-                        lcd.set_cursor_pos(hd44780_helper::get_xy(6, 2).unwrap(), &mut delay)
-                            .unwrap();
-                        lcd.write_str(str_msf_status.as_str(), &mut delay).unwrap();
+                        hd44780_helper::write_at(
+                            (6, 2),
+                            str_msf_status.as_str(),
+                            &mut lcd,
+                            &mut delay,
+                        );
                     }
                     // Decoded date and time:
-                    lcd.set_cursor_pos(hd44780_helper::get_xy(0, 3).unwrap(), &mut delay)
-                        .unwrap();
-                    lcd.write_str(
+                    hd44780_helper::write_at(
+                        (0, 3),
                         frontend::str_datetime(msf.get_radio_datetime(), 0).as_str(),
+                        &mut lcd,
                         &mut delay,
-                    )
-                    .unwrap();
+                    );
                     // Other things:
-                    lcd.set_cursor_pos(hd44780_helper::get_xy(17, 3).unwrap(), &mut delay)
-                        .unwrap();
-                    lcd.write_str(msf::str_misc(&msf).as_str(), &mut delay)
-                        .unwrap();
+                    hd44780_helper::write_at(
+                        (17, 3),
+                        msf::str_misc(&msf).as_str(),
+                        &mut lcd,
+                        &mut delay,
+                    );
                 }
             }
             if msf_tick == 7 {
@@ -376,22 +398,8 @@ fn main() -> ! {
     }
 }
 
-fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
-    lcd: &mut HD44780<I2CDisplay>,
-    delay: &mut D,
-    base_row: u8,
-    show_low: bool,
-    is_low_edge: bool,
-    t0: u32,
-    t1: u32,
-) {
-    if is_low_edge != show_low {
-        return;
-    }
-    lcd.set_cursor_pos(hd44780_helper::get_xy(6, base_row).unwrap(), delay)
-        .unwrap();
+fn str_pulses(is_low_edge: bool, t0: u32, t1: u32) -> String<14> {
     let mut str_buf: String<14> = String::new();
-    str_buf.clear();
     write!(
         str_buf,
         " {} {:<10} ",
@@ -399,7 +407,7 @@ fn show_pulses<D: DelayUs<u16> + DelayMs<u8>>(
         radio_datetime_helpers::time_diff(t0, t1)
     )
     .unwrap();
-    lcd.write_str(str_buf.as_str(), delay).unwrap();
+    str_buf
 }
 
 macro_rules! handle_edge {

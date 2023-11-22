@@ -1,11 +1,6 @@
 use core::sync::atomic::{AtomicBool, AtomicU32};
 use embedded_hal::digital::v2::OutputPin;
-use hd44780_driver::bus::I2CBus;
-use rp_pico::hal::{
-    gpio::{bank0, FunctionI2C, FunctionSioOutput, Pin, PullDown},
-    I2C,
-};
-use rp_pico::pac::I2C1;
+use rp_pico::hal::gpio::{bank0, FunctionSioOutput, Pin, PullDown};
 
 // was_low is to prevent ghost edges
 pub struct HardwareEdge {
@@ -25,16 +20,6 @@ impl HardwareEdge {
         }
     }
 }
-
-pub type I2CDisplay = I2CBus<
-    I2C<
-        I2C1,
-        (
-            Pin<bank0::Gpio26, FunctionI2C, PullDown>,
-            Pin<bank0::Gpio27, FunctionI2C, PullDown>,
-        ),
-    >,
->;
 
 #[macro_export]
 macro_rules! init_pin {

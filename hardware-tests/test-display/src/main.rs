@@ -52,7 +52,6 @@ fn main() -> ! {
     // peripheral isn't available on these pins!
     let sda_pin = pins.gpio26.into_function::<FunctionI2C>();
     let scl_pin = pins.gpio27.into_function::<FunctionI2C>();
-
     let i2c = I2C::i2c1(
         pac.I2C1,
         sda_pin,

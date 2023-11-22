@@ -38,6 +38,7 @@ mod hd44780_helper;
 
 /// I²C address of the PCF8574 adapter, change as needed
 const I2C_ADDRESS: u8 = 0x27;
+
 static HW_DCF77: HardwareEdge = HardwareEdge::new();
 static HW_MSF: HardwareEdge = HardwareEdge::new();
 static HW_KY040_SW: HardwareEdge = HardwareEdge::new();

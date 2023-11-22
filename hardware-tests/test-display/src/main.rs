@@ -45,6 +45,8 @@ fn main() -> ! {
         &mut pac.RESETS,
     );
 
+    // Moving the initialization into hd44780_helper::init_lcd() is impossible because we cannot move `pac`.
+
     // Create the I²C drive, using the two pre-configured pins. This will fail
     // at compile time if the pins are in the wrong mode, or if this I²C
     // peripheral isn't available on these pins!

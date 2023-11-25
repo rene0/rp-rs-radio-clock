@@ -316,7 +316,7 @@ fn main() -> ! {
                     &mut delay,
                 );
             }
-            if dcf77_tick == FRAMES_PER_SECOND / 10 && dcf77.get_new_minute() {
+            if dcf77_tick == FRAMES_PER_SECOND * 3 / 10 && dcf77.get_new_minute() {
                 // print date/time/status
                 dcf77.decode_time();
                 if !dcf77.get_first_minute() {
@@ -364,7 +364,7 @@ fn main() -> ! {
                     &mut delay,
                 );
             }
-            if msf_tick == FRAMES_PER_SECOND / 10 && msf.get_new_minute() {
+            if msf_tick == FRAMES_PER_SECOND * 4 / 10 && msf.get_new_minute() {
                 // print date/time/status
                 msf.decode_time();
                 if !msf.get_first_minute() {

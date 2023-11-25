@@ -39,23 +39,29 @@ mod hd44780_helper;
 /// I²C address of the PCF8574 adapter, change as needed
 const I2C_ADDRESS: u8 = 0x27;
 
+// Definitions for the DCF77 receiver
 static HW_DCF77: HardwareEdge = HardwareEdge::new();
+static mut GLOBAL_PIN_DCF77: Option<Pin<bank0::Gpio11, FunctionSioInput, PullDown>> = None;
+
+// Definitions for the MSF receiver
 static HW_MSF: HardwareEdge = HardwareEdge::new();
+static mut GLOBAL_PIN_MSF: Option<Pin<bank0::Gpio6, FunctionSioInput, PullDown>> = None;
+
+// Definitions for the rotary switch
 static HW_KY040_SW: HardwareEdge = HardwareEdge::new();
+// click button of the Ky040:
+static mut GLOBAL_PIN_KY040_SW: Option<Pin<bank0::Gpio7, FunctionSioInput, PullUp>> = None;
+
+// Definitions for the display controller
 
 /// Ticks (frames) in each second, to control LEDs and display
 const FRAMES_PER_SECOND: u8 = 10;
 static G_TIMER_TICK: AtomicBool = AtomicBool::new(false); // tick-tock
 
-// needed to transfer our pin(s) into the ISR:
-static mut GLOBAL_PIN_DCF77: Option<Pin<bank0::Gpio11, FunctionSioInput, PullDown>> = None;
-static mut GLOBAL_PIN_MSF: Option<Pin<bank0::Gpio6, FunctionSioInput, PullDown>> = None;
 // timer to get the timestamp of the edges:
 static mut GLOBAL_TIMER: Option<Timer> = None;
 // and one for the timer alarm:
 static mut GLOBAL_ALARM: Option<Alarm0> = None;
-// click button of the Ky040:
-static mut GLOBAL_PIN_KY040_SW: Option<Pin<bank0::Gpio7, FunctionSioInput, PullUp>> = None;
 
 enum DisplayMode {
     Status,
@@ -69,11 +75,11 @@ enum DisplayMode {
 /// as soon as all global variables and the spinlock are initialised.
 #[rp_pico::entry]
 fn main() -> ! {
+    // Set up basic peripherals:
     let mut pac = Peripherals::take().unwrap();
-    let core = CorePeripherals::take().unwrap();
     let mut watchdog = Watchdog::new(pac.WATCHDOG);
-    let sio = Sio::new(pac.SIO);
-    // boilerplate from the rp2040 template:
+
+    // Set up the RP2040 clock:
     let clocks = clocks::init_clocks_and_plls(
         rp_pico::XOSC_CRYSTAL_FREQ,
         pac.XOSC,
@@ -86,7 +92,11 @@ fn main() -> ! {
     .ok()
     .unwrap();
 
+    let core = CorePeripherals::take().unwrap();
     let mut delay = Delay::new(core.SYST, clocks.system_clock.freq().to_Hz());
+
+    // Set up the I/O pin bank:
+    let sio = Sio::new(pac.SIO);
     let pins = Pins::new(
         pac.IO_BANK0,
         pac.PADS_BANK0,
@@ -94,13 +104,9 @@ fn main() -> ! {
         &mut pac.RESETS,
     );
 
-    // Configure two pins as being I²C, not GPIO
+    // Configure the LCD display using the I²C interface:
     let sda_pin = pins.gpio26.into_function::<FunctionI2C>();
     let scl_pin = pins.gpio27.into_function::<FunctionI2C>();
-
-    // Create the I²C drive, using the two pre-configured pins. This will fail
-    // at compile time if the pins are in the wrong mode, or if this I²C
-    // peripheral isn't available on these pins!
     let i2c = I2C::i2c1(
         pac.I2C1,
         sda_pin,
@@ -109,8 +115,8 @@ fn main() -> ! {
         &mut pac.RESETS,
         &clocks.peripheral_clock,
     );
-    // Initialize the display:
     let mut lcd = HD44780::new_i2c(i2c, I2C_ADDRESS, &mut delay).unwrap();
+    // Initialize the display:
     lcd.reset(&mut delay).unwrap();
     lcd.clear(&mut delay).unwrap();
     lcd.set_cursor_blink(CursorBlink::Off, &mut delay).unwrap(); // small static cursor

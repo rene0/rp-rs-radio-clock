@@ -21,6 +21,6 @@ panic-halt = "0.2"
 rp-pico = "0.8"
 
 # Hardware-independent
-dcf77_utils = "0.5"
+dcf77_utils = "0.6"
 msf60_utils = "0.3"
 radio_datetime_utils = "0.5"

@@ -59,7 +59,7 @@ pub fn str_misc(dcf77: &DCF77Utils) -> String<3> {
 
 /// Return a character representation of the minute length status.
 fn str_minute_length(dcf77: &DCF77Utils) -> char {
-    match dcf77.get_second().cmp(&dcf77.get_this_minute_length()) {
+    match (dcf77.get_old_second() + 1).cmp(&dcf77.get_this_minute_length()) {
         Ordering::Less => '<',
         Ordering::Equal => ' ',
         Ordering::Greater => '>',

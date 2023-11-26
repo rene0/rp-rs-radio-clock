@@ -9,7 +9,7 @@ use core::{
     sync::atomic::{AtomicBool, Ordering},
 };
 use cortex_m::delay::Delay;
-use dcf77_utils::DCF77Utils;
+use dcf77_utils::{DCF77Utils, DecodeType};
 use embedded_hal::digital::v2::{InputPin, OutputPin, ToggleableOutputPin};
 use fugit::{MicrosDurationU32, RateExtU32};
 use hd44780_driver::{Cursor, CursorBlink, HD44780};
@@ -191,7 +191,7 @@ fn main() -> ! {
     let mut t0_msf = 0;
     let mut msf_tick = 0;
     let mut display_mode = DisplayMode::Status;
-    let mut dcf77 = DCF77Utils::default();
+    let mut dcf77 = DCF77Utils::new(DecodeType::Live);
     let mut msf = MSFUtils::default();
     let mut str_dcf77_status: String<14> = String::new();
     write!(str_dcf77_status, "              ").unwrap(); // 14 spaces
@@ -305,13 +305,10 @@ fn main() -> ! {
                 );
             }
             if dcf77_tick == 0 {
-                let mut second = dcf77.get_second() + 1;
-                if second == dcf77.get_next_minute_length() {
-                    second = 0;
-                }
+                dcf77.increase_second();
                 hd44780_helper::write_at(
                     (14, 1),
-                    frontend::str_02(Some(second)).as_str(),
+                    frontend::str_02(Some(dcf77.get_second())).as_str(),
                     &mut lcd,
                     &mut delay,
                 );
@@ -344,9 +341,6 @@ fn main() -> ! {
                         &mut delay,
                     );
                 }
-            }
-            if dcf77_tick == FRAMES_PER_SECOND * 7 / 10 {
-                dcf77.increase_second();
             }
             dcf77_tick += 1;
             if dcf77_tick == FRAMES_PER_SECOND {

@@ -84,9 +84,9 @@ checksum = "7059fff8937831a9ae6f0fe4d658ffabf58f2ca96aa9dec1c889f936f705f216"
 
 [[package]]
 name = "dcf77_utils"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "824d8617af2b569a01b5498c76efa9dca0acba748d4b339d5fbe3c7e28cb4cfb"
+checksum = "2eb8ecb2c2aaef60f96b20e4adb8c9741ad3d6989a63e43991a1837f8a9a5cde"
 dependencies = [
  "radio_datetime_utils",
 ]
@@ -348,9 +348,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.69"
+version = "1.0.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "134c189feb4956b20f6f547d2cf727d4c0fe06722b20a0eec87ed445a97f92da"
+checksum = "39278fbbf5fb4f646ce651690877f89d1c5811a3d4acb27700c1cb3cdb78fd3b"
 dependencies = [
  "unicode-ident",
 ]
@@ -391,7 +391,7 @@ dependencies = [
 
 [[package]]
 name = "rp-rs-radio-clock"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
@@ -418,9 +418,9 @@ dependencies = [
 
 [[package]]
 name = "rp2040-hal"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ec610f738b69100fbe75f3b835501b669d41c889ac9a62ef284f8e6d1f17385"
+checksum = "08f21deadb5f29f05be9e665049c9c6d6385c6ed3437574c995658a041f71453"
 dependencies = [
  "cortex-m",
  "critical-section",

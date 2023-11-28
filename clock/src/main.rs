@@ -347,13 +347,10 @@ fn main() -> ! {
                 dcf77_tick = 0;
             }
             if msf_tick == 0 {
-                let mut second = msf.get_second() + 1;
-                if second == msf.get_minute_length() {
-                    second = 0;
-                }
+                msf.increase_second();
                 hd44780_helper::write_at(
                     (14, 3),
-                    frontend::str_02(Some(second)).as_str(),
+                    frontend::str_02(Some(msf.get_second())).as_str(),
                     &mut lcd,
                     &mut delay,
                 );
@@ -386,9 +383,6 @@ fn main() -> ! {
                         &mut delay,
                     );
                 }
-            }
-            if msf_tick == FRAMES_PER_SECOND * 7 / 10 {
-                msf.increase_second();
             }
             msf_tick += 1;
             if msf_tick == FRAMES_PER_SECOND {

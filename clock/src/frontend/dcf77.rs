@@ -49,8 +49,8 @@ pub fn str_misc(dcf77: &DCF77Utils) -> String<3> {
     write!(
         str_buf,
         "{}{}{}",
-        str_call_bit(dcf77),
         frontend::str_dst(dcf77.get_radio_datetime()),
+        str_call_bit(dcf77),
         str_leap_second(dcf77)
     )
     .unwrap();

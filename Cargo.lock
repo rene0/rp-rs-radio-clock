@@ -257,9 +257,9 @@ dependencies = [
 
 [[package]]
 name = "msf60_utils"
-version = "0.3.2"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52d9c72eedf515f2d0629a9385f30f3ba7dd12b2f8025cd70edadb32ff45ea6f"
+checksum = "eb97236d96eeef4d5ce746155faf9527b3146da99b23b3102f74da25f07e3c50"
 dependencies = [
  "radio_datetime_utils",
 ]

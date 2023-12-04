@@ -42,7 +42,7 @@ pub fn str_status(msf: &MSFUtils) -> String<14> {
         frontend::str_parity(msf.get_parity_2(), true, 'b'),
         frontend::str_parity(msf.get_parity_1(), true, 'a'),
         str_minute_length(msf),
-        if msf.end_of_minute_marker_present(false) {
+        if msf.end_of_minute_marker_present() {
             ' '
         } else {
             '!'
@@ -79,7 +79,7 @@ pub fn str_misc(msf: &MSFUtils) -> String<3> {
 
 /// Return a character representation of the minute length status.
 fn str_minute_length(msf: &MSFUtils) -> char {
-    match msf.get_second().cmp(&msf.get_minute_length()) {
+    match (msf.get_second() + 1).cmp(&msf.get_minute_length()) {
         Ordering::Less => '<',
         Ordering::Equal => ' ',
         Ordering::Greater => '>',

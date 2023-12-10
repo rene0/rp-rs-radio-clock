@@ -231,6 +231,10 @@ fn main() -> ! {
         if HW_DCF77.is_new.load(Ordering::Acquire) {
             let t1_dcf77 = HW_DCF77.when.load(Ordering::Acquire);
             let is_low_edge = HW_DCF77.is_low.load(Ordering::Acquire);
+            dcf77.handle_new_edge(is_low_edge, t1_dcf77);
+            if dcf77.get_new_second() {
+                dcf77_tick = 0;
+            }
             if matches!(display_mode, DisplayMode::Pulses) {
                 hd44780_helper::write_at(
                     (7 + 7 * is_low_edge as u8, 0),
@@ -238,10 +242,6 @@ fn main() -> ! {
                     &mut lcd,
                     &mut delay,
                 );
-            }
-            dcf77.handle_new_edge(is_low_edge, t1_dcf77);
-            if dcf77.get_new_second() {
-                dcf77_tick = 0;
             }
             dcf77_leds = dcf77::update_bit_leds(dcf77_leds, dcf77_tick, &dcf77);
             set_leds_dcf77(
@@ -256,6 +256,10 @@ fn main() -> ! {
         if HW_MSF.is_new.load(Ordering::Acquire) {
             let t1_msf = HW_MSF.when.load(Ordering::Acquire);
             let is_low_edge = HW_MSF.is_low.load(Ordering::Acquire);
+            msf.handle_new_edge(is_low_edge, t1_msf);
+            if msf.get_new_second() {
+                msf_tick = 0;
+            }
             if matches!(display_mode, DisplayMode::Pulses) {
                 hd44780_helper::write_at(
                     (7 + 7 * is_low_edge as u8, 2),
@@ -263,10 +267,6 @@ fn main() -> ! {
                     &mut lcd,
                     &mut delay,
                 );
-            }
-            msf.handle_new_edge(is_low_edge, t1_msf);
-            if msf.get_new_second() {
-                msf_tick = 0;
             }
             msf_leds = msf::update_bit_leds(msf_leds, msf_tick, &msf);
             set_leds_msf(

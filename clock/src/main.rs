@@ -315,8 +315,8 @@ fn main() -> ! {
                 // print date/time/status
                 dcf77.decode_time();
                 if !dcf77.get_first_minute() {
+                    str_dcf77_status = dcf77::str_status(&dcf77);
                     if matches!(display_mode, DisplayMode::Status) {
-                        str_dcf77_status = dcf77::str_status(&dcf77);
                         hd44780_helper::write_at(
                             (6, 0),
                             str_dcf77_status.as_str(),
@@ -357,8 +357,8 @@ fn main() -> ! {
                 // print date/time/status
                 msf.decode_time();
                 if !msf.get_first_minute() {
+                    str_msf_status = msf::str_status(&msf);
                     if matches!(display_mode, DisplayMode::Status) {
-                        str_msf_status = msf::str_status(&msf);
                         hd44780_helper::write_at(
                             (6, 2),
                             str_msf_status.as_str(),

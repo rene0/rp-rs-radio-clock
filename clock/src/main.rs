@@ -194,10 +194,8 @@ fn main() -> ! {
     let mut display_mode = DisplayMode::Status;
     let mut dcf77 = DCF77Utils::new(DecodeType::Live);
     let mut msf = MSFUtils::default();
-    let mut str_dcf77_status: String<14> = String::new();
-    write!(str_dcf77_status, "              ").unwrap(); // 14 spaces
-    let mut str_msf_status: String<14> = String::new();
-    write!(str_msf_status, "              ").unwrap(); // 14 spaces
+    let mut str_dcf77_status: String<14> = str_blank.clone();
+    let mut str_msf_status: String<14> = str_blank.clone();
 
     loop {
         if HW_KY040_SW.is_new.load(Ordering::Acquire) {

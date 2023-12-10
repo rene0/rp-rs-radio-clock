@@ -65,8 +65,7 @@ static mut GLOBAL_ALARM: Option<Alarm0> = None;
 
 enum DisplayMode {
     Status,
-    PulsesHigh,
-    PulsesLow,
+    Pulses,
 }
 
 /// Entry point to our bare-metal application.
@@ -186,6 +185,8 @@ fn main() -> ! {
         NVIC::unmask(pac::Interrupt::IO_IRQ_BANK0);
         NVIC::unmask(pac::Interrupt::TIMER_IRQ_0);
     }
+    let mut str_blank: String<14> = String::new();
+    write!(str_blank, "              ").unwrap(); // 14 spaces
     let mut t0_dcf77 = 0;
     let mut dcf77_tick = 0;
     let mut t0_msf = 0;
@@ -203,9 +204,13 @@ fn main() -> ! {
             if !HW_KY040_SW.is_low.load(Ordering::Acquire) {
                 // negative logic for the SW pin, pin released
                 match display_mode {
-                    DisplayMode::Status => display_mode = DisplayMode::PulsesHigh,
-                    DisplayMode::PulsesHigh => display_mode = DisplayMode::PulsesLow,
-                    DisplayMode::PulsesLow => {
+                    DisplayMode::Status => {
+                        display_mode = DisplayMode::Pulses;
+                        // clear out status info to not clutter pulse info later on:
+                        hd44780_helper::write_at((6, 0), str_blank.as_str(), &mut lcd, &mut delay);
+                        hd44780_helper::write_at((6, 2), str_blank.as_str(), &mut lcd, &mut delay);
+                    }
+                    DisplayMode::Pulses => {
                         display_mode = DisplayMode::Status;
                         // clear out pulse info, restore any status info
                         hd44780_helper::write_at(
@@ -225,17 +230,12 @@ fn main() -> ! {
             }
             HW_KY040_SW.is_new.store(false, Ordering::Release);
         }
-        let show_low = match display_mode {
-            DisplayMode::PulsesHigh => Some(false),
-            DisplayMode::PulsesLow => Some(true),
-            _ => None,
-        };
         if HW_DCF77.is_new.load(Ordering::Acquire) {
             let t1_dcf77 = HW_DCF77.when.load(Ordering::Acquire);
             let is_low_edge = HW_DCF77.is_low.load(Ordering::Acquire);
-            if Some(is_low_edge) == show_low {
+            if matches!(display_mode, DisplayMode::Pulses) {
                 hd44780_helper::write_at(
-                    (6, 0),
+                    (7 + 7 * is_low_edge as u8, 0),
                     str_pulses(is_low_edge, t0_dcf77, t1_dcf77).as_str(),
                     &mut lcd,
                     &mut delay,
@@ -258,9 +258,9 @@ fn main() -> ! {
         if HW_MSF.is_new.load(Ordering::Acquire) {
             let t1_msf = HW_MSF.when.load(Ordering::Acquire);
             let is_low_edge = HW_MSF.is_low.load(Ordering::Acquire);
-            if Some(is_low_edge) == show_low {
+            if matches!(display_mode, DisplayMode::Pulses) {
                 hd44780_helper::write_at(
-                    (6, 2),
+                    (7 + 7 * is_low_edge as u8, 2),
                     str_pulses(is_low_edge, t0_msf, t1_msf).as_str(),
                     &mut lcd,
                     &mut delay,
@@ -393,13 +393,13 @@ fn main() -> ! {
     }
 }
 
-fn str_pulses(is_low_edge: bool, t0: u32, t1: u32) -> String<14> {
-    let mut str_buf: String<14> = String::new();
+fn str_pulses(is_low_edge: bool, t0: u32, t1: u32) -> String<6> {
+    let mut str_buf: String<6> = String::new();
     write!(
         str_buf,
-        " {} {:<10} ",
+        "{} {:<4}",
         if is_low_edge { 'L' } else { 'H' },
-        radio_datetime_helpers::time_diff(t0, t1)
+        (radio_datetime_helpers::time_diff(t0, t1) + 500) / 1000
     )
     .unwrap();
     str_buf

@@ -55,7 +55,7 @@ static mut GLOBAL_PIN_KY040_SW: Option<Pin<bank0::Gpio7, FunctionSioInput, PullU
 // Definitions for the display controller
 
 /// Ticks (frames) in each second, to control LEDs and display
-const FRAMES_PER_SECOND: u8 = 10;
+const FRAMES_PER_SECOND: u8 = 20;
 static G_TIMER_TICK: AtomicBool = AtomicBool::new(false); // tick-tock
 
 // timer to get the timestamp of the edges:
@@ -310,34 +310,35 @@ fn main() -> ! {
                     &mut lcd,
                     &mut delay,
                 );
-                if dcf77.get_new_minute() {
-                    // print date/time/status
-                    dcf77.decode_time();
-                    if !dcf77.get_first_minute() {
-                        str_dcf77_status = dcf77::str_status(&dcf77);
-                        if matches!(display_mode, DisplayMode::Status) {
-                            hd44780_helper::write_at(
-                                (6, 0),
-                                str_dcf77_status.as_str(),
-                                &mut lcd,
-                                &mut delay,
-                            );
-                        }
-                        // Decoded date and time:
+            }
+            // The rising pulse can be up to 50ms late so  we could miss it when looking for it at dcf77_tick 0
+            if dcf77_tick == FRAMES_PER_SECOND / 20 && dcf77.get_new_minute() {
+                // print date/time/status
+                dcf77.decode_time();
+                if !dcf77.get_first_minute() {
+                    str_dcf77_status = dcf77::str_status(&dcf77);
+                    if matches!(display_mode, DisplayMode::Status) {
                         hd44780_helper::write_at(
-                            (0, 1),
-                            frontend::str_datetime(dcf77.get_radio_datetime(), 7).as_str(),
-                            &mut lcd,
-                            &mut delay,
-                        );
-                        // Other things:
-                        hd44780_helper::write_at(
-                            (17, 1),
-                            dcf77::str_misc(&dcf77).as_str(),
+                            (6, 0),
+                            str_dcf77_status.as_str(),
                             &mut lcd,
                             &mut delay,
                         );
                     }
+                    // Decoded date and time:
+                    hd44780_helper::write_at(
+                        (0, 1),
+                        frontend::str_datetime(dcf77.get_radio_datetime(), 7).as_str(),
+                        &mut lcd,
+                        &mut delay,
+                    );
+                    // Other things:
+                    hd44780_helper::write_at(
+                        (17, 1),
+                        dcf77::str_misc(&dcf77).as_str(),
+                        &mut lcd,
+                        &mut delay,
+                    );
                 }
             }
             dcf77_tick += 1;

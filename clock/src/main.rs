@@ -310,34 +310,34 @@ fn main() -> ! {
                     &mut lcd,
                     &mut delay,
                 );
-            }
-            if dcf77_tick == FRAMES_PER_SECOND * 3 / 10 && dcf77.get_new_minute() {
-                // print date/time/status
-                dcf77.decode_time();
-                if !dcf77.get_first_minute() {
-                    str_dcf77_status = dcf77::str_status(&dcf77);
-                    if matches!(display_mode, DisplayMode::Status) {
+                if dcf77.get_new_minute() {
+                    // print date/time/status
+                    dcf77.decode_time();
+                    if !dcf77.get_first_minute() {
+                        str_dcf77_status = dcf77::str_status(&dcf77);
+                        if matches!(display_mode, DisplayMode::Status) {
+                            hd44780_helper::write_at(
+                                (6, 0),
+                                str_dcf77_status.as_str(),
+                                &mut lcd,
+                                &mut delay,
+                            );
+                        }
+                        // Decoded date and time:
                         hd44780_helper::write_at(
-                            (6, 0),
-                            str_dcf77_status.as_str(),
+                            (0, 1),
+                            frontend::str_datetime(dcf77.get_radio_datetime(), 7).as_str(),
+                            &mut lcd,
+                            &mut delay,
+                        );
+                        // Other things:
+                        hd44780_helper::write_at(
+                            (17, 1),
+                            dcf77::str_misc(&dcf77).as_str(),
                             &mut lcd,
                             &mut delay,
                         );
                     }
-                    // Decoded date and time:
-                    hd44780_helper::write_at(
-                        (0, 1),
-                        frontend::str_datetime(dcf77.get_radio_datetime(), 7).as_str(),
-                        &mut lcd,
-                        &mut delay,
-                    );
-                    // Other things:
-                    hd44780_helper::write_at(
-                        (17, 1),
-                        dcf77::str_misc(&dcf77).as_str(),
-                        &mut lcd,
-                        &mut delay,
-                    );
                 }
             }
             dcf77_tick += 1;
@@ -353,7 +353,7 @@ fn main() -> ! {
                     &mut delay,
                 );
             }
-            if msf_tick == FRAMES_PER_SECOND * 4 / 10 && msf.get_new_minute() {
+            if msf_tick == FRAMES_PER_SECOND * 9 / 10 && msf.get_new_minute() {
                 // print date/time/status
                 msf.decode_time();
                 if !msf.get_first_minute() {

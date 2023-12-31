@@ -68,6 +68,23 @@ enum DisplayMode {
     Pulses,
 }
 
+macro_rules! display_date_time_status {
+    ($status:expr,$base:expr, $datetime:expr, $sunday:expr, $misc:expr, $display_mode:ident, $lcd:ident, $delay:ident) => {
+        if matches!($display_mode, DisplayMode::Status) {
+            hd44780_helper::write_at((6, $base), $status.as_str(), &mut $lcd, &mut $delay);
+        }
+        // Decoded date and time:
+        hd44780_helper::write_at(
+            (0, $base + 1),
+            frontend::str_datetime($datetime, $sunday).as_str(),
+            &mut $lcd,
+            &mut $delay,
+        );
+        // Other things:
+        hd44780_helper::write_at((17, $base + 1), $misc.as_str(), &mut $lcd, &mut $delay);
+    };
+}
+
 /// Entry point to our bare-metal application.
 ///
 /// The `#[entry]` macro ensures the Cortex-M start-up code calls this function
@@ -305,6 +322,16 @@ fn main() -> ! {
             if dcf77_tick == 0 {
                 if !dcf77.increase_second() && dcf77.add_minute() {
                     hd44780_helper::write_at((0, 0), "d", &mut lcd, &mut delay);
+                    display_date_time_status!(
+                        str_dcf77_status,
+                        0,
+                        dcf77.get_radio_datetime(),
+                        7,
+                        dcf77::str_misc(&dcf77),
+                        display_mode,
+                        lcd,
+                        delay
+                    );
                 }
                 hd44780_helper::write_at(
                     (14, 1),
@@ -319,28 +346,16 @@ fn main() -> ! {
                 dcf77.decode_time();
                 if !dcf77.get_first_minute() {
                     str_dcf77_status = dcf77::str_status(&dcf77);
-                    if matches!(display_mode, DisplayMode::Status) {
-                        hd44780_helper::write_at(
-                            (6, 0),
-                            str_dcf77_status.as_str(),
-                            &mut lcd,
-                            &mut delay,
-                        );
-                    }
-                    // Decoded date and time:
                     hd44780_helper::write_at((0, 0), "D", &mut lcd, &mut delay);
-                    hd44780_helper::write_at(
-                        (0, 1),
-                        frontend::str_datetime(dcf77.get_radio_datetime(), 7).as_str(),
-                        &mut lcd,
-                        &mut delay,
-                    );
-                    // Other things:
-                    hd44780_helper::write_at(
-                        (17, 1),
-                        dcf77::str_misc(&dcf77).as_str(),
-                        &mut lcd,
-                        &mut delay,
+                    display_date_time_status!(
+                        str_dcf77_status,
+                        0,
+                        dcf77.get_radio_datetime(),
+                        7,
+                        dcf77::str_misc(&dcf77),
+                        display_mode,
+                        lcd,
+                        delay
                     );
                 }
             }
@@ -351,6 +366,16 @@ fn main() -> ! {
             if msf_tick == 0 {
                 if !msf.increase_second() && msf.add_minute() {
                     hd44780_helper::write_at((0, 2), "m", &mut lcd, &mut delay);
+                    display_date_time_status!(
+                        str_msf_status,
+                        2,
+                        msf.get_radio_datetime(),
+                        0,
+                        msf::str_misc(&msf),
+                        display_mode,
+                        lcd,
+                        delay
+                    );
                 }
                 hd44780_helper::write_at(
                     (14, 3),
@@ -364,28 +389,16 @@ fn main() -> ! {
                 msf.decode_time();
                 if !msf.get_first_minute() {
                     str_msf_status = msf::str_status(&msf);
-                    if matches!(display_mode, DisplayMode::Status) {
-                        hd44780_helper::write_at(
-                            (6, 2),
-                            str_msf_status.as_str(),
-                            &mut lcd,
-                            &mut delay,
-                        );
-                    }
-                    // Decoded date and time:
                     hd44780_helper::write_at((0, 2), "M", &mut lcd, &mut delay);
-                    hd44780_helper::write_at(
-                        (0, 3),
-                        frontend::str_datetime(msf.get_radio_datetime(), 0).as_str(),
-                        &mut lcd,
-                        &mut delay,
-                    );
-                    // Other things:
-                    hd44780_helper::write_at(
-                        (17, 3),
-                        msf::str_misc(&msf).as_str(),
-                        &mut lcd,
-                        &mut delay,
+                    display_date_time_status!(
+                        str_msf_status,
+                        2,
+                        msf.get_radio_datetime(),
+                        0,
+                        msf::str_misc(&msf),
+                        display_mode,
+                        lcd,
+                        delay
                     );
                 }
             }

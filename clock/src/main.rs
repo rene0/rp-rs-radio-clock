@@ -343,7 +343,7 @@ fn main() -> ! {
             // The rising pulse can be up to 50ms late so  we could miss it when looking for it at dcf77_tick 0
             if dcf77_tick == FRAMES_PER_SECOND / 20 && dcf77.get_new_minute() {
                 // print date/time/status
-                dcf77.decode_time();
+                dcf77.decode_time(true);
                 if !dcf77.get_first_minute() {
                     str_dcf77_status = dcf77::str_status(&dcf77);
                     hd44780_helper::write_at((0, 0), "D", &mut lcd, &mut delay);
@@ -386,7 +386,7 @@ fn main() -> ! {
             }
             if msf_tick == FRAMES_PER_SECOND * 9 / 10 && msf.get_new_minute() {
                 // print date/time/status
-                msf.decode_time();
+                msf.decode_time(true);
                 if !msf.get_first_minute() {
                     str_msf_status = msf::str_status(&msf);
                     hd44780_helper::write_at((0, 2), "M", &mut lcd, &mut delay);

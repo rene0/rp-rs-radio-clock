@@ -8,5 +8,4 @@ members = [
 	"hardware-tests/test-isr-timer",
 	"hardware-tests/test-ky040",
 	"hardware-tests/test-leds",
-	"hardware-tests/test-serial",
 ]

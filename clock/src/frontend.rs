@@ -8,8 +8,8 @@ pub mod msf;
 #[macro_export]
 macro_rules! set_time_led {
     ($tick:expr, $station:ident) => {
-        (!$station.get_new_minute() && $tick < $crate::FRAMES_PER_SECOND * 2 / 10)
-            || ($station.get_new_minute() && $tick < $crate::FRAMES_PER_SECOND * 6 / 10)
+        (!$station.get_new_minute() && $tick < $crate::FRAMES_PER_SECOND / 5)
+            || ($station.get_new_minute() && $tick < $crate::FRAMES_PER_SECOND * 3 / 5)
     };
 }
 

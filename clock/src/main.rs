@@ -69,7 +69,7 @@ enum DisplayMode {
 }
 
 macro_rules! display_date_time_status {
-    ($status:expr,$base:expr, $datetime:expr, $sunday:expr, $misc:expr, $display_mode:ident, $lcd:ident, $delay:ident) => {
+    ($status:expr, $base:expr, $datetime:expr, $sunday:expr, $misc:expr, $display_mode:ident, $lcd:ident, $delay:ident) => {
         if matches!($display_mode, DisplayMode::Status) {
             hd44780_helper::write_at((6, $base), $status.as_str(), &mut $lcd, &mut $delay);
         }

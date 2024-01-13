@@ -320,6 +320,11 @@ fn main() -> ! {
                 );
             }
             if dcf77_tick == 0 {
+                if dcf77.increase_second() {
+                    hd44780_helper::write_at((0, 0), "D", &mut lcd, &mut delay);
+                } else {
+                    hd44780_helper::write_at((0, 0), "!", &mut lcd, &mut delay);
+                }
                 if !dcf77.increase_second() && dcf77.add_minute() {
                     hd44780_helper::write_at((0, 0), "d", &mut lcd, &mut delay);
                     display_date_time_status!(
@@ -364,6 +369,11 @@ fn main() -> ! {
                 dcf77_tick = 0;
             }
             if msf_tick == 0 {
+                if msf.increase_second() {
+                    hd44780_helper::write_at((0, 2), "M", &mut lcd, &mut delay);
+                } else {
+                    hd44780_helper::write_at((0, 2), "!", &mut lcd, &mut delay);
+                }
                 if !msf.increase_second() && msf.add_minute() {
                     hd44780_helper::write_at((0, 2), "m", &mut lcd, &mut delay);
                     display_date_time_status!(

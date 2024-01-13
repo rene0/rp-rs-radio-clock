@@ -394,7 +394,7 @@ fn main() -> ! {
                     &mut delay,
                 );
             }
-            if msf_tick == FRAMES_PER_SECOND * 9 / 10 && msf.get_new_minute() {
+            if msf_tick == FRAMES_PER_SECOND * 19 / 20 && msf.get_new_minute() {
                 // print date/time/status
                 msf.decode_time(true);
                 if !msf.get_first_minute() {

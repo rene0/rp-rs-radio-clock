@@ -253,6 +253,7 @@ fn main() -> ! {
                 dcf77_tick = 0;
             }
             if matches!(display_mode, DisplayMode::Pulses) {
+                // stutters the heartbeat LED
                 hd44780_helper::write_at(
                     (7 + 7 * is_low_edge as u8, 0),
                     str_pulses(is_low_edge, t0_dcf77, t1_dcf77).as_str(),
@@ -278,6 +279,7 @@ fn main() -> ! {
                 msf_tick = 0;
             }
             if matches!(display_mode, DisplayMode::Pulses) {
+                // stutters the heartbeat LED
                 hd44780_helper::write_at(
                     (7 + 7 * is_low_edge as u8, 2),
                     str_pulses(is_low_edge, t0_msf, t1_msf).as_str(),
